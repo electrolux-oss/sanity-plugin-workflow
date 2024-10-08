@@ -18,11 +18,12 @@ import {
 import {LexoRank} from 'lexorank'
 import React from 'react'
 import {Tool, useCurrentUser} from 'sanity'
-import {Feedback, useProjectUsers} from 'sanity-plugin-utils'
+import {Feedback} from 'sanity-plugin-utils'
 
 import {API_VERSION} from '../constants'
 import {arraysContainMatchingString} from '../helpers/arraysContainMatchingString'
 import {filterItemsAndSort} from '../helpers/filterItemsAndSort'
+import {useProjectUsers} from '../hooks/useUsers'
 import {useWorkflowDocuments} from '../hooks/useWorkflowDocuments'
 import {State, WorkflowConfig} from '../types'
 import {DocumentCard} from './DocumentCard'

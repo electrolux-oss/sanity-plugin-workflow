@@ -1,11 +1,11 @@
 import {UsersIcon} from '@sanity/icons'
 import {useState} from 'react'
 import {DocumentActionProps} from 'sanity'
-import {useProjectUsers} from 'sanity-plugin-utils'
 
 import UserAssignment from '../components/UserAssignment'
 import {useWorkflowContext} from '../components/WorkflowContext'
 import {API_VERSION} from '../constants'
+import {useProjectUsers} from '../hooks/useUsers'
 
 export function AssignWorkflow(props: DocumentActionProps) {
   const {id} = props

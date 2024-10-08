@@ -1,8 +1,8 @@
 import {CurrentUser, DocumentBadgeDescription} from 'sanity'
-import {useProjectUsers} from 'sanity-plugin-utils'
 
 import {useWorkflowContext} from '../components/WorkflowContext'
 import {API_VERSION} from '../constants'
+import {useProjectUsers} from '../hooks/useUsers'
 
 export function AssigneesBadge(
   documentId: string,
