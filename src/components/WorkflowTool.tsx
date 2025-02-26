@@ -12,11 +12,12 @@ import {
   Flex,
   Grid,
   Spinner,
+  Text,
   useTheme,
   useToast,
 } from '@sanity/ui'
 import {LexoRank} from 'lexorank'
-import React from 'react'
+import {useCallback, useMemo, useState} from 'react'
 import {Tool, useCurrentUser} from 'sanity'
 import {Feedback} from 'sanity-plugin-utils'
 
@@ -25,7 +26,7 @@ import {arraysContainMatchingString} from '../helpers/arraysContainMatchingStrin
 import {filterItemsAndSort} from '../helpers/filterItemsAndSort'
 import {useProjectUsers} from '../hooks/useUsers'
 import {useWorkflowDocuments} from '../hooks/useWorkflowDocuments'
-import {State, WorkflowConfig} from '../types'
+import {FilterOptions, State, WorkflowConfig} from '../types'
 import {DocumentCard} from './DocumentCard'
 import DocumentList from './DocumentList'
 import Filters from './Filters'
@@ -42,25 +43,50 @@ export default function WorkflowTool(props: WorkflowToolProps) {
     states = [],
     filters = null,
   } = props?.tool?.options ?? {}
+  const [patchingIds, setPatchingIds] = useState<string[]>([])
+  const [draggingFrom, setDraggingFrom] = useState('')
+  const [undroppableStates, setUndroppableStates] = useState<string[]>([])
+  const [selectedSchemaTypes, setSelectedSchemaTypes] =
+    useState<string[]>(schemaTypes)
 
-  const isDarkMode = useTheme().sanity.color.dark
-  const defaultCardTone = isDarkMode ? 'default' : 'transparent'
   const toast = useToast()
+  const theme = useTheme()
+  const isDarkMode = useMemo(() => theme.sanity.color.dark, [theme])
+  const defaultCardTone = isDarkMode ? 'default' : 'transparent'
 
   const userList = useProjectUsers({apiVersion: API_VERSION})
 
   const user = useCurrentUser()
-  const userRoleNames = user?.roles?.length
-    ? user?.roles.map((r) => r.name)
-    : []
+  const userRoleNames = useMemo(
+    () => (user?.roles?.length ? user.roles.map((r) => r.name) : []),
+    [user]
+  )
 
-  const filterOptions = filters?.(user)
+  const filterOptions = useMemo(() => filters?.(user), [filters, user])
+  const userLocales = filterOptions?.locales
+
+  const LOCALE_FILTER_STORAGE_KEY = 'studio.plugin.workflow.locale-filter'
+
+  const [selectedLocales, setSelectedLocales] = useState<
+    FilterOptions['locales']
+  >(() => {
+    if (typeof window !== 'undefined') {
+      const storedLocales = localStorage.getItem(LOCALE_FILTER_STORAGE_KEY)
+      if (storedLocales) {
+        return JSON.parse(storedLocales)
+      }
+    }
+    return filterOptions?.locales
+  })
+
+  const passedFilter = selectedLocales
+    ? ({locales: selectedLocales} as FilterOptions)
+    : undefined
 
   const {workflowData, operations} = useWorkflowDocuments(
     schemaTypes,
-    filterOptions
+    passedFilter
   )
-  const [patchingIds, setPatchingIds] = React.useState<string[]>([])
 
   // Data to display in cards
   const {data, loading, error} = workflowData
@@ -68,14 +94,11 @@ export default function WorkflowTool(props: WorkflowToolProps) {
   // Operations to perform on cards
   const {move} = operations
 
-  const [undroppableStates, setUndroppableStates] = React.useState<string[]>([])
-  const [draggingFrom, setDraggingFrom] = React.useState(``)
-
   // When drag starts, check for any States we should not allow dropping on
   // Because of either:
   // 1. The "destination" State requires user assignment and the user is not assigned to the dragged document
   // 2. The "source" State State has a list of transitions and the "destination" State is not in that list
-  const handleDragStart = React.useCallback(
+  const handleDragStart = useCallback(
     (start: DragStart) => {
       const {draggableId, source} = start
       const {droppableId: currentStateId} = source
@@ -128,7 +151,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
     [data, states, user]
   )
 
-  const handleDragEnd = React.useCallback(
+  const handleDragEnd = useCallback(
     async (result: DropResult) => {
       // Reset undroppable states
       setUndroppableStates([])
@@ -238,8 +261,31 @@ export default function WorkflowTool(props: WorkflowToolProps) {
     [data, patchingIds, toast, move, states]
   )
 
+  const toggleLocales = useCallback((locales: string[]) => {
+    setSelectedLocales((prev) => {
+      const updatedLocales = Array.from(
+        locales.reduce((set, locale) => {
+          if (set.has(locale)) {
+            set.delete(locale)
+          } else {
+            set.add(locale)
+          }
+          return set
+        }, new Set(prev))
+      )
+
+      // Store in localStorage
+      localStorage.setItem(
+        LOCALE_FILTER_STORAGE_KEY,
+        JSON.stringify(updatedLocales)
+      )
+
+      return updatedLocales
+    })
+  }, [])
+
   // Used for the user filter UI
-  const uniqueAssignedUsers = React.useMemo(() => {
+  const uniqueAssignedUsers = useMemo(() => {
     const uniqueUserIds = data.reduce((acc, item) => {
       const {assignees = []} = item._metadata ?? {}
       const newAssignees = assignees?.length
@@ -252,24 +298,23 @@ export default function WorkflowTool(props: WorkflowToolProps) {
   }, [data, userList])
 
   // Selected user IDs filter the visible workflow documents
-  const [selectedUserIds, setSelectedUserIds] = React.useState<string[]>(
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>(
     uniqueAssignedUsers.map((u) => u.id)
   )
-  const toggleSelectedUser = React.useCallback((userId: string) => {
+  const toggleSelectedUser = useCallback((userId: string) => {
     setSelectedUserIds((prev) =>
       prev.includes(userId)
         ? prev.filter((u) => u !== userId)
         : [...prev, userId]
     )
   }, [])
-  const resetSelectedUsers = React.useCallback(() => {
+
+  const resetSelectedUsers = useCallback(() => {
     setSelectedUserIds([])
   }, [])
 
   // Selected schema types filter the visible workflow documents
-  const [selectedSchemaTypes, setSelectedSchemaTypes] =
-    React.useState<string[]>(schemaTypes)
-  const toggleSelectedSchemaType = React.useCallback((schemaType: string) => {
+  const toggleSelectedSchemaType = useCallback((schemaType: string) => {
     setSelectedSchemaTypes((prev) =>
       prev.includes(schemaType)
         ? prev.filter((u) => u !== schemaType)
@@ -278,10 +323,8 @@ export default function WorkflowTool(props: WorkflowToolProps) {
   }, [])
 
   // Document IDs that have validation errors
-  const [invalidDocumentIds, setInvalidDocumentIds] = React.useState<string[]>(
-    []
-  )
-  const toggleInvalidDocumentId = React.useCallback(
+  const [invalidDocumentIds, setInvalidDocumentIds] = useState<string[]>([])
+  const toggleInvalidDocumentId = useCallback(
     (docId: string, action: 'ADD' | 'REMOVE') => {
       setInvalidDocumentIds((prev) =>
         action === 'ADD' ? [...prev, docId] : prev.filter((id) => id !== docId)
@@ -290,7 +333,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
     []
   )
 
-  const Clone: DraggableChildrenFn = React.useCallback(
+  const Clone: DraggableChildrenFn = useCallback(
     (provided, snapshot, rubric) => {
       const item = data.find(
         (doc) => doc?._metadata?.documentId === rubric.draggableId
@@ -351,7 +394,6 @@ export default function WorkflowTool(props: WorkflowToolProps) {
   return (
     <Flex direction="column" height="fill" overflow="hidden">
       <Verify data={data} userList={userList} states={states} />
-
       <Filters
         uniqueAssignedUsers={uniqueAssignedUsers}
         selectedUserIds={selectedUserIds}
@@ -360,6 +402,9 @@ export default function WorkflowTool(props: WorkflowToolProps) {
         schemaTypes={schemaTypes}
         selectedSchemaTypes={selectedSchemaTypes}
         toggleSelectedSchemaType={toggleSelectedSchemaType}
+        selectedLocales={selectedLocales}
+        toggleLocales={toggleLocales}
+        userLocales={userLocales}
       />
       <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <Grid columns={states.length} height="fill">
@@ -369,6 +414,13 @@ export default function WorkflowTool(props: WorkflowToolProps) {
               : true
             const isDropDisabled =
               !userRoleCanDrop || undroppableStates.includes(state.id)
+
+            const documentCount = filterItemsAndSort(
+              data,
+              state.id,
+              selectedUserIds,
+              selectedSchemaTypes
+            ).length
 
             return (
               <Card
@@ -384,12 +436,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
                     isDropDisabled={isDropDisabled}
                     draggingFrom={draggingFrom}
                     documentCount={
-                      filterItemsAndSort(
-                        data,
-                        state.id,
-                        selectedUserIds,
-                        selectedSchemaTypes
-                      ).length
+                      selectedLocales.length > 0 ? documentCount : 0
                     }
                   />
                   <Box flex={1}>
@@ -405,31 +452,45 @@ export default function WorkflowTool(props: WorkflowToolProps) {
                           ref={provided.innerRef}
                           tone={
                             snapshot.isDraggingOver
-                              ? `primary`
+                              ? 'primary'
                               : defaultCardTone
                           }
                           height="fill"
                         >
-                          {loading ? (
+                          {loading && (
                             <Flex padding={5} align="center" justify="center">
                               <Spinner muted />
                             </Flex>
-                          ) : null}
-
-                          <DocumentList
-                            data={data}
-                            invalidDocumentIds={invalidDocumentIds}
-                            patchingIds={patchingIds}
-                            selectedSchemaTypes={selectedSchemaTypes}
-                            selectedUserIds={selectedUserIds}
-                            state={state}
-                            states={states}
-                            toggleInvalidDocumentId={toggleInvalidDocumentId}
-                            user={user}
-                            userList={userList}
-                            userRoleCanDrop={userRoleCanDrop}
-                          />
-
+                          )}
+                          {!loading && selectedLocales.length === 0 && (
+                            <Flex
+                              align="center"
+                              justify="center"
+                              height="fill"
+                              padding={6}
+                            >
+                              <Text size={3} align="center">
+                                No documents found.
+                                <br /> Have you selected a language in the
+                                filter?
+                              </Text>
+                            </Flex>
+                          )}
+                          {selectedLocales.length > 0 && (
+                            <DocumentList
+                              data={data}
+                              invalidDocumentIds={invalidDocumentIds}
+                              patchingIds={patchingIds}
+                              selectedSchemaTypes={selectedSchemaTypes}
+                              selectedUserIds={selectedUserIds}
+                              state={state}
+                              states={states}
+                              toggleInvalidDocumentId={toggleInvalidDocumentId}
+                              user={user}
+                              userList={userList}
+                              userRoleCanDrop={userRoleCanDrop}
+                            />
+                          )}
                           {/* Not required for virtualized lists */}
                           {/* {provided.placeholder} */}
                         </Card>
