@@ -1,17 +1,24 @@
 {
   "name": "sanity-plugin-workflow-elux",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A demonstration of a custom content publishing workflow using Sanity.",
   "keywords": [
     "sanity",
     "sanity-plugin"
   ],
+  "homepage": "https://github.com/twltwl/sanity-plugin-workflow-example",
   "repository": {
     "type": "git",
-    "url": "git@github.com:twltwl/sanity-plugin-workflow.git"
+    "url": "git@github.com:twltwl/sanity-plugin-workflow-example.git"
   },
   "license": "MIT",
   "author": "Tommy Ljungberg",
+  "contributors": [
+    {
+      "name": "Philip Åkerfeldt",
+      "url": "https://www.npmjs.com/~philip.akerfeldt"
+    }
+  ],
   "exports": {
     ".": {
       "types": "./lib/index.d.ts",
