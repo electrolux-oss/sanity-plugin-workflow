@@ -35,7 +35,7 @@ export function useWorkflowDocuments(
     ? filterOptions.locales
     : []
 
-  const QUERY = groq`*[_type == "workflow.metadata" (!defined($localeFilter) || count($localeFilter) == 0 || locale in $localeFilter)]|order(orderRank){
+  const QUERY = groq`*[_type == "workflow.metadata" && (!defined($localeFilter) || count($localeFilter) == 0 || locale in $localeFilter)]|order(orderRank){
     "_metadata": {
       _rev,
       assignees,
