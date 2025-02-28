@@ -66,10 +66,6 @@ export default function Filters(props: FiltersProps) {
     resetSelectedUsers()
   }, [resetSelectedUsers])
 
-  if (uniqueAssignedUsers.length === 0 && schemaTypes.length < 2) {
-    return null
-  }
-
   const meInUniqueAssignees =
     currentUser?.id && uniqueAssignedUsers.find((u) => u.id === currentUser.id)
 

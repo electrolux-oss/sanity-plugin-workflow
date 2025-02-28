@@ -31,11 +31,11 @@ export function useWorkflowDocuments(
   const toast = useToast()
   const client = useClient({apiVersion: API_VERSION})
 
-  const localeFilter = filterOptions?.locales
-    ? `&& locale in ${JSON.stringify([...filterOptions.locales, null])}`
-    : ''
+  const localeFilter = filterOptions?.locales?.length
+    ? filterOptions.locales
+    : []
 
-  const QUERY = groq`*[_type == "workflow.metadata" ${localeFilter}]|order(orderRank){
+  const QUERY = groq`*[_type == "workflow.metadata" (!defined($localeFilter) || count($localeFilter) == 0 || locale in $localeFilter)]|order(orderRank){
     "_metadata": {
       _rev,
       assignees,
@@ -60,7 +60,7 @@ export function useWorkflowDocuments(
   const {data, loading, error} = useListeningQuery<
     SanityDocumentWithMetadata[]
   >(QUERY, {
-    params: {schemaTypes},
+    params: {schemaTypes, localeFilter},
     initialValue: [],
   })
 
