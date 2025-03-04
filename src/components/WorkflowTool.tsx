@@ -77,7 +77,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
       }
       return []
     }
-    return filterOptions?.locales
+    return filterOptions?.locales?.[0] ?? []
   })
 
   const passedFilter = selectedLocales
