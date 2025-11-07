@@ -1,6 +1,9 @@
-> This is a **Sanity Studio v3** plugin.
+# Sanity Workflow Plugin - Electrolux Version (for Sanity Studio v3)
 
-# Sanity Workflow Demo Plugin Example
+> This is a **Sanity Studio v3** plugin.
+> This is a forked version of Sanitys own [Sanity Workflow Plugin (v1.0.3)](https://www.npmjs.com/package/sanity-plugin-workflow/v/1.0.3)
+
+# Sanity Workflow Plugin
 
 With Sanity Studio you can [customize your content tools to support arbitrary workflows like assignment and content pipelines](https://www.sanity.io/docs/custom-workflows).
 
@@ -21,25 +24,25 @@ This work demonstrates how a single plugin can define:
 - Document Badges for visual feedback about the current state of a document
 - A custom Tool for drag-and-drop updating of a document's state
 
-## Installation
+## Install (Sanity Studio v3)
 
-```
+```sh
 npm install --save sanity-plugin-workflow
 ```
 
 or
 
-```
+```sh
 yarn add sanity-plugin-workflow
 ```
 
 ## Usage
 
-Add it as a plugin in sanity.config.ts (or .js):
+Add it as a plugin in `sanity.config.ts` (or .js) file:
 
-```js
- import {createConfig} from 'sanity'
- import {workflow} from 'sanity-plugin-workflow'
+```ts
+ import { createConfig } from 'sanity'
+ import { workflow } from 'sanity-plugin-workflow'
 
  export const createConfig({
     // all other settings ...
@@ -106,21 +109,31 @@ This plugin is largely based on the original Workflow Demo built into a Sanity S
 - User Roles and Assignments can affect the Workflow. Set rules to enforce which States documents can move between and if being assigned to a document is required to move it to a new State. These are only enforced in the Studio and not the API.
 - This plugin can filter Schema types and assigned Users.
 
-## License
+## Develop locally
 
-[MIT](LICENSE) © Sanity.io
+### Test your plugin locally
 
-## Develop & test
+In the plugin directory run this command:
+```sh
+npm run link-watch
+```
 
-This plugin uses [@sanity/plugin-kit](https://github.com/sanity-io/plugin-kit)
-with default configuration for build & watch scripts.
+This will set up your plugin to build whenever the code changes, and publish the package to a local yalc repository.
 
-See [Testing a plugin in Sanity Studio](https://github.com/sanity-io/plugin-kit#testing-a-plugin-in-sanity-studio)
-on how to run this plugin with hot reload in the studio.
+In the command log, there should be a note that reads something like this:
 
-### Release new version
+```sh
+npx yalc add sanity-plugin-workflow && npx yalc link sanity-plugin-workflow && npm install
+```
 
-Run ["CI & Release" workflow](https://github.com/sanity-io/sanity-plugin-workflow/actions/workflows/main.yml).
-Make sure to select the main branch and check "Release new version".
+Run this command in the studio project directory and you should see something like this in the `package.json` file:
 
-Semantic release will only release on configured branches, so it is safe to run the release on any branch.
+```
+"sanity-plugin-workflow": "file:.yalc/sanity-plugin-workflow",
+```
+
+Which means you can safely use the local version of the plugin with this import:
+
+```
+import { workflow } from 'sanity-plugin-workflow'
+```
