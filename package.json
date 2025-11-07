@@ -1,15 +1,16 @@
 {
-  "name": "sanity-plugin-workflow-elux",
-  "version": "1.2.4",
+  "name": "@electrolux-oss/sanity-plugin-workflow",
+  "version": "1.0.0",
   "description": "A demonstration of a custom content publishing workflow using Sanity.",
   "keywords": [
     "sanity",
-    "sanity-plugin"
+    "sanity-plugin",
+    "electrolux"
   ],
-  "homepage": "https://github.com/twltwl/sanity-plugin-workflow-example",
+  "homepage": "https://github.com/electrolux-oss/sanity-plugin-workflow",
   "repository": {
     "type": "git",
-    "url": "git@github.com:twltwl/sanity-plugin-workflow-example.git"
+    "url": "git@github.com:electrolux-oss/sanity-plugin-workflow.git"
   },
   "license": "MIT",
   "author": "Tommy Ljungberg",
