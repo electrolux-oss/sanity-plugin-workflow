@@ -13,11 +13,8 @@
     "plugin:react/jsx-runtime",
     "prettier"
   ],
-  "plugins": ["simple-import-sort"],
   "rules": {
     "react/prop-types": "off",
-    "react/require-default-props": "off",
-    "simple-import-sort/imports": "error",
-    "simple-import-sort/exports": "error"
+    "react/require-default-props": "off"
   }
 }
