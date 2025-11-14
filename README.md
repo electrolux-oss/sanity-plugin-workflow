@@ -26,13 +26,13 @@ This work demonstrates how a single plugin can define:
 
 ## Install (Sanity Studio v3)
 
-```sh
+```zsh
 npm install --save sanity-plugin-workflow
 ```
 
 or
 
-```sh
+```zsh
 yarn add sanity-plugin-workflow
 ```
 
@@ -114,26 +114,26 @@ This plugin is largely based on the original Workflow Demo built into a Sanity S
 ### Test your plugin locally
 
 In the plugin directory run this command:
-```sh
+```zsh
 npm run link-watch
 ```
 
 This will set up your plugin to build whenever the code changes, and publish the package to a local yalc repository.
 
-In the command log, there should be a note that reads something like this:
+Run the command in the studio project directory:
 
-```sh
-npx yalc add sanity-plugin-workflow && npx yalc link sanity-plugin-workflow && npm install
+```zsh
+npx yalc add @electrolux-oss/sanity-plugin-workflow && npx yalc link @electrolux-oss/sanity-plugin-workflow && npm install
 ```
 
-Run this command in the studio project directory and you should see something like this in the `package.json` file:
+You should see something like this in the `package.json` file:
 
 ```
-"sanity-plugin-workflow": "file:.yalc/sanity-plugin-workflow",
+"@electrolux-oss/sanity-plugin-workflow": "file:.yalc/@electrolux-oss/sanity-plugin-workflow",
 ```
 
 Which means you can safely use the local version of the plugin with this import:
 
 ```
-import { workflow } from 'sanity-plugin-workflow'
+import { workflow } from '@electrolux-oss/sanity-plugin-workflow'
 ```
