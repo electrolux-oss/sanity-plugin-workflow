@@ -1,13 +1,19 @@
-import {Draggable, DraggableStyle} from '@hello-pangea/dnd'
-import {useVirtualizer, VirtualItem} from '@tanstack/react-virtual'
-import {CSSProperties, useMemo, useRef} from 'react'
-import {CurrentUser} from 'sanity'
-import {UserExtended} from 'sanity-plugin-utils'
+import { useMemo, useRef } from 'react'
 
-import {filterItemsAndSort} from '../helpers/filterItemsAndSort'
-import {SanityDocumentWithMetadata, State} from '../types'
-import {DocumentCard} from './DocumentCard'
+import { Draggable } from '@hello-pangea/dnd'
+import { useVirtualizer } from '@tanstack/react-virtual'
 
+import { filterItemsAndSort } from '../helpers/filterItemsAndSort'
+import { DocumentCard } from './DocumentCard'
+
+import type { CSSProperties } from 'react'
+
+import type { DraggableStyle } from '@hello-pangea/dnd'
+import type { VirtualItem } from '@tanstack/react-virtual'
+import type { CurrentUser } from 'sanity'
+import type { UserExtended } from 'sanity-plugin-utils'
+
+import type { SanityDocumentWithMetadata, State } from '../types'
 type DocumentListProps = {
   data: SanityDocumentWithMetadata[]
   invalidDocumentIds: string[]
@@ -16,10 +22,7 @@ type DocumentListProps = {
   selectedUserIds: string[]
   state: State
   states: State[]
-  toggleInvalidDocumentId: (
-    documentId: string,
-    action: 'ADD' | 'REMOVE'
-  ) => void
+  toggleInvalidDocumentId: (documentId: string, action: 'ADD' | 'REMOVE') => void
   user: CurrentUser | null
   userList: UserExtended[]
   userRoleCanDrop: boolean
@@ -35,10 +38,7 @@ function getStyle(
   // If a card is being dragged over, this card needs to move up or down
   if (draggableStyle && draggableStyle.transform) {
     // So get the transform value from beautiful-dnd
-    const draggableTransformY = parseInt(
-      draggableStyle.transform.split(',')[1].split('px')[0],
-      10
-    )
+    const draggableTransformY = parseInt(draggableStyle.transform.split(',')[1].split('px')[0], 10)
 
     // And apply it to the card
     transform = `translateY(${virtualItem.start + draggableTransformY}px)`
@@ -50,7 +50,7 @@ function getStyle(
     left: 0,
     width: '100%',
     height: `${virtualItem.size}px`,
-    transform,
+    transform
   }
 }
 
@@ -66,7 +66,7 @@ export default function DocumentList(props: DocumentListProps) {
     toggleInvalidDocumentId,
     user,
     userList,
-    userRoleCanDrop,
+    userRoleCanDrop
   } = props
 
   const dataFiltered = useMemo(() => {
@@ -80,12 +80,12 @@ export default function DocumentList(props: DocumentListProps) {
   const virtualizer = useVirtualizer({
     count: dataFiltered.length,
     getScrollElement: () => parentRef.current,
-    getItemKey: (index) => dataFiltered[index]?._metadata?.documentId ?? index,
+    getItemKey: index => dataFiltered[index]?._metadata?.documentId ?? index,
     estimateSize: () => 115,
     overscan: 7,
-    measureElement: (element) => {
+    measureElement: element => {
       return element.getBoundingClientRect().height || 115
-    },
+    }
   })
 
   if (!data.length || !dataFiltered.length) {
@@ -101,20 +101,20 @@ export default function DocumentList(props: DocumentListProps) {
         // Smooths scrollbar behaviour
         overflowAnchor: 'none',
         scrollBehavior: 'auto',
-        paddingTop: 1,
+        paddingTop: 1
       }}
     >
       <div
         style={{
           height: `${virtualizer.getTotalSize()}px`,
           width: '100%',
-          position: 'relative',
+          position: 'relative'
         }}
       >
-        {virtualizer.getVirtualItems().map((virtualItem) => {
+        {virtualizer.getVirtualItems().map(virtualItem => {
           const item = dataFiltered[virtualItem.index]
 
-          const {documentId, assignees} = item?._metadata ?? {}
+          const { documentId, assignees } = item?._metadata ?? {}
 
           const isInvalid = invalidDocumentIds.includes(documentId)
           const meInAssignees = user?.id ? assignees?.includes(user.id) : false
@@ -122,9 +122,7 @@ export default function DocumentList(props: DocumentListProps) {
             patchingIds.includes(documentId) ||
             !userRoleCanDrop ||
             isInvalid ||
-            !(state.requireAssignment
-              ? state.requireAssignment && meInAssignees
-              : true)
+            !(state.requireAssignment ? state.requireAssignment && meInAssignees : true)
 
           return (
             <Draggable
@@ -138,15 +136,9 @@ export default function DocumentList(props: DocumentListProps) {
                   ref={draggableProvided.innerRef}
                   {...draggableProvided.draggableProps}
                   {...draggableProvided.dragHandleProps}
-                  style={getStyle(
-                    draggableProvided.draggableProps.style,
-                    virtualItem
-                  )}
+                  style={getStyle(draggableProvided.draggableProps.style, virtualItem)}
                 >
-                  <div
-                    ref={virtualizer.measureElement}
-                    data-index={virtualItem.index}
-                  >
+                  <div ref={virtualizer.measureElement} data-index={virtualItem.index}>
                     <DocumentCard
                       userRoleCanDrop={userRoleCanDrop}
                       isDragDisabled={isDragDisabled}

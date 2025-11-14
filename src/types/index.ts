@@ -1,4 +1,4 @@
-import {CurrentUser, SanityDocumentLike} from 'sanity'
+import type { CurrentUser, SanityDocumentLike } from 'sanity'
 
 export type State = {
   id: string
@@ -14,7 +14,7 @@ export type State = {
 export type StateCheck<Id, States> = {
   id: Id
   // Transitions is an array of State ids
-  transitions?: States extends {id: infer Id2}[] ? Id2[] : never
+  transitions?: States extends { id: infer Id2 }[] ? Id2[] : never
 } & State
 
 export type FilterOptions = {
@@ -27,10 +27,9 @@ export type WorkflowConfig = {
   filters?: (user: CurrentUser | null) => FilterOptions | undefined
 }
 
-export function defineStates<
-  Id extends string,
-  States extends StateCheck<Id, States>[]
->(states: States): States {
+export function defineStates<Id extends string, States extends StateCheck<Id, States>[]>(
+  states: States
+): States {
   return states
 }
 
@@ -66,7 +65,7 @@ export type Metadata = SanityDocumentLike & {
   locale: string
 }
 
-export type KeyedMetadata = {[key: string]: Metadata}
+export type KeyedMetadata = { [key: string]: Metadata }
 
 export type SanityDocumentWithMetadata = {
   _metadata: Metadata

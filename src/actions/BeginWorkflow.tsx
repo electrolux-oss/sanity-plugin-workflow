@@ -1,16 +1,19 @@
-import {SplitVerticalIcon} from '@sanity/icons'
-import {useToast} from '@sanity/ui'
-import {LexoRank} from 'lexorank'
-import {useCallback, useState} from 'react'
-import {DocumentActionProps, useClient} from 'sanity'
+import { LexoRank } from 'lexorank'
+import { useCallback, useState } from 'react'
+import { useClient } from 'sanity'
 
-import {useWorkflowContext} from '../components/WorkflowContext'
-import {API_VERSION} from '../constants'
+import { SplitVerticalIcon } from '@sanity/icons'
+import { useToast } from '@sanity/ui'
+
+import { useWorkflowContext } from '../components/WorkflowContext'
+import { API_VERSION } from '../constants'
+
+import type { DocumentActionProps } from 'sanity'
 
 export function BeginWorkflow(props: DocumentActionProps) {
-  const {id, draft} = props
-  const {metadata, loading, error, states} = useWorkflowContext(id)
-  const client = useClient({apiVersion: API_VERSION})
+  const { id, draft } = props
+  const { metadata, loading, error, states } = useWorkflowContext(id)
+  const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
   const [beginning, setBeginning] = useState(false)
   const [complete, setComplete] = useState(false)
@@ -24,7 +27,7 @@ export function BeginWorkflow(props: DocumentActionProps) {
 
     const lowestOrderFirstState = await client.fetch(
       `*[_type == "workflow.metadata" && state == $state]|order(orderRank)[0].orderRank`,
-      {state: states[0].id}
+      { state: states[0].id }
     )
 
     client
@@ -36,13 +39,13 @@ export function BeginWorkflow(props: DocumentActionProps) {
         orderRank: lowestOrderFirstState
           ? LexoRank.parse(lowestOrderFirstState).genNext().toString()
           : LexoRank.min().toString(),
-        locale: draft?.locale,
+        locale: draft?.locale
       })
       .then(() => {
         toast.push({
           status: 'success',
           title: 'Workflow started',
-          description: `Document is now "${states[0].title}"`,
+          description: `Document is now "${states[0].title}"`
         })
         setBeginning(false)
         // Optimistically remove action
@@ -61,6 +64,6 @@ export function BeginWorkflow(props: DocumentActionProps) {
     label: beginning ? `Beginning...` : `Begin Workflow`,
     onHandle: () => {
       handle()
-    },
+    }
   }
 }

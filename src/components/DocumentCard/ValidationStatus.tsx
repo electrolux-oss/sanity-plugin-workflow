@@ -1,20 +1,22 @@
-import {ErrorOutlineIcon, WarningOutlineIcon} from '@sanity/icons'
-import {ValidationMarker} from '@sanity/types'
-import {Box, Text, Tooltip} from '@sanity/ui'
-import {TextWithTone} from 'sanity'
+import { TextWithTone } from 'sanity'
+
+import { ErrorOutlineIcon, WarningOutlineIcon } from '@sanity/icons'
+import { Box, Text, Tooltip } from '@sanity/ui'
+
+import type { ValidationMarker } from 'sanity'
 
 type ValidationStatusProps = {
   validation: ValidationMarker[]
 }
 
 export function ValidationStatus(props: ValidationStatusProps) {
-  const {validation = []} = props
+  const { validation = [] } = props
 
   if (!validation.length) {
     return null
   }
 
-  const hasError = validation.some((item) => item.level === 'error')
+  const hasError = validation.some(item => item.level === 'error')
 
   return (
     <Tooltip

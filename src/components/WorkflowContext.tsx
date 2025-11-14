@@ -1,10 +1,11 @@
-import {useCallback, useContext, useState} from 'react'
-import {createContext} from 'react'
-import {LayoutProps} from 'sanity'
+import { createContext, useCallback, useContext, useState } from 'react'
 
-import {DEFAULT_CONFIG} from '../constants'
-import {useWorkflowMetadata} from '../hooks/useWorkflowMetadata'
-import {KeyedMetadata, WorkflowConfig} from '../types'
+import { DEFAULT_CONFIG } from '../constants'
+import { useWorkflowMetadata } from '../hooks/useWorkflowMetadata'
+
+import type { LayoutProps } from 'sanity'
+
+import type { KeyedMetadata, WorkflowConfig } from '../types'
 
 export type WorkflowContextValue = Required<WorkflowConfig> & {
   data: KeyedMetadata
@@ -22,16 +23,16 @@ const WorkflowContext = createContext<WorkflowContextValue>({
   ids: [],
   addId: () => null,
   removeId: () => null,
-  ...DEFAULT_CONFIG,
+  ...DEFAULT_CONFIG
 })
 
 export function useWorkflowContext(id?: string) {
   const current = useContext(WorkflowContext)
 
-  return {...current, metadata: id ? current.data[id] : null}
+  return { ...current, metadata: id ? current.data[id] : null }
 }
 
-type WorkflowProviderProps = LayoutProps & {workflow: Required<WorkflowConfig>}
+type WorkflowProviderProps = LayoutProps & { workflow: Required<WorkflowConfig> }
 
 /**
  * This Provider wraps the Studio and provides the workflow context to document actions and badges.
@@ -42,15 +43,11 @@ type WorkflowProviderProps = LayoutProps & {workflow: Required<WorkflowConfig>}
 export function WorkflowProvider(props: WorkflowProviderProps) {
   const [ids, setIds] = useState<string[]>([])
   const addId = useCallback(
-    (id: string) =>
-      setIds((current) => (current.includes(id) ? current : [...current, id])),
+    (id: string) => setIds(current => (current.includes(id) ? current : [...current, id])),
     []
   )
-  const removeId = useCallback(
-    (id: string) => setIds((current) => current.filter((i) => i !== id)),
-    []
-  )
-  const {data, loading, error} = useWorkflowMetadata(ids)
+  const removeId = useCallback((id: string) => setIds(current => current.filter(i => i !== id)), [])
+  const { data, loading, error } = useWorkflowMetadata(ids)
 
   return (
     <WorkflowContext.Provider
@@ -63,7 +60,7 @@ export function WorkflowProvider(props: WorkflowProviderProps) {
         removeId,
         states: props.workflow.states,
         schemaTypes: props.workflow.schemaTypes,
-        filters: props.workflow.filters,
+        filters: props.workflow.filters
       }}
     >
       {props.renderDefault(props)}

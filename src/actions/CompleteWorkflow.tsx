@@ -1,14 +1,17 @@
-import {CheckmarkIcon} from '@sanity/icons'
-import {useCallback} from 'react'
-import {DocumentActionProps, useClient} from 'sanity'
+import { useCallback } from 'react'
+import { useClient } from 'sanity'
 
-import {useWorkflowContext} from '../components/WorkflowContext'
-import {API_VERSION} from '../constants'
+import { CheckmarkIcon } from '@sanity/icons'
+
+import { useWorkflowContext } from '../components/WorkflowContext'
+import { API_VERSION } from '../constants'
+
+import type { DocumentActionProps } from 'sanity'
 
 export function CompleteWorkflow(props: DocumentActionProps) {
-  const {id} = props
-  const {metadata, loading, error, states} = useWorkflowContext(id)
-  const client = useClient({apiVersion: API_VERSION})
+  const { id } = props
+  const { metadata, loading, error, states } = useWorkflowContext(id)
+  const client = useClient({ apiVersion: API_VERSION })
 
   if (error) {
     console.error(error)
@@ -22,7 +25,7 @@ export function CompleteWorkflow(props: DocumentActionProps) {
     return null
   }
 
-  const state = states.find((s) => s.id === metadata.state)
+  const state = states.find(s => s.id === metadata.state)
   const isLastState = state?.id === states[states.length - 1].id
 
   return {
@@ -36,6 +39,6 @@ export function CompleteWorkflow(props: DocumentActionProps) {
     onHandle: () => {
       handle()
     },
-    color: 'positive',
+    color: 'positive'
   }
 }

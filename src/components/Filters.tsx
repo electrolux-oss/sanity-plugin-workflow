@@ -1,16 +1,19 @@
+import { useCallback, useMemo } from 'react'
+import { useCurrentUser, UserAvatar, useSchema } from 'sanity'
+import { UserSelectMenu } from 'sanity-plugin-utils'
+
 import {
   CheckmarkCircleIcon,
   CircleIcon,
   EarthAmericasIcon,
   ResetIcon,
-  UserIcon,
+  UserIcon
 } from '@sanity/icons'
-import {Button, Card, Flex, Menu, MenuButton, MenuItem} from '@sanity/ui'
-import {useCallback, useMemo} from 'react'
-import {useCurrentUser, UserAvatar, useSchema} from 'sanity'
-import {UserExtended, UserSelectMenu} from 'sanity-plugin-utils'
+import { Button, Card, Flex, Menu, MenuButton, MenuItem } from '@sanity/ui'
 
-import {FilterOptions} from '../types'
+import type { UserExtended } from 'sanity-plugin-utils'
+
+import type { FilterOptions } from '../types'
 
 type FiltersProps = {
   uniqueAssignedUsers: UserExtended[]
@@ -36,7 +39,7 @@ export default function Filters(props: FiltersProps) {
     resetSelectedUsers,
     toggleSelectedSchemaType,
     toggleLocales,
-    userLocales,
+    userLocales
   } = props
 
   const memoizedCurrentUser = useCurrentUser()
@@ -67,11 +70,9 @@ export default function Filters(props: FiltersProps) {
   }, [resetSelectedUsers])
 
   const meInUniqueAssignees =
-    currentUser?.id && uniqueAssignedUsers.find((u) => u.id === currentUser.id)
+    currentUser?.id && uniqueAssignedUsers.find(u => u.id === currentUser.id)
 
-  const uniqueAssigneesNotMe = uniqueAssignedUsers.filter(
-    (u) => u.id !== currentUser?.id
-  )
+  const uniqueAssigneesNotMe = uniqueAssignedUsers.filter(u => u.id !== currentUser?.id)
 
   const shouldDisplayUserFilter = uniqueAssignedUsers.length > 5
 
@@ -87,20 +88,14 @@ export default function Filters(props: FiltersProps) {
     <Card tone="default">
       <MenuButton
         button={
-          <Button
-            padding={3}
-            fontSize={1}
-            text="Filter Assignees"
-            tone="primary"
-            icon={UserIcon}
-          />
+          <Button padding={3} fontSize={1} text="Filter Assignees" tone="primary" icon={UserIcon} />
         }
         id="user-filters"
-        popover={{portal: true, placement: 'top'}}
+        popover={{ portal: true, placement: 'top' }}
         menu={
           <Menu>
             <UserSelectMenu
-              style={{maxHeight: '70dvh'}}
+              style={{ maxHeight: '70dvh' }}
               value={selectedUserIds}
               userList={uniqueAssignedUsers}
               onAdd={onAddUserToFilter}
@@ -109,7 +104,7 @@ export default function Filters(props: FiltersProps) {
               labels={{
                 addMe: 'Filter mine',
                 removeMe: 'Clear mine',
-                clear: 'Clear filters',
+                clear: 'Clear filters'
               }}
             />
           </Menu>
@@ -125,20 +120,18 @@ export default function Filters(props: FiltersProps) {
           <>
             <Button
               padding={0}
-              mode={
-                selectedUserIds.includes(currentUser.id) ? `default` : `bleed`
-              }
+              mode={selectedUserIds.includes(currentUser.id) ? `default` : `bleed`}
               onClick={() => toggleSelectedUser(currentUser.id)}
             >
               <Flex padding={1} align="center" justify="center">
                 <UserAvatar user={currentUser.id} size={1} withTooltip />
               </Flex>
             </Button>
-            <Card borderRight style={{height: 30}} tone="inherit" />
+            <Card borderRight style={{ height: 30 }} tone="inherit" />
           </>
         )}
 
-        {uniqueAssigneesNotMe.map((user) => (
+        {uniqueAssigneesNotMe.map(user => (
           <Button
             key={user.id}
             padding={0}
@@ -180,10 +173,10 @@ export default function Filters(props: FiltersProps) {
             disabled={localeFilterDisabled}
           />
         }
-        popover={{portal: true, placement: 'top', animate: true}}
+        popover={{ portal: true, placement: 'top', animate: true }}
         id="locale-filters"
         menu={
-          <Menu style={{maxHeight: '70dvh'}}>
+          <Menu style={{ maxHeight: '70dvh' }}>
             <MenuItem
               fontSize={1}
               onClick={() => toggleLocales(userLocales!)}
@@ -197,13 +190,11 @@ export default function Filters(props: FiltersProps) {
               return (
                 <MenuItem
                   key={idx}
-                  text={new Intl.DisplayNames('en', {type: 'language'}).of(
-                    locale
-                  )}
+                  text={new Intl.DisplayNames('en', { type: 'language' }).of(locale)}
                   icon={
                     selected ? (
                       <CheckmarkCircleIcon
-                        style={{color: 'var(--card-badge-positive-icon-color)'}}
+                        style={{ color: 'var(--card-badge-positive-icon-color)' }}
                       />
                     ) : (
                       CircleIcon
@@ -220,7 +211,7 @@ export default function Filters(props: FiltersProps) {
   )
 
   return (
-    <Card tone="primary" padding={2} borderBottom style={{overflowX: 'hidden'}}>
+    <Card tone="primary" padding={2} borderBottom style={{ overflowX: 'hidden' }}>
       <Flex align="center">
         <Flex align="center" gap={4} flex={1}>
           {shouldDisplayUserFilter && <UserFilter />}
@@ -230,7 +221,7 @@ export default function Filters(props: FiltersProps) {
 
         {schemaTypes.length > 1 && (
           <Flex align="center" gap={1}>
-            {schemaTypes.map((typeName) => {
+            {schemaTypes.map(typeName => {
               const schemaType = schema.get(typeName)
 
               if (!schemaType) {
@@ -244,9 +235,7 @@ export default function Filters(props: FiltersProps) {
                   key={typeName}
                   text={schemaType?.title ?? typeName}
                   icon={schemaType?.icon ?? undefined}
-                  mode={
-                    selectedSchemaTypes.includes(typeName) ? `default` : `ghost`
-                  }
+                  mode={selectedSchemaTypes.includes(typeName) ? `default` : `ghost`}
                   onClick={() => toggleSelectedSchemaType(typeName)}
                 />
               )

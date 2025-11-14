@@ -1,10 +1,12 @@
-import {InfoOutlineIcon, UserIcon} from '@sanity/icons'
-import {Badge, BadgeTone, Box, Card, Flex, Text} from '@sanity/ui'
-import styled, {css} from 'styled-components'
+import styled, { css } from 'styled-components'
 
-import {State} from '../../types'
-import {Status} from './Status'
+import { InfoOutlineIcon, UserIcon } from '@sanity/icons'
+import { Badge, Box, Card, Flex, Text } from '@sanity/ui'
 
+import { Status } from './Status'
+
+import type { BadgeTone } from '@sanity/ui'
+import type { State } from '../../types'
 const StyledStickyCard = styled(Card)(
   () => css`
     position: sticky;
@@ -23,14 +25,8 @@ type StateTitleProps = {
 }
 
 export default function StateTitle(props: StateTitleProps) {
-  const {
-    state,
-    requireAssignment,
-    userRoleCanDrop,
-    isDropDisabled,
-    draggingFrom,
-    documentCount,
-  } = props
+  const { state, requireAssignment, userRoleCanDrop, isDropDisabled, draggingFrom, documentCount } =
+    props
 
   let tone: BadgeTone = 'default'
   const isSource = draggingFrom === state.id
@@ -43,11 +39,7 @@ export default function StateTitle(props: StateTitleProps) {
     <StyledStickyCard paddingY={4} padding={3} tone="inherit">
       <Flex gap={3} align="center">
         <Badge
-          mode={
-            (draggingFrom && !isDropDisabled) || isSource
-              ? 'default'
-              : 'outline'
-          }
+          mode={(draggingFrom && !isDropDisabled) || isSource ? 'default' : 'outline'}
           tone={tone}
           muted={!userRoleCanDrop || isDropDisabled}
         >

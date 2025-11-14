@@ -1,16 +1,15 @@
-import {useEffect} from 'react'
-import {ObjectInputProps} from 'sanity'
+import { useEffect } from 'react'
 
-import {useWorkflowContext} from './WorkflowContext'
+import { useWorkflowContext } from './WorkflowContext'
+
+import type { ObjectInputProps } from 'sanity'
 
 // This component is loaded at the root level of the Document Form
 // It is used to signal the document ID to the WorkflowProvider
 export default function WorkflowSignal(props: ObjectInputProps) {
-  const documentId = props?.value?._id
-    ? props.value._id.replace(`drafts.`, ``)
-    : null
+  const documentId = props?.value?._id ? props.value._id.replace(`drafts.`, ``) : null
 
-  const {addId, removeId} = useWorkflowContext()
+  const { addId, removeId } = useWorkflowContext()
 
   useEffect(() => {
     // On mount, add  to the query of listening documents

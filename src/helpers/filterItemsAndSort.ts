@@ -1,4 +1,4 @@
-import {SanityDocumentWithMetadata} from '../types'
+import type { SanityDocumentWithMetadata } from '../types'
 
 export function filterItemsAndSort(
   items: SanityDocumentWithMetadata[],
@@ -9,26 +9,22 @@ export function filterItemsAndSort(
   return (
     items
       // Only items that have existing documents
-      .filter((item) => item?._id)
+      .filter(item => item?._id)
       // Only items of this state
-      .filter((item) => item?._metadata?.state === stateId)
+      .filter(item => item?._metadata?.state === stateId)
       // Only items with selected users, if the document has any assigned users
-      .filter((item) =>
+      .filter(item =>
         selectedUsers.length && item._metadata?.assignees?.length
-          ? item._metadata?.assignees.some((assignee) =>
-              selectedUsers.includes(assignee)
-            )
+          ? item._metadata?.assignees.some(assignee => selectedUsers.includes(assignee))
           : !selectedUsers.length
       )
       // Only items of selected schema types, if any are selected
-      .filter((item) => {
+      .filter(item => {
         if (!selectedSchemaTypes) {
           return true
         }
 
-        return selectedSchemaTypes.length
-          ? selectedSchemaTypes.includes(item._type)
-          : false
+        return selectedSchemaTypes.length ? selectedSchemaTypes.includes(item._type) : false
       })
       // Sort by metadata orderRank, a string field
       .sort((a, b) => {

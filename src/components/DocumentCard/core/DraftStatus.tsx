@@ -1,12 +1,14 @@
-import {EditIcon} from '@sanity/icons'
-import {PreviewValue, SanityDocument} from '@sanity/types'
-import {Box, Text, Tooltip} from '@sanity/ui'
-import {TextWithTone} from 'sanity'
+import { TextWithTone } from 'sanity'
 
-import {TimeAgo} from './TimeAgo'
+import { EditIcon } from '@sanity/icons'
+import { Box, Text, Tooltip } from '@sanity/ui'
 
-export function DraftStatus(props: {document?: PreviewValue | Partial<SanityDocument> | null}) {
-  const {document} = props
+import { TimeAgo } from './TimeAgo'
+
+import type { PreviewValue, SanityDocument } from 'sanity'
+
+export function DraftStatus(props: { document?: PreviewValue | Partial<SanityDocument> | null }) {
+  const { document } = props
   const updatedAt = document && '_updatedAt' in document && document._updatedAt
 
   return (

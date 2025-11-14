@@ -1,16 +1,12 @@
-import {CheckmarkIcon} from '@sanity/icons'
-import {
-  Box,
-  Button,
-  Text,
-  ToastContextValue,
-  Tooltip,
-  useToast,
-} from '@sanity/ui'
 import React from 'react'
-import {SanityClient, useClient} from 'sanity'
+import { SanityClient, useClient } from 'sanity'
 
-import {API_VERSION} from '../../constants'
+import { CheckmarkIcon } from '@sanity/icons'
+import { Box, Button, Text, Tooltip, useToast } from '@sanity/ui'
+
+import { API_VERSION } from '../../constants'
+
+import type { ToastContextValue } from '@sanity/ui'
 
 type CompleteButtonProps = {
   documentId: string
@@ -30,25 +26,25 @@ async function moveDraftToPublished(
     if (!draftDoc) {
       toast.push({
         status: 'error',
-        title: `No draft document found with _id:', ${draftId}`,
+        title: `No draft document found with _id:', ${draftId}`
       })
       return
     }
 
     await client.createOrReplace({
       ...draftDoc,
-      _id: publishedId,
+      _id: publishedId
     })
 
     toast.push({
       status: 'success',
-      title: `Document published successfully with _id:', ${publishedId}`,
+      title: `Document published successfully with _id:', ${publishedId}`
     })
 
     await client.delete(draftId)
     toast.push({
       status: 'success',
-      title: `Draft document deleted successfully::', ${draftId}`,
+      title: `Draft document deleted successfully::', ${draftId}`
     })
   } catch (error) {
     console.error('Error publishing the document:', error)
@@ -56,39 +52,38 @@ async function moveDraftToPublished(
 }
 
 export default function CompleteButton(props: CompleteButtonProps) {
-  const {documentId, disabled = false} = props
-  const client = useClient({apiVersion: API_VERSION})
+  const { documentId, disabled = false } = props
+  const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
 
-  const handleComplete: React.MouseEventHandler<HTMLButtonElement> =
-    React.useCallback(
-      (event) => {
-        const id = event.currentTarget.value
+  const handleComplete: React.MouseEventHandler<HTMLButtonElement> = React.useCallback(
+    event => {
+      const id = event.currentTarget.value
 
-        if (!id) {
-          return
-        }
+      if (!id) {
+        return
+      }
 
-        // publish the document
-        moveDraftToPublished(client, id, toast)
+      // publish the document
+      moveDraftToPublished(client, id, toast)
 
-        client
-          .delete(`workflow-metadata.${id}`)
-          .then(() => {
-            toast.push({
-              status: 'success',
-              title: 'Workflow completed',
-            })
+      client
+        .delete(`workflow-metadata.${id}`)
+        .then(() => {
+          toast.push({
+            status: 'success',
+            title: 'Workflow completed'
           })
-          .catch(() => {
-            toast.push({
-              status: 'error',
-              title: 'Could not complete Workflow',
-            })
+        })
+        .catch(() => {
+          toast.push({
+            status: 'error',
+            title: 'Could not complete Workflow'
           })
-      },
-      [client, toast]
-    )
+        })
+    },
+    [client, toast]
+  )
 
   return (
     <Tooltip

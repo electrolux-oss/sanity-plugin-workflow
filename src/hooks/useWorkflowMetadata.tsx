@@ -1,8 +1,9 @@
-import {useMemo} from 'react'
-import {useListeningQuery} from 'sanity-plugin-utils'
+import { useMemo } from 'react'
+import { useListeningQuery } from 'sanity-plugin-utils'
 
-import {API_VERSION} from '../constants'
-import {KeyedMetadata, Metadata} from '../types'
+import { API_VERSION } from '../constants'
+
+import type { KeyedMetadata, Metadata } from '../types'
 
 /**
  * Takes the published ID of documents and return the metadata for those documents.
@@ -17,7 +18,7 @@ export function useWorkflowMetadata(ids: string[]): {
   const {
     data: rawData,
     loading,
-    error,
+    error
   } = useListeningQuery<Metadata[]>(
     `*[_type == "workflow.metadata" && documentId in $ids]{
       _id,
@@ -29,8 +30,8 @@ export function useWorkflowMetadata(ids: string[]): {
       orderRank
     }`,
     {
-      params: {ids},
-      options: {apiVersion: API_VERSION},
+      params: { ids },
+      options: { apiVersion: API_VERSION }
     }
   )
 
@@ -40,10 +41,10 @@ export function useWorkflowMetadata(ids: string[]): {
     return rawData.reduce<KeyedMetadata>((acc, cur) => {
       return {
         ...acc,
-        [cur.documentId]: cur,
+        [cur.documentId]: cur
       }
     }, {})
   }, [rawData])
 
-  return {data: keyedMetadata, loading, error}
+  return { data: keyedMetadata, loading, error }
 }

@@ -1,33 +1,35 @@
-import {ArrowLeftIcon, ArrowRightIcon} from '@sanity/icons'
-import {useToast} from '@sanity/ui'
-import {useCurrentUser, useValidationStatus} from 'sanity'
-import {DocumentActionProps, useClient} from 'sanity'
+import { useClient, useCurrentUser, useValidationStatus } from 'sanity'
 
-import {useWorkflowContext} from '../components/WorkflowContext'
-import {API_VERSION} from '../constants'
-import {arraysContainMatchingString} from '../helpers/arraysContainMatchingString'
-import {State} from '../types'
+import { ArrowLeftIcon, ArrowRightIcon } from '@sanity/icons'
+import { useToast } from '@sanity/ui'
+
+import { useWorkflowContext } from '../components/WorkflowContext'
+import { API_VERSION } from '../constants'
+import { arraysContainMatchingString } from '../helpers/arraysContainMatchingString'
+
+import type { State } from '../types'
+import type { DocumentActionProps } from 'sanity'
 
 // eslint-disable-next-line complexity
 export function UpdateWorkflow(props: DocumentActionProps, actionState: State) {
-  const {id, type} = props
+  const { id, type } = props
 
   const user = useCurrentUser()
-  const client = useClient({apiVersion: API_VERSION})
+  const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
   const currentUser = useCurrentUser()
 
-  const {metadata, loading, error, states} = useWorkflowContext(id)
-  const currentState = states.find((s) => s.id === metadata?.state)
-  const {assignees = []} = metadata ?? {}
+  const { metadata, loading, error, states } = useWorkflowContext(id)
+  const currentState = states.find(s => s.id === metadata?.state)
+  const { assignees = [] } = metadata ?? {}
 
   // TODO: Shouldn't the document action props contain this?
-  const {validation, isValidating} = useValidationStatus(id, type)
+  const { validation, isValidating } = useValidationStatus(id, type)
   const hasValidationErrors =
     currentState?.requireValidation &&
     !isValidating &&
     validation?.length > 0 &&
-    validation.find((v) => v.level === 'error')
+    validation.find(v => v.level === 'error')
 
   if (error) {
     console.error(error)
@@ -36,21 +38,21 @@ export function UpdateWorkflow(props: DocumentActionProps, actionState: State) {
   const onHandle = (documentId: string, newState: State) => {
     client
       .patch(`workflow-metadata.${documentId}`)
-      .set({state: newState.id})
+      .set({ state: newState.id })
       .commit()
       .then(() => {
         props.onComplete()
         toast.push({
           status: 'success',
-          title: `Document state now "${newState.title}"`,
+          title: `Document state now "${newState.title}"`
         })
       })
-      .catch((err) => {
+      .catch(err => {
         props.onComplete()
         console.error(err)
         toast.push({
           status: 'error',
-          title: `Document state update failed`,
+          title: `Document state update failed`
         })
       })
   }
@@ -62,8 +64,8 @@ export function UpdateWorkflow(props: DocumentActionProps, actionState: State) {
     return null
   }
 
-  const currentStateIndex = states.findIndex((s) => s.id === currentState?.id)
-  const actionStateIndex = states.findIndex((s) => s.id === actionState.id)
+  const currentStateIndex = states.findIndex(s => s.id === currentState?.id)
+  const actionStateIndex = states.findIndex(s => s.id === actionState.id)
   const direction = actionStateIndex > currentStateIndex ? 'promote' : 'demote'
   const DirectionIcon = direction === 'promote' ? ArrowRightIcon : ArrowLeftIcon
   const directionLabel = direction === 'promote' ? 'Promote' : 'Demote'
@@ -73,7 +75,7 @@ export function UpdateWorkflow(props: DocumentActionProps, actionState: State) {
       ? // If the Action state is limited to specific roles
         // check that the current user has one of those roles
         arraysContainMatchingString(
-          user.roles.map((r) => r.name),
+          user.roles.map(r => r.name),
           actionState.roles
         )
       : // No roles specified on the next state, so anyone can update
@@ -121,6 +123,6 @@ export function UpdateWorkflow(props: DocumentActionProps, actionState: State) {
       !userAssignmentCanUpdateState,
     title,
     label: actionState.title,
-    onHandle: () => onHandle(id, actionState),
+    onHandle: () => onHandle(id, actionState)
   }
 }
