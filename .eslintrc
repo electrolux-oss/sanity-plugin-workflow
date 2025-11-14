@@ -6,15 +6,11 @@
   },
   "extends": [
     "sanity",
-    "sanity/typescript",
     "sanity/react",
+    "sanity/typescript",
     "plugin:react-hooks/recommended",
     "plugin:prettier/recommended",
     "plugin:react/jsx-runtime",
     "prettier"
-  ],
-  "rules": {
-    "react/prop-types": "off",
-    "react/require-default-props": "off"
-  }
+  ]
 }
