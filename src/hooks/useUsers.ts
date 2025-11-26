@@ -1,5 +1,5 @@
-import {useEffect, useState} from 'react'
-import {useClient, useWorkspace} from 'sanity'
+import { useEffect, useState } from 'react'
+import { useClient, useWorkspace } from 'sanity'
 
 export type UserExtended = {
   createdAt: string
@@ -41,18 +41,18 @@ function chunkArray(array: any[], size: number) {
 }
 
 // Custom hook to fetch user details and roles in batches
-export function useProjectUsers({apiVersion}: HookConfig): UserExtended[] {
-  const {currentUser} = useWorkspace()
-  const client = useClient({apiVersion: apiVersion ?? '2023-01-01'})
+export function useProjectUsers({ apiVersion }: HookConfig): UserExtended[] {
+  const { currentUser } = useWorkspace()
+  const client = useClient({ apiVersion: apiVersion ?? '2023-01-01' })
   const [users, setUsers] = useState<UserExtended[]>([])
 
   useEffect(() => {
-    const {projectId} = client.config()
+    const { projectId } = client.config()
 
     async function getUsersWithRoles() {
       try {
         const aclData = await client.request({
-          url: `/projects/${projectId}/acl`,
+          url: `/projects/${projectId}/acl`
         })
 
         const userIds = aclData
@@ -72,7 +72,7 @@ export function useProjectUsers({apiVersion}: HookConfig): UserExtended[] {
         for (const chunk of userIdChunks) {
           const chunkedUserIds = chunk.join(',')
           const response = await client.request({
-            url: `/projects/${projectId}/users/${chunkedUserIds}`,
+            url: `/projects/${projectId}/users/${chunkedUserIds}`
           })
           usersData = [...usersData, ...response]
         }
@@ -80,14 +80,12 @@ export function useProjectUsers({apiVersion}: HookConfig): UserExtended[] {
         // Combine user details with roles
         const usersWithRoles = usersData.map((user: UserExtended) => {
           const userRoles =
-            aclData.find(
-              (aclUser: UserResponse) => aclUser.projectUserId === user.id
-            )?.roles || []
+            aclData.find((aclUser: UserResponse) => aclUser.projectUserId === user.id)?.roles || []
 
           return {
             ...user,
             isCurrentUser: user.id === currentUser?.id,
-            roles: userRoles,
+            roles: userRoles
           }
         })
 

@@ -1,22 +1,18 @@
-import {LexoRank} from 'lexorank'
+import { LexoRank } from 'lexorank'
 
 function generateMiddleValue(ranks: (LexoRank | undefined)[]) {
   // Has no undefined values
-  if (!ranks.some((rank) => !rank)) {
+  if (!ranks.some(rank => !rank)) {
     return ranks
   }
 
   // Find the first undefined value
-  const firstUndefined = ranks.findIndex((rank) => !rank)
+  const firstUndefined = ranks.findIndex(rank => !rank)
 
   // Find the first defined value after the undefined value
-  const firstDefinedAfter = ranks.findIndex(
-    (rank, index) => rank && index > firstUndefined
-  )
+  const firstDefinedAfter = ranks.findIndex((rank, index) => rank && index > firstUndefined)
   // Find the first defined value before the undefined value
-  const firstDefinedBefore = ranks.findLastIndex(
-    (rank, index) => rank && index < firstUndefined
-  )
+  const firstDefinedBefore = ranks.findLastIndex((rank, index) => rank && index < firstUndefined)
 
   if (firstDefinedAfter === -1 || firstDefinedBefore === -1) {
     throw new Error(

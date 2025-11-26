@@ -1,5 +1,6 @@
 import React from 'react'
-import {Box, Text, Tooltip} from '@sanity/ui'
+
+import { Box, Text, Tooltip } from '@sanity/ui'
 
 type StatusProps = {
   text: string
@@ -7,7 +8,7 @@ type StatusProps = {
 }
 
 export function Status(props: StatusProps) {
-  const {text, icon} = props
+  const { text, icon } = props
   const Icon = icon
 
   return (
