@@ -1,6 +1,6 @@
-# Sanity Workflow Plugin - Electrolux Version (for Sanity Studio v3)
+# Sanity Workflow Plugin - Electrolux Version (for Sanity Studio v4)
 
-> This is a **Sanity Studio v3** plugin.
+> This is a **Sanity Studio v4** plugin.
 > This is a forked version of Sanitys own [Sanity Workflow Plugin (v1.0.3)](https://www.npmjs.com/package/sanity-plugin-workflow/v/1.0.3)
 
 # Sanity Workflow Plugin
