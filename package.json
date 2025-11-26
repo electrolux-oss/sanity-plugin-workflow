@@ -1,6 +1,6 @@
 {
   "name": "@electrolux-oss/sanity-plugin-workflow",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "A demonstration of a custom content publishing workflow using Sanity.",
   "keywords": [
     "sanity",
@@ -55,8 +55,9 @@
   "browserslist": "extends @sanity/browserslist-config",
   "dependencies": {
     "@hello-pangea/dnd": "^16.5.0",
-    "@sanity/icons": "^2.2.2",
+    "@sanity/icons": "^3.7.4",
     "@sanity/incompatible-plugin": "^1.0.4",
+    "@sanity/ui": "^3.1.11",
     "@tanstack/react-virtual": "^3.0.0-beta.54",
     "framer-motion": "^10.6.1",
     "groq": "^3.3.1",
@@ -89,19 +90,19 @@
     "react-dom": "^18.2.0",
     "react-is": "^18.2.0",
     "rimraf": "^4.1.2",
-    "sanity": "^3.55.0",
+    "sanity": "^4.19.0",
     "semantic-release": "^24.0.0",
     "typescript": "^5.0.0"
   },
   "peerDependencies": {
-    "@sanity/ui": "^1.0 || ^2.0",
+    "@sanity/ui": "3.1.11",
     "react": "^18",
     "react-dom": "^18",
-    "sanity": "^3.0.0",
+    "sanity": "^4.0.0",
     "styled-components": "^5.0 || ^6.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=24"
   },
   "publishConfig": {
     "access": "public"
