@@ -2,24 +2,47 @@ import { useCallback } from 'react'
 import { useClient } from 'sanity'
 
 import { CheckmarkIcon } from '@sanity/icons'
+import { useToast } from '@sanity/ui'
 
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
 
-import type { DocumentActionProps } from 'sanity'
+import type { ToastContextValue } from '@sanity/ui'
+import type { DocumentActionProps, SanityClient } from 'sanity'
+
+export const handleDeleteMetadata = async (
+  client: SanityClient,
+  toast: ToastContextValue,
+  id: string
+) => {
+  try {
+    await client.delete(`workflow-metadata.${id}`)
+    toast.push({
+      status: 'success',
+      title: 'Workflow completed'
+    })
+  } catch (error) {
+    console.error(error)
+    toast.push({
+      status: 'error',
+      title: 'Could not complete Workflow'
+    })
+  }
+}
 
 export function CompleteWorkflow(props: DocumentActionProps) {
   const { id } = props
   const { metadata, loading, error, states } = useWorkflowContext(id)
   const client = useClient({ apiVersion: API_VERSION })
+  const toast = useToast()
 
   if (error) {
     console.error(error)
   }
 
-  const handle = useCallback(() => {
-    client.delete(`workflow-metadata.${id}`)
-  }, [id, client])
+  const handle = useCallback(async () => {
+    await handleDeleteMetadata(client, toast, id)
+  }, [id, client, toast])
 
   if (!metadata) {
     return null
@@ -38,6 +61,7 @@ export function CompleteWorkflow(props: DocumentActionProps) {
       : `Cannot remove from workflow until in the last state`,
     onHandle: () => {
       handle()
+      props.onComplete()
     },
     color: 'positive'
   }
