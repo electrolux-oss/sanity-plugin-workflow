@@ -27,7 +27,7 @@ export function BeginWorkflow(props: DocumentActionProps) {
 
     const lowestOrderFirstState = await client.fetch(
       `*[_type == "workflow.metadata" && state == $state]|order(orderRank)[0].orderRank`,
-      { state: states[0].id }
+      { state: states?.[0]?.id }
     )
 
     client
@@ -35,7 +35,7 @@ export function BeginWorkflow(props: DocumentActionProps) {
         _id: `workflow-metadata.${id}`,
         _type: `workflow.metadata`,
         documentId: id,
-        state: states[0].id,
+        state: states?.[0]?.id,
         orderRank: lowestOrderFirstState
           ? LexoRank.parse(lowestOrderFirstState).genNext().toString()
           : LexoRank.min().toString(),
@@ -45,7 +45,7 @@ export function BeginWorkflow(props: DocumentActionProps) {
         toast.push({
           status: 'success',
           title: 'Workflow started',
-          description: `Document is now "${states[0].title}"`
+          description: `Document is now "${states?.[0]?.title}"`
         })
         setBeginning(false)
         // Optimistically remove action
