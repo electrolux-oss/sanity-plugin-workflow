@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
 import { useValidationStatus } from 'sanity'
 
-import type { ValidationStatus } from 'sanity'
+import type { ValidationMarker } from 'sanity'
 
 type ValidateProps = {
   documentId: string
   type: string
-  onChange: (validation: ValidationStatus) => void
+  onChange: (validation: { isValidating: boolean; validation: ValidationMarker[] }) => void
 }
 
 // Document validation is siloed into its own component

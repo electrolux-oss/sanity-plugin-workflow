@@ -1,5 +1,5 @@
 import type { DraggableLocation } from '@hello-pangea/dnd'
-import React from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { useClient } from 'sanity'
 import { useListeningQuery } from 'sanity-plugin-utils'
 
@@ -9,32 +9,7 @@ import { API_VERSION } from '../constants'
 
 import type { FilterOptions, SanityDocumentWithMetadata, State } from '../types'
 
-type WorkflowDocuments = {
-  workflowData: {
-    data: SanityDocumentWithMetadata[]
-    loading: boolean
-    error: boolean | unknown | ProgressEvent
-  }
-  operations: {
-    move: (
-      draggedId: string,
-      destination: DraggableLocation,
-      states: State[],
-      newOrder: string
-    ) => void
-  }
-}
-
-export function useWorkflowDocuments(
-  schemaTypes: string[],
-  filterOptions?: FilterOptions
-): WorkflowDocuments {
-  const toast = useToast()
-  const client = useClient({ apiVersion: API_VERSION })
-
-  const localeFilter = filterOptions?.locales?.length ? filterOptions.locales : []
-
-  const QUERY = `*[_type == "workflow.metadata" && (!defined($localeFilter) || count($localeFilter) == 0 || locale in $localeFilter)]|order(orderRank){
+const QUERY = `*[_type == "workflow.metadata" && (!defined($localeFilter) || count($localeFilter) == 0 || locale in $localeFilter)]|order(orderRank){
     "_metadata": {
       _rev,
       assignees,
@@ -55,21 +30,52 @@ export function useWorkflowDocuments(
     )
   }`
 
+type WorkflowDocuments = {
+  workflowData: {
+    data: SanityDocumentWithMetadata[]
+    loading: boolean
+    error: unknown
+  }
+  operations: {
+    move: (
+      draggedId: string,
+      destination: DraggableLocation,
+      states: State[],
+      newOrder: string
+    ) => Promise<{ _id: string; _type: string; documentId: string; state: State } | null>
+  }
+}
+
+export function useWorkflowDocuments(
+  schemaTypes: string[],
+  filterOptions?: FilterOptions
+): WorkflowDocuments {
+  const toast = useToast()
+  const client = useClient({ apiVersion: API_VERSION })
+
+  const localeFilter = filterOptions?.locales?.length ? filterOptions.locales : []
+
   // Get and listen to changes on documents + workflow metadata documents
-  const { data, loading, error } = useListeningQuery<SanityDocumentWithMetadata[]>(QUERY, {
+  const {
+    data: _data,
+    loading,
+    error
+  } = useListeningQuery<SanityDocumentWithMetadata[]>(QUERY, {
     params: { schemaTypes, localeFilter },
     initialValue: []
   })
 
+  const data = _data as SanityDocumentWithMetadata[]
+
   const [localDocuments, setLocalDocuments] = React.useState<SanityDocumentWithMetadata[]>([])
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (data) {
       setLocalDocuments(data)
     }
   }, [data])
 
-  const move = React.useCallback(
+  const move = useCallback(
     async (
       draggedId: string,
       destination: DraggableLocation,

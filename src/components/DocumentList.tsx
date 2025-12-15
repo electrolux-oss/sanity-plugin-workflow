@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
 import { Draggable } from '@hello-pangea/dnd'
 import { useVirtualizer } from '@tanstack/react-virtual'
@@ -14,6 +14,7 @@ import type { CurrentUser } from 'sanity'
 import type { UserExtended } from 'sanity-plugin-utils'
 
 import type { SanityDocumentWithMetadata, State } from '../types'
+
 type DocumentListProps = {
   data: SanityDocumentWithMetadata[]
   invalidDocumentIds: string[]
@@ -38,7 +39,10 @@ function getStyle(
   // If a card is being dragged over, this card needs to move up or down
   if (draggableStyle && draggableStyle.transform) {
     // So get the transform value from beautiful-dnd
-    const draggableTransformY = parseInt(draggableStyle.transform.split(',')[1].split('px')[0], 10)
+    const draggableTransformY = parseInt(
+      draggableStyle.transform.split(',')[1]!.split('px')[0]!,
+      10
+    )
 
     // And apply it to the card
     transform = `translateY(${virtualItem.start + draggableTransformY}px)`
@@ -79,13 +83,16 @@ export default function DocumentList(props: DocumentListProps) {
 
   const virtualizer = useVirtualizer({
     count: dataFiltered.length,
-    getScrollElement: () => parentRef.current,
-    getItemKey: index => dataFiltered[index]?._metadata?.documentId ?? index,
-    estimateSize: () => 115,
+    getScrollElement: useCallback(() => parentRef.current, []),
+    getItemKey: useCallback(
+      index => dataFiltered[index]?._metadata?.documentId ?? index,
+      [dataFiltered]
+    ),
+    estimateSize: useCallback(() => 115, []),
     overscan: 7,
-    measureElement: element => {
+    measureElement: useCallback((element: Element) => {
       return element.getBoundingClientRect().height || 115
-    }
+    }, [])
   })
 
   if (!data.length || !dataFiltered.length) {
@@ -116,10 +123,10 @@ export default function DocumentList(props: DocumentListProps) {
 
           const { documentId, assignees } = item?._metadata ?? {}
 
-          const isInvalid = invalidDocumentIds.includes(documentId)
+          const isInvalid = invalidDocumentIds.includes(documentId!)
           const meInAssignees = user?.id ? assignees?.includes(user.id) : false
           const isDragDisabled =
-            patchingIds.includes(documentId) ||
+            patchingIds.includes(documentId!) ||
             !userRoleCanDrop ||
             isInvalid ||
             !(state.requireAssignment ? state.requireAssignment && meInAssignees : true)
@@ -127,7 +134,7 @@ export default function DocumentList(props: DocumentListProps) {
           return (
             <Draggable
               key={virtualItem.key}
-              draggableId={documentId}
+              draggableId={documentId!}
               index={virtualItem.index}
               isDragDisabled={isDragDisabled}
             >
@@ -142,9 +149,9 @@ export default function DocumentList(props: DocumentListProps) {
                     <DocumentCard
                       userRoleCanDrop={userRoleCanDrop}
                       isDragDisabled={isDragDisabled}
-                      isPatching={patchingIds.includes(documentId)}
+                      isPatching={patchingIds.includes(documentId!)}
                       isDragging={draggableSnapshot.isDragging}
-                      item={item}
+                      item={item!}
                       toggleInvalidDocumentId={toggleInvalidDocumentId}
                       userList={userList}
                       states={states}

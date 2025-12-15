@@ -16,7 +16,7 @@ export function useWorkflowMetadata(ids: string[]): {
   error: boolean | unknown | ProgressEvent
 } {
   const {
-    data: rawData,
+    data: _rawData,
     loading,
     error
   } = useListeningQuery<Metadata[]>(
@@ -34,6 +34,8 @@ export function useWorkflowMetadata(ids: string[]): {
       options: { apiVersion: API_VERSION }
     }
   )
+
+  const rawData = _rawData as Metadata[]
 
   const keyedMetadata = useMemo(() => {
     if (!rawData || rawData.length === 0) return {}
