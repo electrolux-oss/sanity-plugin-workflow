@@ -102,27 +102,54 @@ Once the Workflow is complete, the metadata can be removed by using the "Complet
 
 ### Test your plugin locally
 
-In the plugin directory run this command:
+**Step 1: Set up the plugin for local development**
+
+In the plugin directory, run:
 ```zsh
 npm run link-watch
 ```
 
-This will set up your plugin to build whenever the code changes, and publish the package to a local yalc repository.
+This will:
+- Build your plugin automatically whenever code changes
+- Publish the package to a local yalc repository
 
-Run the command in the studio project directory:
+**Step 2: Link the plugin to your studio**
 
+In your studio project directory, run:
 ```zsh
-npx yalc add @electrolux-oss/sanity-plugin-workflow && npx yalc link @electrolux-oss/sanity-plugin-workflow && npm install
+npx yalc add @electrolux-oss/sanity-plugin-workflow && npm install
 ```
 
-You should see something like this in the `package.json` file:
+**Step 3: Verify the setup**
 
-```
-"@electrolux-oss/sanity-plugin-workflow": "file:.yalc/@electrolux-oss/sanity-plugin-workflow",
+Check your studio's `package.json` - you should see:
+```json
+"@electrolux-oss/sanity-plugin-workflow": "file:.yalc/@electrolux-oss/sanity-plugin-workflow"
 ```
 
-Which means you can safely use the local version of the plugin with this import:
-
-```
+Now you can use the local version of the plugin:
+```typescript
 import { workflow } from '@electrolux-oss/sanity-plugin-workflow'
 ```
+
+### Making changes
+
+When you modify the plugin code:
+1. The `link-watch` command will automatically rebuild
+2. In your studio, run `npx yalc update` to pull the latest changes
+3. Restart your dev server: `npm run dev`
+
+
+## FAQ
+
+#### Q: Why multiple `tsconfig*.json` files?
+
+**[Plugin kit information source](https://github.com/sanity-io/plugin-kit?tab=readme-ov-file#q-why-multiple-tsconfigjson-files)**.
+
+After running `plugin-kit init` you will get these tsconfig files:
+
+- `tsconfig.json` used by the IDE (this typically includes test files)
+- `tsconfig.dist.json` used by the build system, and ignores test files
+- `tsconfig.settings.json` with shared settings between tsconfig.json and tsconfig.dist.json
+
+This configuration allows for type-checking you scripts and tests, and not only the distribution files. When building the scripts and test files will not be included in the npm package distribution.

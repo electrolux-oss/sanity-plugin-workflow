@@ -34,20 +34,17 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist",
-    "sanity.json",
-    "README.md",
-    "LICENSE"
+    "dist"
   ],
   "scripts": {
-    "build": "plugin-kit verify-package --silent && pkg-utils build --strict --check --clean",
+    "build": "pkg-utils build --strict --check --clean",
     "clean": "rimraf dist",
     "dev": "sanity dev",
     "format": "prettier --write --cache --ignore-unknown .",
     "link-watch": "plugin-kit link-watch",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "prepublishOnly": "npm run build",
+    "prepack": "npm run build",
     "watch": "pkg-utils watch --strict"
   },
   "browserslist": "extends @sanity/browserslist-config",
@@ -55,7 +52,6 @@
     "@hello-pangea/dnd": "^18.0.1",
     "@sanity/icons": "^3.7.4",
     "@sanity/incompatible-plugin": "^1.0.4",
-    "@sanity/types": "^4.20.3",
     "@sanity/ui": "^3.1.11",
     "@tanstack/react-virtual": "^3.13.13",
     "lexorank": "^1.0.5",
@@ -87,14 +83,14 @@
     "typescript": "^5.0.0"
   },
   "peerDependencies": {
-    "@sanity/ui": "3.1.11",
+    "@sanity/ui": "^3.1.11",
     "react": "^19",
     "react-dom": "^19",
     "sanity": "^4.20.0",
     "styled-components": "^5.0 || ^6.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=24"
   },
   "publishConfig": {
     "access": "public"
