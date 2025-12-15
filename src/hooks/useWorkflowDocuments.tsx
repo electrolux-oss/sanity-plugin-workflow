@@ -1,5 +1,4 @@
 import type { DraggableLocation } from '@hello-pangea/dnd'
-import groq from 'groq'
 import React from 'react'
 import { useClient } from 'sanity'
 import { useListeningQuery } from 'sanity-plugin-utils'
@@ -35,7 +34,7 @@ export function useWorkflowDocuments(
 
   const localeFilter = filterOptions?.locales?.length ? filterOptions.locales : []
 
-  const QUERY = groq`*[_type == "workflow.metadata" && (!defined($localeFilter) || count($localeFilter) == 0 || locale in $localeFilter)]|order(orderRank){
+  const QUERY = `*[_type == "workflow.metadata" && (!defined($localeFilter) || count($localeFilter) == 0 || locale in $localeFilter)]|order(orderRank){
     "_metadata": {
       _rev,
       assignees,
