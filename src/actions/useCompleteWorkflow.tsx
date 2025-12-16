@@ -8,7 +8,7 @@ import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
 
 import type { ToastContextValue } from '@sanity/ui'
-import type { DocumentActionProps, SanityClient } from 'sanity'
+import type { DocumentActionProps, SanityClient, DocumentActionDescription } from 'sanity'
 
 export const handleDeleteMetadata = async (
   client: SanityClient,
@@ -30,8 +30,10 @@ export const handleDeleteMetadata = async (
   }
 }
 
-export function CompleteWorkflow(props: DocumentActionProps) {
-  const { id } = props
+export function useCompleteWorkflow({
+  id,
+  onComplete
+}: DocumentActionProps): DocumentActionDescription | null {
   const { metadata, loading, error, states } = useWorkflowContext(id)
   const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
@@ -42,27 +44,26 @@ export function CompleteWorkflow(props: DocumentActionProps) {
 
   const handle = useCallback(async () => {
     await handleDeleteMetadata(client, toast, id)
-  }, [id, client, toast])
+  }, [client, toast, id])
 
   if (!metadata) {
     return null
   }
 
   const state = states.find(s => s.id === metadata.state)
-  const isLastState = state?.id === states[states.length - 1].id
+  const isLastState = state?.id === states?.[states?.length - 1]?.id
 
   return {
     icon: CheckmarkIcon,
-    type: 'dialog',
-    disabled: loading || error || !isLastState,
+    disabled: loading || Boolean(error) || !isLastState,
     label: `Complete Workflow`,
     title: isLastState
       ? `Removes the document from the Workflow process`
       : `Cannot remove from workflow until in the last state`,
-    onHandle: () => {
-      handle()
-      props.onComplete()
+    onHandle: async () => {
+      await handle()
+      onComplete()
     },
-    color: 'positive'
+    tone: 'positive'
   }
 }

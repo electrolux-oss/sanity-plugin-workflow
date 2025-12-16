@@ -8,10 +8,12 @@ import { useToast } from '@sanity/ui'
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
 
-import type { DocumentActionProps } from 'sanity'
+import type { DocumentActionProps, DocumentActionDescription } from 'sanity'
 
-export function BeginWorkflow(props: DocumentActionProps) {
-  const { id, draft } = props
+export function useBeginWorkflow({
+  id,
+  draft
+}: DocumentActionProps): DocumentActionDescription | null {
   const { metadata, loading, error, states } = useWorkflowContext(id)
   const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
@@ -59,11 +61,8 @@ export function BeginWorkflow(props: DocumentActionProps) {
 
   return {
     icon: SplitVerticalIcon,
-    type: 'dialog',
-    disabled: metadata || loading || error || beginning || complete,
+    disabled: metadata || loading || Boolean(error) || beginning || complete,
     label: beginning ? `Beginning...` : `Begin Workflow`,
-    onHandle: () => {
-      handle()
-    }
+    onHandle: handle
   }
 }

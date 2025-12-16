@@ -8,12 +8,13 @@ import { API_VERSION } from '../constants'
 import { arraysContainMatchingString } from '../helpers/arraysContainMatchingString'
 
 import type { State } from '../types'
-import type { DocumentActionProps } from 'sanity'
+import type { DocumentActionProps, DocumentActionDescription } from 'sanity'
 
 // eslint-disable-next-line complexity
-export function UpdateWorkflow(props: DocumentActionProps, actionState: State) {
-  const { id, type } = props
-
+function useUpdateWorkflow(
+  { id, type, onComplete }: DocumentActionProps,
+  actionState: State
+): DocumentActionDescription | null {
   const user = useCurrentUser()
   const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
@@ -41,14 +42,14 @@ export function UpdateWorkflow(props: DocumentActionProps, actionState: State) {
       .set({ state: newState.id })
       .commit()
       .then(() => {
-        props.onComplete()
+        onComplete()
         toast.push({
           status: 'success',
           title: `Document state now "${newState.title}"`
         })
       })
       .catch(err => {
-        props.onComplete()
+        onComplete()
         console.error(err)
         toast.push({
           status: 'error',
@@ -114,9 +115,9 @@ export function UpdateWorkflow(props: DocumentActionProps, actionState: State) {
     icon: DirectionIcon,
     disabled:
       loading ||
-      error ||
+      Boolean(error) ||
       (currentState?.requireValidation && isValidating) ||
-      hasValidationErrors ||
+      Boolean(hasValidationErrors) ||
       !currentState ||
       !userRoleCanUpdateState ||
       !actionStateIsAValidTransition ||
@@ -125,4 +126,10 @@ export function UpdateWorkflow(props: DocumentActionProps, actionState: State) {
     label: actionState.title,
     onHandle: () => onHandle(id, actionState)
   }
+}
+
+export function defineUpdateWorkflow(
+  actionState: State
+): (props: DocumentActionProps) => DocumentActionDescription | null {
+  return (props: DocumentActionProps) => useUpdateWorkflow(props, actionState)
 }
