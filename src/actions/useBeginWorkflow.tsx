@@ -8,10 +8,12 @@ import { useToast } from '@sanity/ui'
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
 
-import type { DocumentActionProps } from 'sanity'
+import type { DocumentActionProps, DocumentActionDescription } from 'sanity'
 
-export function BeginWorkflow(props: DocumentActionProps) {
-  const { id, draft } = props
+export function useBeginWorkflow({
+  id,
+  draft
+}: DocumentActionProps): DocumentActionDescription | null {
   const { metadata, loading, error, states } = useWorkflowContext(id)
   const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
@@ -27,7 +29,7 @@ export function BeginWorkflow(props: DocumentActionProps) {
 
     const lowestOrderFirstState = await client.fetch(
       `*[_type == "workflow.metadata" && state == $state]|order(orderRank)[0].orderRank`,
-      { state: states[0].id }
+      { state: states?.[0]?.id }
     )
 
     client
@@ -35,7 +37,7 @@ export function BeginWorkflow(props: DocumentActionProps) {
         _id: `workflow-metadata.${id}`,
         _type: `workflow.metadata`,
         documentId: id,
-        state: states[0].id,
+        state: states?.[0]?.id,
         orderRank: lowestOrderFirstState
           ? LexoRank.parse(lowestOrderFirstState).genNext().toString()
           : LexoRank.min().toString(),
@@ -45,7 +47,7 @@ export function BeginWorkflow(props: DocumentActionProps) {
         toast.push({
           status: 'success',
           title: 'Workflow started',
-          description: `Document is now "${states[0].title}"`
+          description: `Document is now "${states?.[0]?.title}"`
         })
         setBeginning(false)
         // Optimistically remove action
@@ -59,11 +61,8 @@ export function BeginWorkflow(props: DocumentActionProps) {
 
   return {
     icon: SplitVerticalIcon,
-    type: 'dialog',
-    disabled: metadata || loading || error || beginning || complete,
+    disabled: metadata || loading || Boolean(error) || beginning || complete,
     label: beginning ? `Beginning...` : `Begin Workflow`,
-    onHandle: () => {
-      handle()
-    }
+    onHandle: handle
   }
 }

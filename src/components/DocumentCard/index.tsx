@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Preview, useSchema } from 'sanity'
 
-/* eslint-disable react/prop-types */
 import { DragHandleIcon } from '@sanity/icons'
 import { Box, Card, Flex, Stack, useTheme } from '@sanity/ui'
 
@@ -13,10 +12,10 @@ import EditButton from './EditButton'
 import Validate from './Validate'
 import { ValidationStatus } from './ValidationStatus'
 
-import type { SanityDocumentWithMetadata, State, User } from '../../types'
-import type { ValidationStatus as ValidationStatusType } from 'sanity'
+import type { SchemaType, ValidationMarker } from 'sanity'
 import type { CardTone } from '@sanity/ui'
-import type { SchemaType } from 'sanity'
+
+import type { SanityDocumentWithMetadata, State, User } from '../../types'
 
 type DocumentCardProps = {
   isDragDisabled: boolean
@@ -50,16 +49,22 @@ export function DocumentCard(props: DocumentCardProps) {
   // Validation only runs if the state requests it
   // Because it's not performant to run it on many documents simultaneously
   // So we fake it here, and maybe set it inside <Validate />
-  const [optimisticValidation, setOptimisticValidation] = useState<ValidationStatusType>({
+  const [optimisticValidation, setOptimisticValidation] = useState<{
+    isValidating: boolean
+    validation: ValidationMarker[]
+  }>({
     isValidating: state?.requireValidation ?? false,
     validation: []
   })
 
   const { isValidating, validation } = optimisticValidation
 
-  const handleValidation = useCallback((updates: ValidationStatusType) => {
-    setOptimisticValidation(updates)
-  }, [])
+  const handleValidation = useCallback(
+    (updates: { isValidating: boolean; validation: ValidationMarker[] }) => {
+      setOptimisticValidation(updates)
+    },
+    []
+  )
 
   const cardTone = useMemo(() => {
     let tone: CardTone = defaultCardTone
@@ -110,7 +115,7 @@ export function DocumentCard(props: DocumentCardProps) {
   )
 
   const isLastState = useMemo(
-    () => states[states.length - 1].id === item._metadata?.state,
+    () => states?.[states?.length - 1]?.id === item._metadata?.state,
     [states, item._metadata.state]
   )
 
