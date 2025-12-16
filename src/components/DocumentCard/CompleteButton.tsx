@@ -1,54 +1,15 @@
-import React from 'react'
-import { SanityClient, useClient } from 'sanity'
+import React, { useCallback } from 'react'
+import { useClient } from 'sanity'
 
 import { CheckmarkIcon } from '@sanity/icons'
 import { Box, Button, Text, Tooltip, useToast } from '@sanity/ui'
 
+import { handleDeleteMetadata } from '../../actions/useCompleteWorkflow'
 import { API_VERSION } from '../../constants'
-
-import type { ToastContextValue } from '@sanity/ui'
 
 type CompleteButtonProps = {
   documentId: string
   disabled: boolean
-}
-
-async function moveDraftToPublished(
-  client: SanityClient,
-  publishedId: string,
-  toast: ToastContextValue
-) {
-  const draftId = `drafts.${publishedId}`
-
-  try {
-    const draftDoc = await client.getDocument(draftId)
-
-    if (!draftDoc) {
-      toast.push({
-        status: 'error',
-        title: `No draft document found with _id:', ${draftId}`
-      })
-      return
-    }
-
-    await client.createOrReplace({
-      ...draftDoc,
-      _id: publishedId
-    })
-
-    toast.push({
-      status: 'success',
-      title: `Document published successfully with _id:', ${publishedId}`
-    })
-
-    await client.delete(draftId)
-    toast.push({
-      status: 'success',
-      title: `Draft document deleted successfully::', ${draftId}`
-    })
-  } catch (error) {
-    console.error('Error publishing the document:', error)
-  }
 }
 
 export default function CompleteButton(props: CompleteButtonProps) {
@@ -56,31 +17,15 @@ export default function CompleteButton(props: CompleteButtonProps) {
   const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
 
-  const handleComplete: React.MouseEventHandler<HTMLButtonElement> = React.useCallback(
-    event => {
+  const handleComplete: React.MouseEventHandler<HTMLButtonElement> = useCallback(
+    async event => {
       const id = event.currentTarget.value
 
       if (!id) {
         return
       }
 
-      // publish the document
-      moveDraftToPublished(client, id, toast)
-
-      client
-        .delete(`workflow-metadata.${id}`)
-        .then(() => {
-          toast.push({
-            status: 'success',
-            title: 'Workflow completed'
-          })
-        })
-        .catch(() => {
-          toast.push({
-            status: 'error',
-            title: 'Could not complete Workflow'
-          })
-        })
+      await handleDeleteMetadata(client, toast, id)
     },
     [client, toast]
   )
