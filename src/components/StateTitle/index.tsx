@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components'
+import { styled } from 'styled-components'
 
 import { InfoOutlineIcon, UserIcon } from '@sanity/icons'
 import { Badge, Box, Card, Flex, Text } from '@sanity/ui'
@@ -7,13 +7,12 @@ import { Status } from './Status'
 
 import type { BadgeTone } from '@sanity/ui'
 import type { State } from '../../types'
-const StyledStickyCard = styled(Card)(
-  () => css`
-    position: sticky;
-    top: 0;
-    z-index: 1;
-  `
-)
+
+const StyledStickyCard = styled(Card)`
+  position: sticky;
+  top: 0;
+  z-index: 1;
+`
 
 type StateTitleProps = {
   state: State

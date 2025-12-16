@@ -1,17 +1,15 @@
 import type { PropsWithChildren } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import styled, { css } from 'styled-components'
+import { styled } from 'styled-components'
 
 import { Card, Grid } from '@sanity/ui'
 
-const StyledFloatingCard = styled(Card)(
-  () => css`
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    z-index: 1000;
-  `
-)
+const StyledFloatingCard = styled(Card)`
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 1000;
+`
 
 export default function FloatingCard({ children }: PropsWithChildren) {
   const childrenHaveValues = Array.isArray(children) ? children.some(Boolean) : Boolean(children)
