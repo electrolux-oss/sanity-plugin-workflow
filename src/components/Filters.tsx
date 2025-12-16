@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { memo, useCallback, useMemo } from 'react'
 import { useCurrentUser, UserAvatar, useSchema } from 'sanity'
 import { UserSelectMenu } from 'sanity-plugin-utils'
 
@@ -28,63 +28,20 @@ type FiltersProps = {
   toggleLocales: (locales: FilterOptions['locales']) => void
 }
 
-export default function Filters(props: FiltersProps) {
-  const {
-    uniqueAssignedUsers = [],
-    selectedLocales,
-    selectedUserIds,
-    schemaTypes,
-    selectedSchemaTypes,
-    toggleSelectedUser,
-    resetSelectedUsers,
-    toggleSelectedSchemaType,
-    toggleLocales,
-    userLocales
-  } = props
-
-  const memoizedCurrentUser = useCurrentUser()
-
-  const currentUser = useMemo(() => memoizedCurrentUser, [memoizedCurrentUser])
-  const schema = useSchema()
-
-  const onAddUserToFilter = useCallback(
-    (id: string) => {
-      if (!selectedUserIds.includes(id)) {
-        toggleSelectedUser(id)
-      }
-    },
-    [selectedUserIds, toggleSelectedUser]
-  )
-
-  const onRemoveUserFromFilter = useCallback(
-    (id: string) => {
-      if (selectedUserIds.includes(id)) {
-        toggleSelectedUser(id)
-      }
-    },
-    [selectedUserIds, toggleSelectedUser]
-  )
-
-  const onClearUserFilter = useCallback(() => {
-    resetSelectedUsers()
-  }, [resetSelectedUsers])
-
-  const meInUniqueAssignees =
-    currentUser?.id && uniqueAssignedUsers.find(u => u.id === currentUser.id)
-
-  const uniqueAssigneesNotMe = uniqueAssignedUsers.filter(u => u.id !== currentUser?.id)
-
-  const shouldDisplayUserFilter = uniqueAssignedUsers.length > 5
-
-  const localeFilterDisabled = userLocales && userLocales.length < 2
-
-  const sortedLocales = userLocales?.sort((a, b) => {
-    const aSelected = selectedLocales.includes(a) ? -1 : 1
-    const bSelected = selectedLocales.includes(b) ? -1 : 1
-    return aSelected - bSelected
-  })
-
-  const UserFilter = () => (
+const UserFilterButton = memo(function UserFilterButton({
+  selectedUserIds,
+  onAddUserToFilter,
+  onRemoveUserFromFilter,
+  onClearUserFilter,
+  uniqueAssignedUsers
+}: {
+  selectedUserIds: string[]
+  onAddUserToFilter: (id: string) => void
+  onRemoveUserFromFilter: (id: string) => void
+  onClearUserFilter: () => void
+  uniqueAssignedUsers: UserExtended[]
+}) {
+  return (
     <Card tone="default">
       <MenuButton
         button={
@@ -112,8 +69,24 @@ export default function Filters(props: FiltersProps) {
       />
     </Card>
   )
+})
 
-  const SlimUserFilter = () => (
+const SlimUserFilterButton = memo(function SlimUserFilterButton({
+  meInUniqueAssignees,
+  currentUser,
+  uniqueAssigneesNotMe,
+  selectedUserIds,
+  toggleSelectedUser,
+  resetSelectedUsers
+}: {
+  meInUniqueAssignees: UserExtended | undefined
+  currentUser: any
+  uniqueAssigneesNotMe: UserExtended[]
+  selectedUserIds: string[]
+  toggleSelectedUser: (userId: string) => void
+  resetSelectedUsers: () => void
+}) {
+  return (
     <Card tone="inherit">
       <Flex gap={2}>
         {meInUniqueAssignees && (
@@ -159,8 +132,30 @@ export default function Filters(props: FiltersProps) {
       </Flex>
     </Card>
   )
+})
 
-  const LocaleFilter = () => (
+const LocaleFilterButton = memo(function LocaleFilterButton({
+  userLocales,
+  selectedLocales,
+  toggleLocales,
+  localeFilterDisabled
+}: {
+  userLocales?: FilterOptions['locales']
+  selectedLocales: FilterOptions['locales']
+  toggleLocales: (locales: FilterOptions['locales']) => void
+  localeFilterDisabled: boolean
+}) {
+  const sortedLocales = useMemo(
+    () =>
+      userLocales?.sort((a, b) => {
+        const aSelected = selectedLocales.includes(a) ? -1 : 1
+        const bSelected = selectedLocales.includes(b) ? -1 : 1
+        return aSelected - bSelected
+      }),
+    [userLocales, selectedLocales]
+  )
+
+  return (
     <Card tone="default">
       <MenuButton
         button={
@@ -209,40 +204,141 @@ export default function Filters(props: FiltersProps) {
       />
     </Card>
   )
+})
+
+const SchemaTypeButtons = memo(function SchemaTypeButtons({
+  schemaTypes,
+  selectedSchemaTypes,
+  toggleSelectedSchemaType,
+  schema
+}: {
+  schemaTypes: string[]
+  selectedSchemaTypes: string[]
+  toggleSelectedSchemaType: (schemaType: string) => void
+  schema: any
+}) {
+  return (
+    <Flex align="center" gap={1}>
+      {schemaTypes.map(typeName => {
+        const schemaType = schema.get(typeName)
+
+        if (!schemaType) {
+          return null
+        }
+
+        return (
+          <Button
+            padding={3}
+            fontSize={1}
+            key={typeName}
+            text={schemaType?.title ?? typeName}
+            icon={schemaType?.icon ?? undefined}
+            mode={selectedSchemaTypes.includes(typeName) ? `default` : `ghost`}
+            onClick={() => toggleSelectedSchemaType(typeName)}
+          />
+        )
+      })}
+    </Flex>
+  )
+})
+
+function Filters(props: FiltersProps) {
+  const {
+    uniqueAssignedUsers = [],
+    selectedLocales,
+    selectedUserIds,
+    schemaTypes,
+    selectedSchemaTypes,
+    toggleSelectedUser,
+    resetSelectedUsers,
+    toggleSelectedSchemaType,
+    toggleLocales,
+    userLocales
+  } = props
+
+  const currentUser = useCurrentUser()
+  const schema = useSchema()
+
+  const onAddUserToFilter = useCallback(
+    (id: string) => {
+      if (!selectedUserIds.includes(id)) {
+        toggleSelectedUser(id)
+      }
+    },
+    [selectedUserIds, toggleSelectedUser]
+  )
+
+  const onRemoveUserFromFilter = useCallback(
+    (id: string) => {
+      if (selectedUserIds.includes(id)) {
+        toggleSelectedUser(id)
+      }
+    },
+    [selectedUserIds, toggleSelectedUser]
+  )
+
+  const onClearUserFilter = useCallback(() => {
+    resetSelectedUsers()
+  }, [resetSelectedUsers])
+
+  const meInUniqueAssignees = useMemo(
+    () => currentUser?.id && uniqueAssignedUsers.find(u => u.id === currentUser.id),
+    [currentUser?.id, uniqueAssignedUsers]
+  )
+
+  const uniqueAssigneesNotMe = useMemo(
+    () => uniqueAssignedUsers.filter(u => u.id !== currentUser?.id),
+    [uniqueAssignedUsers, currentUser?.id]
+  )
+
+  const shouldDisplayUserFilter = uniqueAssignedUsers.length > 5
+
+  const localeFilterDisabled = userLocales && userLocales.length < 2
 
   return (
     <Card tone="primary" padding={2} borderBottom style={{ overflowX: 'hidden' }}>
       <Flex align="center">
         <Flex align="center" gap={4} flex={1}>
-          {shouldDisplayUserFilter && <UserFilter />}
-          {!shouldDisplayUserFilter && <SlimUserFilter />}
-          {userLocales && <LocaleFilter />}
+          {shouldDisplayUserFilter && (
+            <UserFilterButton
+              selectedUserIds={selectedUserIds}
+              onAddUserToFilter={onAddUserToFilter}
+              onRemoveUserFromFilter={onRemoveUserFromFilter}
+              onClearUserFilter={onClearUserFilter}
+              uniqueAssignedUsers={uniqueAssignedUsers}
+            />
+          )}
+          {!shouldDisplayUserFilter && (
+            <SlimUserFilterButton
+              meInUniqueAssignees={meInUniqueAssignees}
+              currentUser={currentUser}
+              uniqueAssigneesNotMe={uniqueAssigneesNotMe}
+              selectedUserIds={selectedUserIds}
+              toggleSelectedUser={toggleSelectedUser}
+              resetSelectedUsers={resetSelectedUsers}
+            />
+          )}
+          {userLocales && (
+            <LocaleFilterButton
+              userLocales={userLocales}
+              selectedLocales={selectedLocales}
+              toggleLocales={toggleLocales}
+              localeFilterDisabled={localeFilterDisabled}
+            />
+          )}
         </Flex>
 
         {schemaTypes.length > 1 && (
-          <Flex align="center" gap={1}>
-            {schemaTypes.map(typeName => {
-              const schemaType = schema.get(typeName)
-
-              if (!schemaType) {
-                return null
-              }
-
-              return (
-                <Button
-                  padding={3}
-                  fontSize={1}
-                  key={typeName}
-                  text={schemaType?.title ?? typeName}
-                  icon={schemaType?.icon ?? undefined}
-                  mode={selectedSchemaTypes.includes(typeName) ? `default` : `ghost`}
-                  onClick={() => toggleSelectedSchemaType(typeName)}
-                />
-              )
-            })}
-          </Flex>
+          <SchemaTypeButtons
+            schemaTypes={schemaTypes}
+            selectedSchemaTypes={selectedSchemaTypes}
+            toggleSelectedSchemaType={toggleSelectedSchemaType}
+            schema={schema}
+          />
         )}
       </Flex>
     </Card>
   )
 }
+
+export default memo(Filters)
