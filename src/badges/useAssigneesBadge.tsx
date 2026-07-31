@@ -21,13 +21,14 @@ export function useAssigneesBadge({
     return null
   }
 
-  if (!metadata?.assignees?.length) {
+  const assignees = metadata?.assignees
+
+  if (!assignees?.length) {
     return {
       label: 'Unassigned'
     }
   }
 
-  const { assignees } = metadata ?? []
   const hasMe = currentUser ? assignees.some(assignee => assignee === currentUser.id) : false
   const assigneesCount = hasMe ? assignees.length - 1 : assignees.length
   const assigneeUsers = userList.filter(user => assignees.includes(user.id))

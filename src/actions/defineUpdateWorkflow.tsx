@@ -1,6 +1,7 @@
 import { useClient, useCurrentUser, useValidationStatus } from 'sanity'
 
-import { ArrowLeftIcon, ArrowRightIcon } from '@sanity/icons'
+import { ArrowLeftIcon } from '@sanity/icons/ArrowLeft'
+import { ArrowRightIcon } from '@sanity/icons/ArrowRight'
 import { useToast } from '@sanity/ui'
 
 import { useWorkflowContext } from '../components/WorkflowContext'
@@ -12,20 +13,25 @@ import type { DocumentActionProps, DocumentActionDescription } from 'sanity'
 
 // eslint-disable-next-line complexity
 function useUpdateWorkflow(
-  { id, type, onComplete }: DocumentActionProps,
+  { id, type, draft, version, onComplete }: DocumentActionProps,
   actionState: State
 ): DocumentActionDescription | null {
   const user = useCurrentUser()
   const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
-  const currentUser = useCurrentUser()
 
   const { metadata, loading, error, states } = useWorkflowContext(id)
   const currentState = states.find(s => s.id === metadata?.state)
   const { assignees = [] } = metadata ?? {}
 
-  // TODO: Shouldn't the document action props contain this?
-  const { validation, isValidating } = useValidationStatus(id, type)
+  // Validate the version the editor is actually working on. Sanity derives the validation
+  // target from the id it is given, so passing the published id would gate transitions on
+  // the published document's markers rather than the in-progress ones.
+  const { validation, isValidating } = useValidationStatus(
+    version?._id ?? draft?._id ?? id,
+    type,
+    false
+  )
   const hasValidationErrors =
     currentState?.requireValidation &&
     !isValidating &&
@@ -93,7 +99,7 @@ function useUpdateWorkflow(
   const userAssignmentCanUpdateState = actionState.requireAssignment
     ? // If the Action State requires assigned users
       // Check the current user ID is in the assignees array
-      currentUser && assignees?.length && assignees.includes(currentUser.id)
+      user && assignees?.length && assignees.includes(user.id)
     : // Otherwise this isn't a problem
       true
 

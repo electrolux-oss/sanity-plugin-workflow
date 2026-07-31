@@ -1,9 +1,8 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useRef } from 'react'
 
 import { Draggable } from '@hello-pangea/dnd'
 import { useVirtualizer } from '@tanstack/react-virtual'
 
-import { filterItemsAndSort } from '../helpers/filterItemsAndSort'
 import { DocumentCard } from './DocumentCard'
 
 import type { CSSProperties } from 'react'
@@ -11,16 +10,14 @@ import type { CSSProperties } from 'react'
 import type { DraggableStyle } from '@hello-pangea/dnd'
 import type { VirtualItem } from '@tanstack/react-virtual'
 import type { CurrentUser } from 'sanity'
-import type { UserExtended } from 'sanity-plugin-utils'
+import type { UserExtended } from '../hooks/useUsers'
 
 import type { SanityDocumentWithMetadata, State } from '../types'
 
 type DocumentListProps = {
-  data: SanityDocumentWithMetadata[]
+  items: SanityDocumentWithMetadata[]
   invalidDocumentIds: string[]
   patchingIds: string[]
-  selectedSchemaTypes: string[]
-  selectedUserIds: string[]
   state: State
   states: State[]
   toggleInvalidDocumentId: (documentId: string, action: 'ADD' | 'REMOVE') => void
@@ -60,11 +57,9 @@ function getStyle(
 
 export default function DocumentList(props: DocumentListProps) {
   const {
-    data = [],
+    items = [],
     invalidDocumentIds,
     patchingIds,
-    selectedSchemaTypes,
-    selectedUserIds,
     state,
     states,
     toggleInvalidDocumentId,
@@ -73,21 +68,12 @@ export default function DocumentList(props: DocumentListProps) {
     userRoleCanDrop
   } = props
 
-  const dataFiltered = useMemo(() => {
-    return data.length
-      ? filterItemsAndSort(data, state.id, selectedUserIds, selectedSchemaTypes)
-      : []
-  }, [data, selectedSchemaTypes, selectedUserIds, state.id])
-
   const parentRef = useRef(null)
 
   const virtualizer = useVirtualizer({
-    count: dataFiltered.length,
+    count: items.length,
     getScrollElement: useCallback(() => parentRef.current, []),
-    getItemKey: useCallback(
-      index => dataFiltered[index]?._metadata?.documentId ?? index,
-      [dataFiltered]
-    ),
+    getItemKey: useCallback(index => items[index]?._metadata?.documentId ?? index, [items]),
     estimateSize: useCallback(() => 115, []),
     overscan: 7,
     measureElement: useCallback((element: Element) => {
@@ -95,7 +81,7 @@ export default function DocumentList(props: DocumentListProps) {
     }, [])
   })
 
-  if (!data.length || !dataFiltered.length) {
+  if (!items.length) {
     return null
   }
 
@@ -119,7 +105,7 @@ export default function DocumentList(props: DocumentListProps) {
         }}
       >
         {virtualizer.getVirtualItems().map(virtualItem => {
-          const item = dataFiltered[virtualItem.index]
+          const item = items[virtualItem.index]
 
           const { documentId, assignees } = item?._metadata ?? {}
 

@@ -1,5 +1,4 @@
-import { SplitVerticalIcon } from '@sanity/icons'
-
+import { SplitVerticalIcon } from '@sanity/icons/SplitVertical'
 import WorkflowTool from '../components/WorkflowTool'
 
 import type { Tool } from 'sanity'

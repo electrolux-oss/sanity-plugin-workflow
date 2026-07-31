@@ -1,15 +1,16 @@
-import React from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
-import { AddIcon } from '@sanity/icons'
+import { AddIcon } from '@sanity/icons/Add'
 import { Button, Grid, Popover, useClickOutside } from '@sanity/ui'
 
 import AvatarGroup from './DocumentCard/AvatarGroup'
 import UserAssignment from './UserAssignment'
 
-import type { User } from '../types'
+import type { UserExtended } from '../hooks/useUsers'
+
 type UserDisplayProps = {
-  userList: User[]
-  assignees: string[]
+  userList: UserExtended[]
+  assignees: string[] | null
   documentId: string
   disabled?: boolean
 }
@@ -17,18 +18,22 @@ type UserDisplayProps = {
 export default function UserDisplay(props: UserDisplayProps) {
   const { assignees, userList, documentId, disabled = false } = props
 
-  const [button] = React.useState(null)
-  const [popover, setPopover] = React.useState(null)
-  const [isOpen, setIsOpen] = React.useState(false)
+  const [button, setButton] = useState<HTMLButtonElement | null>(null)
+  const [popover, setPopover] = useState<HTMLDivElement | null>(null)
+  const [isOpen, setIsOpen] = useState(false)
 
-  const close = React.useCallback(() => setIsOpen(false), [])
-  const open = React.useCallback(() => setIsOpen(true), [])
+  const close = useCallback(() => setIsOpen(false), [])
+  const toggle = useCallback(() => setIsOpen(current => !current), [])
 
   useClickOutside(close, [button, popover])
 
+  const assignedUsers = useMemo(
+    () => (assignees?.length ? userList.filter(u => assignees.includes(u.id)) : []),
+    [userList, assignees]
+  )
+
   return (
     <Popover
-      // @ts-ignore
       ref={setPopover}
       content={<UserAssignment userList={userList} assignees={assignees} documentId={documentId} />}
       portal
@@ -36,7 +41,8 @@ export default function UserDisplay(props: UserDisplayProps) {
     >
       {!assignees || assignees.length === 0 ? (
         <Button
-          onClick={open}
+          ref={setButton}
+          onClick={toggle}
           fontSize={1}
           padding={2}
           tabIndex={-1}
@@ -48,8 +54,8 @@ export default function UserDisplay(props: UserDisplayProps) {
         />
       ) : (
         <Grid>
-          <Button onClick={open} padding={0} mode="bleed" disabled={disabled}>
-            <AvatarGroup users={userList.filter(u => assignees.includes(u.id))} />
+          <Button ref={setButton} onClick={toggle} padding={0} mode="bleed" disabled={disabled}>
+            <AvatarGroup users={assignedUsers} />
           </Button>
         </Grid>
       )}

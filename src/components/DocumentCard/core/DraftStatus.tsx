@@ -1,6 +1,6 @@
 import { TextWithTone } from 'sanity'
 
-import { EditIcon } from '@sanity/icons'
+import { EditIcon } from '@sanity/icons/Edit'
 import { Box, Text, Tooltip } from '@sanity/ui'
 
 import { TimeAgo } from './TimeAgo'

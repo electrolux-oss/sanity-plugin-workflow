@@ -7,7 +7,5 @@ export default function initialRank(lastRankValue = ``): string {
     lastRankValue && typeof lastRankValue === 'string'
       ? LexoRank.parse(lastRankValue)
       : LexoRank.min()
-  const nextRank = lastRank.genNext().genNext()
-
-  return (nextRank as any).value
+  return lastRank.genNext().genNext().toString()
 }

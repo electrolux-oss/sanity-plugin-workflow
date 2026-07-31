@@ -1,5 +1,14 @@
-import { useEffect, useState } from 'react'
-import { useClient, useWorkspace } from 'sanity'
+import { useEffect, useMemo, useState } from 'react'
+import { useClient, useCurrentUser } from 'sanity'
+
+import { API_VERSION } from '../constants'
+
+import type { SanityClient } from 'sanity'
+
+export type UserRole = {
+  name: string
+  title: string
+}
 
 export type UserExtended = {
   createdAt: string
@@ -13,16 +22,12 @@ export type UserExtended = {
   middleName: string
   projectId: string
   provider: string
+  roles?: UserRole[]
   sanityUserId: string
   updatedAt: string
 }
 
-type UserRole = {
-  name: string
-  title: string
-}
-
-type UserResponse = {
+type AclEntry = {
   isRobot: boolean
   projectUserId: string
   roles: UserRole[]
@@ -32,73 +37,123 @@ type HookConfig = {
   apiVersion?: string
 }
 
-function chunkArray(array: any[], size: number) {
-  const chunks = []
-  for (let i = 0; i < array.length; i += size) {
-    chunks.push(array.slice(i, i + size))
+const USER_ID_BATCH_SIZE = 200
+
+const CACHE_TTL_MS = 5 * 60 * 1000
+
+const EMPTY_USERS: UserExtended[] = []
+
+/**
+ * Shared across every hook instance so the project ACL and user lists are fetched
+ * once per project rather than once per document action, badge and card.
+ *
+ * Cached entries are served immediately even once stale, and refreshed in the
+ * background. Dropping stale entries instead would leave the assignee list empty
+ * for two round trips every time the TTL lapsed.
+ */
+const inFlight = new Map<string, Promise<UserExtended[]>>()
+const resolved = new Map<string, { users: UserExtended[]; fetchedAt: number }>()
+
+function isStale(entry: { fetchedAt: number } | undefined): boolean {
+  return !entry || Date.now() - entry.fetchedAt > CACHE_TTL_MS
+}
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const chunks: T[][] = []
+
+  for (let i = 0; i < items.length; i += size) {
+    chunks.push(items.slice(i, i + size))
   }
+
   return chunks
 }
 
-// Custom hook to fetch user details and roles in batches
-export function useProjectUsers({ apiVersion }: HookConfig): UserExtended[] {
-  const { currentUser } = useWorkspace()
-  const client = useClient({ apiVersion: apiVersion ?? '2023-01-01' })
-  const [users, setUsers] = useState<UserExtended[]>([])
+async function fetchProjectUsers(client: SanityClient, projectId: string): Promise<UserExtended[]> {
+  const acl: AclEntry[] = await client.request({ url: `/projects/${projectId}/acl` })
+
+  const rolesByUserId = new Map(acl.map(entry => [entry.projectUserId, entry.roles]))
+
+  const userIds = acl
+    .filter(entry => !(entry.roles.length === 1 && entry.roles[0]?.name === 'viewer'))
+    .map(entry => entry.projectUserId)
+
+  if (!userIds.length) {
+    return EMPTY_USERS
+  }
+
+  const batches = await Promise.all(
+    chunk(userIds, USER_ID_BATCH_SIZE).map(
+      (ids): Promise<UserExtended[]> =>
+        client.request({ url: `/projects/${projectId}/users/${ids.join(',')}` })
+    )
+  )
+
+  return batches.flat().map(user => ({
+    ...user,
+    roles: rolesByUserId.get(user.id) ?? []
+  }))
+}
+
+export function useProjectUsers({ apiVersion }: HookConfig = {}): UserExtended[] {
+  const currentUser = useCurrentUser()
+  const client = useClient({ apiVersion: apiVersion ?? API_VERSION })
+  const { projectId } = client.config()
+
+  const [users, setUsers] = useState<UserExtended[]>(
+    () => (projectId ? resolved.get(projectId)?.users : undefined) ?? EMPTY_USERS
+  )
 
   useEffect(() => {
-    const { projectId } = client.config()
+    if (!projectId) {
+      return undefined
+    }
 
-    async function getUsersWithRoles() {
-      try {
-        const aclData = await client.request({
-          url: `/projects/${projectId}/acl`
+    const entry = resolved.get(projectId)
+
+    // Show whatever we already have straight away, stale or not
+    if (entry) {
+      setUsers(entry.users)
+    }
+
+    if (!isStale(entry)) {
+      return undefined
+    }
+
+    let cancelled = false
+    let request = inFlight.get(projectId)
+
+    if (!request) {
+      request = fetchProjectUsers(client, projectId)
+        .then(list => {
+          resolved.set(projectId, { users: list, fetchedAt: Date.now() })
+          return list
+        })
+        .finally(() => {
+          inFlight.delete(projectId)
         })
 
-        const userIds = aclData
-          .filter((user: UserResponse) => {
-            if (user.roles.length === 1 && user.roles[0].name === 'viewer') {
-              return false
-            }
-            return true
-          })
-          .map((user: UserResponse) => user.projectUserId)
+      inFlight.set(projectId, request)
+    }
 
-        const userIdChunks = chunkArray(userIds, 200)
-
-        let usersData: UserExtended[] = []
-
-        // Fetch users in batches of 200
-        for (const chunk of userIdChunks) {
-          const chunkedUserIds = chunk.join(',')
-          const response = await client.request({
-            url: `/projects/${projectId}/users/${chunkedUserIds}`
-          })
-          usersData = [...usersData, ...response]
+    request
+      .then(list => {
+        if (!cancelled) {
+          setUsers(list)
         }
 
-        // Combine user details with roles
-        const usersWithRoles = usersData.map((user: UserExtended) => {
-          const userRoles =
-            aclData.find((aclUser: UserResponse) => aclUser.projectUserId === user.id)?.roles || []
-
-          return {
-            ...user,
-            isCurrentUser: user.id === currentUser?.id,
-            roles: userRoles
-          }
-        })
-
-        setUsers(usersWithRoles)
-      } catch (err) {
+        return list
+      })
+      .catch(err => {
         console.error('Failed to fetch users:', err)
-      }
-    }
+      })
 
-    if (!users.length) {
-      getUsersWithRoles()
+    return () => {
+      cancelled = true
     }
-  }, [client, currentUser?.id, users.length])
+  }, [client, projectId])
 
-  return users
+  return useMemo(
+    () => users.map(user => ({ ...user, isCurrentUser: user.id === currentUser?.id })),
+    [users, currentUser?.id]
+  )
 }

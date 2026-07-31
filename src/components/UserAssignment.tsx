@@ -6,10 +6,11 @@ import { useToast } from '@sanity/ui'
 
 import { API_VERSION } from '../constants'
 
-import type { User } from '../types'
+import type { UserExtended } from '../hooks/useUsers'
+
 type UserAssignmentProps = {
-  userList: User[]
-  assignees: string[]
+  userList: UserExtended[]
+  assignees: string[] | null
   documentId: string
 }
 

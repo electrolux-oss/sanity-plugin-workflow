@@ -33,36 +33,15 @@ export function defineStates<Id extends string, States extends StateCheck<Id, St
   return states
 }
 
-export type User = {
-  createdAt: string
-  displayName: string
-  email: string
-  familyName: string
-  givenName: string
-  id: string
-  imageUrl: string
-  isCurrentUser: boolean
-  middleName: string
-  projectId: string
-  provider: string
-  sanityUserId: string
-  updatedAt: string
-}
-
-export type DragData = {
-  documentId?: string
-  x?: number
-  y?: number
-  state?: string
-}
-
 export type Metadata = SanityDocumentLike & {
   _rev: string
-  assignees: string[]
+  assignees: string[] | null
   documentId: string
-  state: string
-  orderRank: string
-  locale: string
+  draftDocumentId?: string
+  hasDraft?: boolean
+  state: string | null
+  orderRank: string | null
+  locale: string | null
 }
 
 export type KeyedMetadata = { [key: string]: Metadata }

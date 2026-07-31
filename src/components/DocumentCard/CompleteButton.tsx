@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 import { useClient } from 'sanity'
 
-import { CheckmarkIcon } from '@sanity/icons'
+import { CheckmarkIcon } from '@sanity/icons/Checkmark'
 import { Box, Button, Text, Tooltip, useToast } from '@sanity/ui'
 
 import { handleDeleteMetadata } from '../../actions/useCompleteWorkflow'

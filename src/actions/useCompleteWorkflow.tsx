@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useClient } from 'sanity'
 
-import { CheckmarkIcon } from '@sanity/icons'
+import { CheckmarkIcon } from '@sanity/icons/Checkmark'
 import { useToast } from '@sanity/ui'
 
 import { useWorkflowContext } from '../components/WorkflowContext'
