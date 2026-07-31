@@ -36,7 +36,6 @@
     "rootDir": ".",
     "outDir": "dist",
     "jsx": "preserve",
-    "noCheck": true,
     "noPropertyAccessFromIndexSignature": false,
     "noUncheckedIndexedAccess": false
   }

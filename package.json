@@ -15,7 +15,7 @@
   "author": "Tommy Ljungberg",
   "contributors": [
     {
-      "name": "Philip \u00c5kerfeldt",
+      "name": "Philip Åkerfeldt",
       "url": "https://www.npmjs.com/~philip.akerfeldt"
     }
   ],
@@ -44,7 +44,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prepack": "npm run build",
-    "watch": "pkg-utils watch --strict"
+    "watch": "pkg-utils watch --strict",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "browserslist": "extends @sanity/browserslist-config",
   "dependencies": {
