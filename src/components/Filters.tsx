@@ -2,18 +2,20 @@ import { memo, useCallback, useMemo } from 'react'
 import { useCurrentUser, UserAvatar, useSchema } from 'sanity'
 import { UserSelectMenu } from 'sanity-plugin-utils'
 
-import {
-  CheckmarkCircleIcon,
-  CircleIcon,
-  EarthAmericasIcon,
-  ResetIcon,
-  UserIcon
-} from '@sanity/icons'
+import { CheckmarkCircleIcon } from '@sanity/icons/CheckmarkCircle'
+import { CircleIcon } from '@sanity/icons/Circle'
+import { EarthAmericasIcon } from '@sanity/icons/EarthAmericas'
+import { ResetIcon } from '@sanity/icons/Reset'
+import { UserIcon } from '@sanity/icons/User'
 import { Button, Card, Flex, Menu, MenuButton, MenuItem } from '@sanity/ui'
 
-import type { UserExtended } from 'sanity-plugin-utils'
+import type { CurrentUser, Schema as SchemaRegistry } from 'sanity'
+
+import type { UserExtended } from '../hooks/useUsers'
 
 import type { FilterOptions } from '../types'
+
+const languageNames = new Intl.DisplayNames('en', { type: 'language' })
 
 type FiltersProps = {
   uniqueAssignedUsers: UserExtended[]
@@ -21,7 +23,7 @@ type FiltersProps = {
   selectedUserIds: string[]
   schemaTypes: string[]
   selectedSchemaTypes: string[]
-  userLocales?: FilterOptions['locales']
+  userLocales?: FilterOptions['locales'] | undefined
   toggleSelectedUser: (userId: string) => void
   resetSelectedUsers: () => void
   toggleSelectedSchemaType: (schemaType: string) => void
@@ -80,7 +82,7 @@ const SlimUserFilterButton = memo(function SlimUserFilterButton({
   resetSelectedUsers
 }: {
   meInUniqueAssignees: UserExtended | undefined
-  currentUser: any
+  currentUser: CurrentUser | null
   uniqueAssigneesNotMe: UserExtended[]
   selectedUserIds: string[]
   toggleSelectedUser: (userId: string) => void
@@ -89,7 +91,7 @@ const SlimUserFilterButton = memo(function SlimUserFilterButton({
   return (
     <Card tone="inherit">
       <Flex gap={2}>
-        {meInUniqueAssignees && (
+        {meInUniqueAssignees && currentUser && (
           <>
             <Button
               padding={0}
@@ -140,18 +142,20 @@ const LocaleFilterButton = memo(function LocaleFilterButton({
   toggleLocales,
   localeFilterDisabled
 }: {
-  userLocales?: FilterOptions['locales']
+  userLocales?: FilterOptions['locales'] | undefined
   selectedLocales: FilterOptions['locales']
   toggleLocales: (locales: FilterOptions['locales']) => void
   localeFilterDisabled: boolean
 }) {
   const sortedLocales = useMemo(
     () =>
-      userLocales?.sort((a, b) => {
-        const aSelected = selectedLocales.includes(a) ? -1 : 1
-        const bSelected = selectedLocales.includes(b) ? -1 : 1
-        return aSelected - bSelected
-      }),
+      userLocales
+        ? [...userLocales].sort((a, b) => {
+            const aSelected = selectedLocales.includes(a) ? -1 : 1
+            const bSelected = selectedLocales.includes(b) ? -1 : 1
+            return aSelected - bSelected
+          })
+        : undefined,
     [userLocales, selectedLocales]
   )
 
@@ -180,12 +184,12 @@ const LocaleFilterButton = memo(function LocaleFilterButton({
               padding={3}
               text="Toggle all"
             />
-            {sortedLocales?.map((locale, idx) => {
+            {sortedLocales?.map(locale => {
               const selected = selectedLocales.includes(locale)
               return (
                 <MenuItem
-                  key={idx}
-                  text={new Intl.DisplayNames('en', { type: 'language' }).of(locale)}
+                  key={locale}
+                  text={languageNames.of(locale)}
                   icon={
                     selected ? (
                       <CheckmarkCircleIcon
@@ -215,7 +219,7 @@ const SchemaTypeButtons = memo(function SchemaTypeButtons({
   schemaTypes: string[]
   selectedSchemaTypes: string[]
   toggleSelectedSchemaType: (schemaType: string) => void
-  schema: any
+  schema: SchemaRegistry
 }) {
   return (
     <Flex align="center" gap={1}>
@@ -282,7 +286,8 @@ function Filters(props: FiltersProps) {
   }, [resetSelectedUsers])
 
   const meInUniqueAssignees = useMemo(
-    () => currentUser?.id && uniqueAssignedUsers.find(u => u.id === currentUser.id),
+    () =>
+      currentUser?.id ? uniqueAssignedUsers.find(u => u.id === currentUser.id) : undefined,
     [currentUser?.id, uniqueAssignedUsers]
   )
 
@@ -293,7 +298,7 @@ function Filters(props: FiltersProps) {
 
   const shouldDisplayUserFilter = uniqueAssignedUsers.length > 5
 
-  const localeFilterDisabled = userLocales && userLocales.length < 2
+  const localeFilterDisabled = Boolean(userLocales && userLocales.length < 2)
 
   return (
     <Card tone="primary" padding={2} borderBottom style={{ overflowX: 'hidden' }}>

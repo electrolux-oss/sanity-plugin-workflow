@@ -2,7 +2,7 @@ import { LexoRank } from 'lexorank'
 import { useCallback, useState } from 'react'
 import { useClient } from 'sanity'
 
-import { SplitVerticalIcon } from '@sanity/icons'
+import { SplitVerticalIcon } from '@sanity/icons/SplitVertical'
 import { useToast } from '@sanity/ui'
 
 import { useWorkflowContext } from '../components/WorkflowContext'
@@ -27,13 +27,13 @@ export function useBeginWorkflow({
   const handle = useCallback(async () => {
     setBeginning(true)
 
-    const lowestOrderFirstState = await client.fetch(
-      `*[_type == "workflow.metadata" && state == $state]|order(orderRank)[0].orderRank`,
-      { state: states?.[0]?.id }
-    )
+    try {
+      const lowestOrderFirstState = await client.fetch(
+        `*[_type == "workflow.metadata" && state == $state]|order(orderRank)[0].orderRank`,
+        { state: states?.[0]?.id }
+      )
 
-    client
-      .createIfNotExists({
+      await client.createIfNotExists({
         _id: `workflow-metadata.${id}`,
         _type: `workflow.metadata`,
         documentId: id,
@@ -43,16 +43,25 @@ export function useBeginWorkflow({
           : LexoRank.min().toString(),
         locale: draft?.locale
       })
-      .then(() => {
-        toast.push({
-          status: 'success',
-          title: 'Workflow started',
-          description: `Document is now "${states?.[0]?.title}"`
-        })
-        setBeginning(false)
-        // Optimistically remove action
-        setComplete(true)
+
+      toast.push({
+        status: 'success',
+        title: 'Workflow started',
+        description: `Document is now "${states?.[0]?.title}"`
       })
+
+      // Optimistically remove action
+      setComplete(true)
+    } catch (err) {
+      console.error(err)
+
+      toast.push({
+        status: 'error',
+        title: 'Could not start Workflow'
+      })
+    } finally {
+      setBeginning(false)
+    }
   }, [id, states, client, toast, draft])
 
   if (!draft || complete || metadata) {

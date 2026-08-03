@@ -17,6 +17,7 @@ const QUERY = `*[_type == "workflow.metadata" && (!defined($localeFilter) || cou
       state,
       orderRank,
       "draftDocumentId": "drafts." + documentId,
+      "hasDraft": defined(*[_id == "drafts." + ^.documentId][0]._id),
     }
   }{
     ...,
@@ -46,10 +47,7 @@ type WorkflowDocuments = {
   }
 }
 
-export function useWorkflowDocuments(
-  schemaTypes: string[],
-  filterOptions?: FilterOptions
-): WorkflowDocuments {
+export function useWorkflowDocuments(filterOptions?: FilterOptions): WorkflowDocuments {
   const toast = useToast()
   const client = useClient({ apiVersion: API_VERSION })
 
@@ -61,7 +59,7 @@ export function useWorkflowDocuments(
     loading,
     error
   } = useListeningQuery<SanityDocumentWithMetadata[]>(QUERY, {
-    params: { schemaTypes, localeFilter },
+    params: { localeFilter },
     initialValue: []
   })
 

@@ -1,6 +1,7 @@
 import { styled } from 'styled-components'
 
-import { InfoOutlineIcon, UserIcon } from '@sanity/icons'
+import { InfoOutlineIcon } from '@sanity/icons/InfoOutline'
+import { UserIcon } from '@sanity/icons/User'
 import { Badge, Box, Card, Flex, Text } from '@sanity/ui'
 
 import { Status } from './Status'
@@ -37,11 +38,7 @@ export default function StateTitle(props: StateTitleProps) {
   return (
     <StyledStickyCard paddingY={4} padding={3} tone="inherit">
       <Flex gap={3} align="center">
-        <Badge
-          mode={(draggingFrom && !isDropDisabled) || isSource ? 'default' : 'outline'}
-          tone={tone}
-          muted={!userRoleCanDrop || isDropDisabled}
-        >
+        <Badge tone={tone} style={{ opacity: !userRoleCanDrop || isDropDisabled ? 0.5 : 1 }}>
           {state.title}
         </Badge>
         {userRoleCanDrop ? null : (

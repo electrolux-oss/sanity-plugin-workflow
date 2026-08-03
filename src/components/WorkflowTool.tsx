@@ -9,6 +9,11 @@ import { Box, Card, Container, Flex, Grid, Spinner, Text, useTheme, useToast } f
 import { API_VERSION } from '../constants'
 import { arraysContainMatchingString } from '../helpers/arraysContainMatchingString'
 import { filterItemsAndSort } from '../helpers/filterItemsAndSort'
+import {
+  readStoredLocales,
+  shouldShowDocuments,
+  shouldShowFilters
+} from '../helpers/localeFilter'
 import { useProjectUsers } from '../hooks/useUsers'
 import { useWorkflowDocuments } from '../hooks/useWorkflowDocuments'
 import { DocumentCard } from './DocumentCard'
@@ -18,8 +23,15 @@ import StateTitle from './StateTitle'
 import Verify from './Verify'
 
 import type { DraggableChildrenFn, DragStart, DropResult } from '@hello-pangea/dnd'
-import type { FilterOptions, State, WorkflowConfig } from '../types'
+import type {
+  FilterOptions,
+  SanityDocumentWithMetadata,
+  State,
+  WorkflowConfig
+} from '../types'
 import type { Tool } from 'sanity'
+
+const LOCALE_FILTER_STORAGE_KEY = 'studio.plugin.workflow.locale-filter'
 
 type WorkflowToolProps = {
   tool: Tool<WorkflowConfig>
@@ -48,21 +60,16 @@ export default function WorkflowTool(props: WorkflowToolProps) {
   const filterOptions = useMemo(() => filters?.(user), [filters, user])
   const userLocales = filterOptions?.locales
 
-  const LOCALE_FILTER_STORAGE_KEY = 'studio.plugin.workflow.locale-filter'
+  const [selectedLocales, setSelectedLocales] = useState<FilterOptions['locales']>(
+    () =>
+      readStoredLocales(LOCALE_FILTER_STORAGE_KEY) ?? (userLocales?.[0] ? [userLocales[0]] : [])
+  )
 
-  const [selectedLocales, setSelectedLocales] = useState<FilterOptions['locales']>(() => {
-    if (typeof window !== 'undefined') {
-      const storedLocales = localStorage.getItem(LOCALE_FILTER_STORAGE_KEY)
-      if (storedLocales) {
-        return JSON.parse(storedLocales)
-      }
-    }
-    return filterOptions?.locales[0] ? [filterOptions.locales[0]] : []
-  })
+  const showDocuments = shouldShowDocuments(userLocales, selectedLocales)
 
   const passedFilter = selectedLocales ? ({ locales: selectedLocales } as FilterOptions) : undefined
 
-  const { workflowData, operations } = useWorkflowDocuments(schemaTypes, passedFilter)
+  const { workflowData, operations } = useWorkflowDocuments(passedFilter)
 
   // Data to display in cards
   const { data, loading, error } = workflowData
@@ -134,11 +141,19 @@ export default function WorkflowTool(props: WorkflowToolProps) {
         return
       }
 
+      if (!data.length) {
+        return
+      }
+
       // Find all items in current state
       const destinationStateItems = [...filterItemsAndSort(data, destination.droppableId, [], null)]
       const destinationStateIndex = states.findIndex(s => s.id === destination.droppableId)
-      const globalStateMinimumRank = data[0]._metadata.orderRank
-      const globalStateMaximumRank = data[data.length - 1]._metadata.orderRank
+      // Documents can legitimately be missing an orderRank (the Verify panel repairs those),
+      // so fall back rather than letting LexoRank.parse throw mid-drag
+      const globalMinimum = data[0]?._metadata?.orderRank
+      const globalMaximum = data[data.length - 1]?._metadata?.orderRank
+      const globalStateMinimumRank = globalMinimum ? LexoRank.parse(globalMinimum) : LexoRank.min()
+      const globalStateMaximumRank = globalMaximum ? LexoRank.parse(globalMaximum) : LexoRank.max()
 
       let newOrder
 
@@ -163,7 +178,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
           newOrder = LexoRank.min().toString()
         } else {
           // Otherwise create the next rank between min and the globally minimum rank
-          newOrder = LexoRank.parse(globalStateMinimumRank).between(LexoRank.min()).toString()
+          newOrder = globalStateMinimumRank.between(LexoRank.min()).toString()
         }
       } else if (destination.index + 1 === destinationStateItems.length) {
         // Now last item in order
@@ -176,7 +191,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
           newOrder = LexoRank.max().toString()
         } else {
           // Otherwise create the next rank between max and the globally maximum rank
-          newOrder = LexoRank.parse(globalStateMaximumRank).between(LexoRank.min()).toString()
+          newOrder = globalStateMaximumRank.between(LexoRank.min()).toString()
         }
       } else {
         // Must be between two items
@@ -188,7 +203,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
         } else if (destinationStateIndex === 0) {
           itemBeforeRankParsed = LexoRank.min()
         } else {
-          itemBeforeRankParsed = LexoRank.parse(globalStateMinimumRank)
+          itemBeforeRankParsed = globalStateMinimumRank
         }
 
         const itemAfter = destinationStateItems[destination.index]
@@ -199,7 +214,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
         } else if (destinationStateIndex === states.length - 1) {
           itemAfterRankParsed = LexoRank.max()
         } else {
-          itemAfterRankParsed = LexoRank.parse(globalStateMaximumRank)
+          itemAfterRankParsed = globalStateMaximumRank
         }
 
         newOrder = itemBeforeRankParsed.between(itemAfterRankParsed).toString()
@@ -271,10 +286,27 @@ export default function WorkflowTool(props: WorkflowToolProps) {
   // Document IDs that have validation errors
   const [invalidDocumentIds, setInvalidDocumentIds] = useState<string[]>([])
   const toggleInvalidDocumentId = useCallback((docId: string, action: 'ADD' | 'REMOVE') => {
-    setInvalidDocumentIds(prev =>
-      action === 'ADD' ? [...prev, docId] : prev.filter(id => id !== docId)
-    )
+    setInvalidDocumentIds(prev => {
+      const isListed = prev.includes(docId)
+
+      if (action === 'ADD') {
+        return isListed ? prev : [...prev, docId]
+      }
+
+      return isListed ? prev.filter(id => id !== docId) : prev
+    })
   }, [])
+
+  // Filter once per State and reuse for both the header count and the list itself
+  const itemsByState = useMemo(() => {
+    const map = new Map<string, SanityDocumentWithMetadata[]>()
+
+    for (const state of states) {
+      map.set(state.id, filterItemsAndSort(data, state.id, selectedUserIds, selectedSchemaTypes))
+    }
+
+    return map
+  }, [data, states, selectedUserIds, selectedSchemaTypes])
 
   const Clone: DraggableChildrenFn = useCallback(
     (provided, snapshot, rubric) => {
@@ -328,7 +360,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
   return (
     <Flex direction="column" height="fill" overflow="hidden">
       <Verify data={data} userList={userList} states={states} />
-      {userLocales && userLocales.length > 1 && (
+      {shouldShowFilters(userLocales, schemaTypes, uniqueAssignedUsers.length) && (
         <Filters
           uniqueAssignedUsers={uniqueAssignedUsers}
           selectedUserIds={selectedUserIds}
@@ -350,12 +382,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
               : true
             const isDropDisabled = !userRoleCanDrop || undroppableStates.includes(state.id)
 
-            const documentCount = filterItemsAndSort(
-              data,
-              state.id,
-              selectedUserIds,
-              selectedSchemaTypes
-            ).length
+            const stateItems = itemsByState.get(state.id) ?? []
 
             return (
               <Card key={state.id} borderLeft={stateIndex > 0} tone={defaultCardTone}>
@@ -366,7 +393,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
                     userRoleCanDrop={userRoleCanDrop}
                     isDropDisabled={isDropDisabled}
                     draggingFrom={draggingFrom}
-                    documentCount={selectedLocales.length > 0 ? documentCount : 0}
+                    documentCount={showDocuments ? stateItems.length : 0}
                   />
                   <Box flex={1}>
                     <Droppable
@@ -387,7 +414,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
                               <Spinner muted />
                             </Flex>
                           )}
-                          {!loading && selectedLocales.length === 0 && (
+                          {!loading && !showDocuments && (
                             <Flex align="center" justify="center" height="fill" padding={6}>
                               <Text size={3} align="center">
                                 No documents found.
@@ -395,13 +422,11 @@ export default function WorkflowTool(props: WorkflowToolProps) {
                               </Text>
                             </Flex>
                           )}
-                          {selectedLocales.length > 0 && (
+                          {showDocuments && (
                             <DocumentList
-                              data={data}
+                              items={stateItems}
                               invalidDocumentIds={invalidDocumentIds}
                               patchingIds={patchingIds}
-                              selectedSchemaTypes={selectedSchemaTypes}
-                              selectedUserIds={selectedUserIds}
                               state={state}
                               states={states}
                               toggleInvalidDocumentId={toggleInvalidDocumentId}

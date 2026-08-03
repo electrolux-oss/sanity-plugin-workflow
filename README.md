@@ -1,12 +1,26 @@
-# Sanity Workflow Plugin - Electrolux Version (for Sanity Studio v4)
+# Sanity Workflow Plugin - Electrolux Version (for Sanity Studio v5 & v6)
 
-> This is a **Sanity Studio v4** plugin.
+> This is a **Sanity Studio v5 / v6** plugin.
 > This is a forked version of Sanitys own [Sanity Workflow Plugin (v1.0.3)](https://www.npmjs.com/package/sanity-plugin-workflow/v/1.0.3)
 
 > [!WARNING]
-> Breaking changes introduced in verion 3.0.0 of this plugin. Please see more information below.
+> Breaking changes introduced in version 4.0.0 of this plugin. Please see more information below.
 
-## :warning: Breaking changes - (v2.0.0 &rarr; v3.0.0)
+## :warning: Breaking changes - (v3.0.0 &rarr; v4.0.0)
+
+### **v3 → v4**
+
+This release adds support for **Sanity Studio v6** and drops support for Studio v4.
+
+Requirements:
+
+| | Requirement |
+| --- | --- |
+| `sanity` | `^5.0.0 \|\| ^6.0.0` |
+| `react` / `react-dom` | `^19.2.2` |
+| `styled-components` | `^6.1.15` (v5 is no longer supported) |
+| Node.js | `>=22.12` |
+
 ### **v2 → v3**
 
 This release upgrades the plugin’s peer dependency from **React 18** to **React 19**.  
@@ -24,16 +38,16 @@ Projects using this plugin must update to React 19 before upgrading to v3.
 - A custom Tool for drag-and-drop updating of a document's state
 - Language filter to make it easier for multi-market users to find relevant information.
 
-## Install (Sanity Studio v4)
+## Install (Sanity Studio v5 / v6)
 
 ```zsh
-npm install --save sanity-plugin-workflow
+npm install --save @electrolux-oss/sanity-plugin-workflow
 ```
 
 or
 
 ```zsh
-yarn add sanity-plugin-workflow
+yarn add @electrolux-oss/sanity-plugin-workflow
 ```
 
 ## Usage
@@ -42,7 +56,7 @@ Add it as a plugin in `sanity.config.ts` (or .js) file:
 
 ```ts
  import { createConfig } from 'sanity'
- import { workflow } from 'sanity-plugin-workflow'
+ import { workflow } from '@electrolux-oss/sanity-plugin-workflow'
 
  export const createConfig({
     // all other settings ...
@@ -100,7 +114,7 @@ Once the Workflow is complete, the metadata can be removed by using the "Complet
 
 ## Develop locally
 
-### Test your plugin locally
+### Link the plugin to a local studio
 
 **Step 1: Set up the plugin for local development**
 
@@ -138,6 +152,34 @@ When you modify the plugin code:
 1. The `link-watch` command will automatically rebuild
 2. In your studio, run `npx yalc update` to pull the latest changes
 3. Restart your dev server: `npm run dev`
+
+### Running the checks
+
+```zsh
+npm test          # unit tests (Vitest)
+npm run typecheck # tsc --noEmit
+npm run lint      # ESLint
+npm run build     # also fails on type errors
+```
+
+Use `npm run test:watch` while working on a change.
+
+Tests live next to the code they cover as `*.test.ts`. They are type-checked by
+`tsconfig.json` but excluded from `tsconfig.dist.json`, so they never reach the
+published package.
+
+Two areas are worth knowing about when adding tests:
+
+- **Pure helpers** (`src/helpers/`) are tested directly — filtering and sorting of
+  board items, LexoRank ordering, and whether the locale filter should gate the board.
+- **The GROQ query** in `src/hooks/useWorkflowDocuments.tsx` is tested by reading the
+  `QUERY` constant out of the source file and evaluating it with
+  [`groq-js`](https://github.com/sanity-io/groq-js) against a small in-memory dataset.
+  Reading it from source means the test cannot drift from the query that actually ships.
+  This is how the draft-vs-published validation target and the locale filter are covered.
+
+`npm run build` type-checks as it compiles, so a type error fails the build rather than
+being emitted into `dist`.
 
 
 ## FAQ

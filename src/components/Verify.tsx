@@ -8,7 +8,7 @@ import { API_VERSION } from '../constants'
 import { generateMultipleOrderRanks } from '../helpers/generateMultipleOrderRanks'
 import FloatingCard from './FloatingCard'
 
-import type { UserExtended } from 'sanity-plugin-utils'
+import type { UserExtended } from '../hooks/useUsers'
 
 import type { SanityDocumentWithMetadata, State } from '../types'
 type VerifyProps = {
@@ -25,51 +25,69 @@ export default function Verify(props: VerifyProps) {
   const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
 
-  // A lot of error-checking
-  const documentsWithoutValidMetadataIds = data?.length
-    ? data.reduce((acc, cur) => {
-        const { documentId, state } = cur._metadata ?? {}
-        const stateExists = states.find(s => s.id === state)
+  // A lot of error-checking, in a single pass over the data
+  const {
+    documentsWithoutValidMetadataIds,
+    documentsWithInvalidUserIds,
+    documentsWithoutOrderIds,
+    documentsWithDuplicatedOrderIds
+  } = React.useMemo(() => {
+    const stateIds = new Set(states.map(s => s.id))
+    const userIds = new Set(userList.map(u => u.id))
 
-        return !stateExists && documentId ? [...acc, documentId] : acc
-      }, [] as string[])
-    : []
+    const orderRankCounts = new Map<string, number>()
+    for (const item of data) {
+      const { orderRank } = item._metadata ?? {}
 
-  const documentsWithInvalidUserIds =
-    data?.length && userList?.length
-      ? data.reduce((acc, cur) => {
-          const { documentId, assignees } = cur._metadata ?? {}
-          const allAssigneesExist = assignees?.length
-            ? assignees?.every(a => userList.find(u => u.id === a))
-            : true
+      if (orderRank) {
+        orderRankCounts.set(orderRank, (orderRankCounts.get(orderRank) ?? 0) + 1)
+      }
+    }
 
-          return !allAssigneesExist && documentId ? [...acc, documentId] : acc
-        }, [] as string[])
-      : []
+    const withoutValidMetadata: string[] = []
+    const withInvalidUsers: string[] = []
+    const withoutOrder: string[] = []
+    const withDuplicatedOrder: string[] = []
 
-  const documentsWithoutOrderIds = data?.length
-    ? data.reduce((acc, cur) => {
-        const { documentId, orderRank } = cur._metadata ?? {}
+    for (const item of data) {
+      const { documentId, state, assignees, orderRank } = item._metadata ?? {}
 
-        return !orderRank && documentId ? [...acc, documentId] : acc
-      }, [] as string[])
-    : []
+      if (!documentId) {
+        continue
+      }
 
-  const documentsWithDuplicatedOrderIds = data?.length
-    ? data.reduce((acc, cur) => {
-        const { documentId, orderRank } = cur._metadata ?? {}
+      if (!state || !stateIds.has(state)) {
+        withoutValidMetadata.push(documentId)
+      }
 
-        return orderRank &&
-          data.filter(d => d._metadata?.orderRank === orderRank).length > 1 &&
-          documentId
-          ? [...acc, documentId]
-          : acc
-      }, [] as string[])
-    : []
+      if (userList.length && assignees?.length && !assignees.every(a => userIds.has(a))) {
+        withInvalidUsers.push(documentId)
+      }
+
+      if (!orderRank) {
+        withoutOrder.push(documentId)
+      } else if ((orderRankCounts.get(orderRank) ?? 0) > 1) {
+        withDuplicatedOrder.push(documentId)
+      }
+    }
+
+    return {
+      documentsWithoutValidMetadataIds: withoutValidMetadata,
+      documentsWithInvalidUserIds: withInvalidUsers,
+      documentsWithoutOrderIds: withoutOrder,
+      documentsWithDuplicatedOrderIds: withDuplicatedOrder
+    }
+  }, [data, states, userList])
 
   // Updates metadata documents to a valid, existing state
   const correctDocuments = React.useCallback(
     async (ids: string[]) => {
+      const firstState = states[0]
+
+      if (!firstState) {
+        return
+      }
+
       toast.push({
         title: 'Correcting...',
         status: 'info'
@@ -77,7 +95,7 @@ export default function Verify(props: VerifyProps) {
 
       const tx = ids.reduce((item, documentId) => {
         return item.patch(`workflow-metadata.${documentId}`, {
-          set: { state: states[0].id }
+          set: { state: firstState.id }
         })
       }, client.transaction())
 
@@ -99,11 +117,13 @@ export default function Verify(props: VerifyProps) {
         status: 'info'
       })
 
+      const userIds = new Set(userList.map(u => u.id))
+
       const tx = ids.reduce((item, documentId) => {
-        const { assignees } = data.find(d => d._id === documentId)?._metadata ?? {}
+        const { assignees } = data.find(d => d._metadata?.documentId === documentId)?._metadata ?? {}
         const validAssignees = assignees?.length
           ? // eslint-disable-next-line max-nested-callbacks
-            assignees.filter(a => userList.find(u => u.id === a)?.id)
+            assignees.filter(a => userIds.has(a))
           : []
 
         return item.patch(`workflow-metadata.${documentId}`, {
@@ -180,7 +200,7 @@ export default function Verify(props: VerifyProps) {
         status: 'success'
       })
     },
-    [data, client, toast]
+    [client, toast]
   )
 
   // A document could be deleted and the workflow metadata left behind
@@ -188,7 +208,7 @@ export default function Verify(props: VerifyProps) {
     return data.length ? data.filter(doc => !doc?._id).map(doc => doc._metadata.documentId) : []
   }, [data])
 
-  const handleOrphans = React.useCallback(() => {
+  const handleOrphans = React.useCallback(async () => {
     toast.push({
       title: 'Removing orphaned metadata...',
       status: 'info'
@@ -199,12 +219,21 @@ export default function Verify(props: VerifyProps) {
       tx.delete(`workflow-metadata.${id}`)
     })
 
-    tx.commit()
+    try {
+      await tx.commit()
 
-    toast.push({
-      title: `Removed ${orphanedMetadataDocumentIds.length} orphaned metadata documents`,
-      status: 'success'
-    })
+      toast.push({
+        title: `Removed ${orphanedMetadataDocumentIds.length} orphaned metadata documents`,
+        status: 'success'
+      })
+    } catch (err) {
+      console.error(err)
+
+      toast.push({
+        title: 'Failed to remove orphaned metadata',
+        status: 'error'
+      })
+    }
   }, [client, orphanedMetadataDocumentIds, toast])
 
   return (

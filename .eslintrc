@@ -12,5 +12,13 @@
     "plugin:prettier/recommended",
     "plugin:react/jsx-runtime",
     "prettier"
+  ],
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "**/*.test.tsx"],
+      "rules": {
+        "max-nested-callbacks": "off"
+      }
+    }
   ]
 }

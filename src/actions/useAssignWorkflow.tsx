@@ -1,8 +1,7 @@
 import type { DocumentActionProps, DocumentActionDescription } from 'sanity'
 import { useState } from 'react'
 
-import { UsersIcon } from '@sanity/icons'
-
+import { UsersIcon } from '@sanity/icons/Users'
 import UserAssignment from '../components/UserAssignment'
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
@@ -35,7 +34,7 @@ export function useAssignWorkflow({ id }: DocumentActionProps): DocumentActionDe
         // <div>Testing</div>
         <UserAssignment
           userList={userList}
-          assignees={metadata?.assignees?.length > 0 ? metadata.assignees : []}
+          assignees={metadata?.assignees ?? []}
           documentId={id}
         />
       )

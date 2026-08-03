@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Preview, useSchema } from 'sanity'
 
-import { DragHandleIcon } from '@sanity/icons'
+import { DragHandleIcon } from '@sanity/icons/DragHandle'
 import { Box, Card, Flex, Stack, useTheme } from '@sanity/ui'
 
 import UserDisplay from '../UserDisplay'
@@ -15,7 +15,8 @@ import { ValidationStatus } from './ValidationStatus'
 import type { SchemaType, ValidationMarker } from 'sanity'
 import type { CardTone } from '@sanity/ui'
 
-import type { SanityDocumentWithMetadata, State, User } from '../../types'
+import type { UserExtended } from '../../hooks/useUsers'
+import type { SanityDocumentWithMetadata, State } from '../../types'
 
 type DocumentCardProps = {
   isDragDisabled: boolean
@@ -25,7 +26,7 @@ type DocumentCardProps = {
   item: SanityDocumentWithMetadata
   states: State[]
   toggleInvalidDocumentId: (documentId: string, action: 'ADD' | 'REMOVE') => void
-  userList: User[]
+  userList: UserExtended[]
 }
 
 export function DocumentCard(props: DocumentCardProps) {
@@ -42,6 +43,11 @@ export function DocumentCard(props: DocumentCardProps) {
   const { assignees = [], documentId } = item._metadata ?? {}
   const schema = useSchema()
   const state = states.find(s => s.id === item._metadata?.state)
+
+  // Sanity picks the validation target from the id it is given, so validate the draft
+  // when one exists — otherwise the card reports the published document's markers
+  const { draftDocumentId, hasDraft } = item._metadata ?? {}
+  const validationId = hasDraft ? (draftDocumentId ?? `drafts.${documentId}`) : documentId
 
   const isDarkMode = useTheme().sanity.color.dark
   const defaultCardTone = isDarkMode ? `transparent` : `default`
@@ -122,7 +128,7 @@ export function DocumentCard(props: DocumentCardProps) {
   return (
     <>
       {state?.requireValidation ? (
-        <Validate documentId={documentId} type={item._type} onChange={handleValidation} />
+        <Validate documentId={validationId} type={item._type} onChange={handleValidation} />
       ) : null}
       <Box paddingBottom={3} paddingX={3}>
         <Card radius={2} shadow={isDragging ? 3 : 1} tone={cardTone}>

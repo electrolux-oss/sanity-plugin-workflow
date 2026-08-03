@@ -38,14 +38,17 @@ export function useWorkflowMetadata(ids: string[]): {
   const rawData = _rawData as Metadata[]
 
   const keyedMetadata = useMemo(() => {
-    if (!rawData || rawData.length === 0) return {}
+    if (!rawData?.length) {
+      return {}
+    }
 
-    return rawData.reduce<KeyedMetadata>((acc, cur) => {
-      return {
-        ...acc,
-        [cur.documentId]: cur
-      }
-    }, {})
+    const keyed: KeyedMetadata = {}
+
+    for (const metadata of rawData) {
+      keyed[metadata.documentId] = metadata
+    }
+
+    return keyed
   }, [rawData])
 
   return { data: keyedMetadata, loading, error }

@@ -12,6 +12,8 @@ import { DEFAULT_CONFIG } from './constants'
 import metadata from './schema/workflow/workflow.metadata'
 import { workflowTool } from './tools'
 
+import type { Plugin } from 'sanity'
+
 import type { WorkflowConfig } from './types'
 
 export const workflow: Plugin<WorkflowConfig> = definePlugin<WorkflowConfig>(
