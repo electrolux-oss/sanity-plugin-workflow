@@ -3,7 +3,7 @@ import React, { useCallback, useEffect } from 'react'
 import { useClient } from 'sanity'
 import { useListeningQuery } from 'sanity-plugin-utils'
 
-import { useToast } from '@sanity/ui'
+import { useToast } from '@sanity/ui/toast'
 
 import { API_VERSION } from '../constants'
 

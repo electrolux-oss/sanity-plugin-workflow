@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Preview, useSchema } from 'sanity'
 
 import { DragHandleIcon } from '@sanity/icons/DragHandle'
-import { Box, Card, Flex, Stack, useTheme } from '@sanity/ui'
+import { Box, Card, Flex, Stack, useTheme_v2 } from '@sanity/ui'
 
 import UserDisplay from '../UserDisplay'
 import CompleteButton from './CompleteButton'
@@ -49,7 +49,7 @@ export function DocumentCard(props: DocumentCardProps) {
   const { draftDocumentId, hasDraft } = item._metadata ?? {}
   const validationId = hasDraft ? (draftDocumentId ?? `drafts.${documentId}`) : documentId
 
-  const isDarkMode = useTheme().sanity.color.dark
+  const isDarkMode = useTheme_v2().color._dark
   const defaultCardTone = isDarkMode ? `transparent` : `default`
 
   // Validation only runs if the state requests it

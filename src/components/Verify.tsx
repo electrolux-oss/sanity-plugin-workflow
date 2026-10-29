@@ -2,7 +2,8 @@ import { LexoRank } from 'lexorank'
 import React from 'react'
 import { useClient } from 'sanity'
 
-import { Button, useToast } from '@sanity/ui'
+import { Button } from '@sanity/ui'
+import { useToast } from '@sanity/ui/toast'
 
 import { API_VERSION } from '../constants'
 import { generateMultipleOrderRanks } from '../helpers/generateMultipleOrderRanks'

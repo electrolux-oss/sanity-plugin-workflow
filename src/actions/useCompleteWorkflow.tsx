@@ -2,12 +2,12 @@ import { useCallback } from 'react'
 import { useClient } from 'sanity'
 
 import { CheckmarkIcon } from '@sanity/icons/Checkmark'
-import { useToast } from '@sanity/ui'
+import { useToast } from '@sanity/ui/toast'
 
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
 
-import type { ToastContextValue } from '@sanity/ui'
+import type { ToastContextValue } from '@sanity/ui/toast'
 import type { DocumentActionProps, SanityClient, DocumentActionDescription } from 'sanity'
 
 export const handleDeleteMetadata = async (

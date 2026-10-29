@@ -1,12 +1,26 @@
-# Sanity Workflow Plugin - Electrolux Version (for Sanity Studio v5 & v6)
+# Sanity Workflow Plugin - Electrolux Version (for Sanity Studio v6)
 
-> This is a **Sanity Studio v5 / v6** plugin.
+> This is a **Sanity Studio v6** plugin.
 > This is a forked version of Sanitys own [Sanity Workflow Plugin (v1.0.3)](https://www.npmjs.com/package/sanity-plugin-workflow/v/1.0.3)
 
 > [!WARNING]
-> Breaking changes introduced in version 4.0.0 of this plugin. Please see more information below.
+> Breaking changes introduced in version 5.0.0 of this plugin. Please see more information below.
 
-## :warning: Breaking changes - (v3.0.0 &rarr; v4.0.0)
+## :warning: Breaking changes
+
+### **v4 → v5**
+
+This release drops support for **Sanity Studio v5** and moves the plugin to `@sanity/ui` v4, the
+version Studio v6 ships with. Stay on v4 of this plugin while on Studio v5.
+
+Requirements:
+
+| | Requirement |
+| --- | --- |
+| `sanity` | `^6.0.0` |
+| `react` / `react-dom` | `^19.2.2` |
+| `styled-components` | `^6.1.15` |
+| Node.js | `>=22.12` |
 
 ### **v3 → v4**
 
@@ -38,7 +52,7 @@ Projects using this plugin must update to React 19 before upgrading to v3.
 - A custom Tool for drag-and-drop updating of a document's state
 - Language filter to make it easier for multi-market users to find relevant information.
 
-## Install (Sanity Studio v5 / v6)
+## Install (Sanity Studio v6)
 
 ```zsh
 npm install --save @electrolux-oss/sanity-plugin-workflow

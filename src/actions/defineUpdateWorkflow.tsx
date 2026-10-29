@@ -2,7 +2,7 @@ import { useClient, useCurrentUser, useValidationStatus } from 'sanity'
 
 import { ArrowLeftIcon } from '@sanity/icons/ArrowLeft'
 import { ArrowRightIcon } from '@sanity/icons/ArrowRight'
-import { useToast } from '@sanity/ui'
+import { useToast } from '@sanity/ui/toast'
 
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'

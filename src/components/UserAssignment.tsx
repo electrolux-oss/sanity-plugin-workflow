@@ -2,7 +2,7 @@ import React from 'react'
 import { useClient } from 'sanity'
 import { UserSelectMenu } from 'sanity-plugin-utils'
 
-import { useToast } from '@sanity/ui'
+import { useToast } from '@sanity/ui/toast'
 
 import { API_VERSION } from '../constants'
 

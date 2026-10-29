@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react'
 import { useClient } from 'sanity'
 
 import { SplitVerticalIcon } from '@sanity/icons/SplitVertical'
-import { useToast } from '@sanity/ui'
+import { useToast } from '@sanity/ui/toast'
 
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'

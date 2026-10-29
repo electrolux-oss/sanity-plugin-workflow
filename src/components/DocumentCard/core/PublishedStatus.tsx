@@ -1,7 +1,8 @@
 import { TextWithTone } from 'sanity'
 
 import { PublishIcon } from '@sanity/icons/Publish'
-import { Box, Text, Tooltip } from '@sanity/ui'
+import { Box, Text } from '@sanity/ui'
+import { Tooltip } from '@sanity/ui/tooltip'
 
 import { TimeAgo } from './TimeAgo'
 

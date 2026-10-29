@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import { AddIcon } from '@sanity/icons/Add'
-import { Button, Grid, Popover, useClickOutside } from '@sanity/ui'
+import { Button, Grid, useClickOutsideEvent } from '@sanity/ui'
+import { Popover } from '@sanity/ui/popover'
 
 import AvatarGroup from './DocumentCard/AvatarGroup'
 import UserAssignment from './UserAssignment'
@@ -25,7 +26,7 @@ export default function UserDisplay(props: UserDisplayProps) {
   const close = useCallback(() => setIsOpen(false), [])
   const toggle = useCallback(() => setIsOpen(current => !current), [])
 
-  useClickOutside(close, [button, popover])
+  useClickOutsideEvent(isOpen && close, () => [button, popover])
 
   const assignedUsers = useMemo(
     () => (assignees?.length ? userList.filter(u => assignees.includes(u.id)) : []),

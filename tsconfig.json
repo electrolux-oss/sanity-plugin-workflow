@@ -1,4 +1,7 @@
 {
   "extends": "./tsconfig.settings",
+  "compilerOptions": {
+    "types": ["node"]
+  },
   "include": ["./src"]
 }

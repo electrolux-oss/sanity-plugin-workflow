@@ -7,7 +7,8 @@ import { CircleIcon } from '@sanity/icons/Circle'
 import { EarthAmericasIcon } from '@sanity/icons/EarthAmericas'
 import { ResetIcon } from '@sanity/icons/Reset'
 import { UserIcon } from '@sanity/icons/User'
-import { Button, Card, Flex, Menu, MenuButton, MenuItem } from '@sanity/ui'
+import { Button, Card, Flex } from '@sanity/ui'
+import { Menu, MenuButton, MenuItem } from '@sanity/ui/menu'
 
 import type { CurrentUser, Schema as SchemaRegistry } from 'sanity'
 

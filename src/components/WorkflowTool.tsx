@@ -4,7 +4,8 @@ import { useCurrentUser } from 'sanity'
 import { Feedback } from 'sanity-plugin-utils'
 
 import { DragDropContext, Droppable } from '@hello-pangea/dnd'
-import { Box, Card, Container, Flex, Grid, Spinner, Text, useTheme, useToast } from '@sanity/ui'
+import { Box, Card, Container, Flex, Grid, Spinner, Text, useTheme_v2 } from '@sanity/ui'
+import { useToast } from '@sanity/ui/toast'
 
 import { API_VERSION } from '../constants'
 import { arraysContainMatchingString } from '../helpers/arraysContainMatchingString'
@@ -45,8 +46,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
   const [selectedSchemaTypes, setSelectedSchemaTypes] = useState<string[]>(schemaTypes)
 
   const toast = useToast()
-  const theme = useTheme()
-  const isDarkMode = useMemo(() => theme.sanity.color.dark, [theme])
+  const isDarkMode = useTheme_v2().color._dark
   const defaultCardTone = isDarkMode ? 'default' : 'transparent'
 
   const userList = useProjectUsers({ apiVersion: API_VERSION })
@@ -375,7 +375,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
         />
       )}
       <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-        <Grid columns={states.length} height="fill">
+        <Grid gridTemplateColumns={states.length} height="fill">
           {states.map((state: State, stateIndex: number) => {
             const userRoleCanDrop = state?.roles?.length
               ? arraysContainMatchingString(state.roles, userRoleNames)
