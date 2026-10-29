@@ -6,28 +6,16 @@ import { useToast } from '@sanity/ui/toast'
 
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
+import { runWithToast } from '../helpers/runWithToast'
 
 import type { ToastContextValue } from '@sanity/ui/toast'
 import type { DocumentActionProps, SanityClient, DocumentActionDescription } from 'sanity'
 
-export const handleDeleteMetadata = async (
-  client: SanityClient,
-  toast: ToastContextValue,
-  id: string
-) => {
-  try {
-    await client.delete(`workflow-metadata.${id}`)
-    toast.push({
-      status: 'success',
-      title: 'Workflow completed'
-    })
-  } catch (error) {
-    console.error(error)
-    toast.push({
-      status: 'error',
-      title: 'Could not complete Workflow'
-    })
-  }
+export function completeWorkflow(client: SanityClient, toast: ToastContextValue, id: string) {
+  return runWithToast(toast, () => client.delete(`workflow-metadata.${id}`), {
+    success: 'Workflow completed',
+    error: 'Could not complete Workflow'
+  })
 }
 
 export function useCompleteWorkflow({
@@ -43,7 +31,7 @@ export function useCompleteWorkflow({
   }
 
   const handle = useCallback(async () => {
-    await handleDeleteMetadata(client, toast, id)
+    await completeWorkflow(client, toast, id)
   }, [client, toast, id])
 
   if (!metadata) {

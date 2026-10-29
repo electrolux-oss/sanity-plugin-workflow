@@ -7,15 +7,21 @@ import { useToast } from '@sanity/ui/toast'
 
 import { API_VERSION } from '../constants'
 import { generateMultipleOrderRanks } from '../helpers/generateMultipleOrderRanks'
+import { runWithToast } from '../helpers/runWithToast'
 import FloatingCard from './FloatingCard'
 
 import type { UserExtended } from '../hooks/useUsers'
 
 import type { SanityDocumentWithMetadata, State } from '../types'
+
 type VerifyProps = {
   data: SanityDocumentWithMetadata[]
   userList: UserExtended[]
   states: State[]
+}
+
+function plural(count: number, noun: string) {
+  return `${count} ${noun}${count === 1 ? '' : 's'}`
 }
 
 // This component checks the validity of the data in the Kanban
@@ -80,161 +86,113 @@ export default function Verify(props: VerifyProps) {
     }
   }, [data, states, userList])
 
+  const commitPatches = React.useCallback(
+    (ids: string[], buildPatch: (documentId: string, index: number) => Record<string, unknown>) => {
+      const tx = client.transaction()
+
+      ids.forEach((documentId, index) => {
+        tx.patch(`workflow-metadata.${documentId}`, { set: buildPatch(documentId, index) })
+      })
+
+      return tx.commit()
+    },
+    [client]
+  )
+
   // Updates metadata documents to a valid, existing state
   const correctDocuments = React.useCallback(
-    async (ids: string[]) => {
+    (ids: string[]) => {
       const firstState = states[0]
 
       if (!firstState) {
         return
       }
 
-      toast.push({
-        title: 'Correcting...',
-        status: 'info'
-      })
-
-      const tx = ids.reduce((item, documentId) => {
-        return item.patch(`workflow-metadata.${documentId}`, {
-          set: { state: firstState.id }
-        })
-      }, client.transaction())
-
-      await tx.commit()
-
-      toast.push({
-        title: `Corrected ${ids.length === 1 ? `1 Document` : `${ids.length} Documents`}`,
-        status: 'success'
+      runWithToast(toast, () => commitPatches(ids, () => ({ state: firstState.id })), {
+        pending: 'Correcting...',
+        success: `Corrected ${plural(ids.length, 'Document')}`,
+        error: 'Could not correct Document states'
       })
     },
-    [client, states, toast]
+    [commitPatches, states, toast]
   )
 
   // Remove users that are no longer in the project from documents
   const removeUsersFromDocuments = React.useCallback(
-    async (ids: string[]) => {
-      toast.push({
-        title: 'Removing users...',
-        status: 'info'
-      })
-
+    (ids: string[]) => {
       const userIds = new Set(userList.map(u => u.id))
+      const assigneesById = new Map(
+        data.map(d => [d._metadata?.documentId, d._metadata?.assignees])
+      )
 
-      const tx = ids.reduce((item, documentId) => {
-        const { assignees } = data.find(d => d._metadata?.documentId === documentId)?._metadata ?? {}
-        const validAssignees = assignees?.length
-          ? // eslint-disable-next-line max-nested-callbacks
-            assignees.filter(a => userIds.has(a))
-          : []
-
-        return item.patch(`workflow-metadata.${documentId}`, {
-          set: { assignees: validAssignees }
-        })
-      }, client.transaction())
-
-      await tx.commit()
-
-      toast.push({
-        title: `Corrected ${ids.length === 1 ? `1 Document` : `${ids.length} Documents`}`,
-        status: 'success'
-      })
+      runWithToast(
+        toast,
+        () =>
+          commitPatches(ids, documentId => ({
+            assignees: (assigneesById.get(documentId) ?? []).filter(a => userIds.has(a))
+          })),
+        {
+          pending: 'Removing users...',
+          success: `Corrected ${plural(ids.length, 'Document')}`,
+          error: 'Could not remove invalid users'
+        }
+      )
     },
-    [client, data, toast, userList]
+    [commitPatches, data, toast, userList]
   )
 
-  // Add order value to metadata documents
+  const setOrderOfDocuments = React.useCallback(
+    (ids: string[], start?: LexoRank, end?: LexoRank) => {
+      const ranks = generateMultipleOrderRanks(ids.length, start, end)
+
+      runWithToast(
+        toast,
+        () => commitPatches(ids, (_, index) => ({ orderRank: ranks[index].toString() })),
+        {
+          pending: 'Adding ordering...',
+          success: `Added order to ${plural(ids.length, 'Document')}`,
+          error: 'Could not set Document order'
+        }
+      )
+    },
+    [commitPatches, toast]
+  )
+
+  // Places the given documents between the first two ranked documents
   const addOrderToDocuments = React.useCallback(
-    async (ids: string[]) => {
-      toast.push({
-        title: 'Adding ordering...',
-        status: 'info'
-      })
+    (ids: string[]) => {
+      const [firstOrder, secondOrder] = data.slice(0, 2).map(d => d._metadata?.orderRank)
 
-      // Get first and second order values, if they exist
-      const [firstOrder, secondOrder] = [...data].slice(0, 2).map(d => d._metadata?.orderRank)
-      const minLexo = firstOrder ? LexoRank.parse(firstOrder) : undefined
-      const maxLexo = secondOrder ? LexoRank.parse(secondOrder) : undefined
-      const ranks = generateMultipleOrderRanks(ids.length, minLexo, maxLexo)
-
-      const tx = client.transaction()
-
-      // Create a new in-between value for each document
-      for (let index = 0; index < ids.length; index += 1) {
-        tx.patch(`workflow-metadata.${ids[index]}`, {
-          set: { orderRank: ranks[index].toString() }
-        })
-      }
-
-      await tx.commit()
-
-      toast.push({
-        title: `Added order to ${ids.length === 1 ? `1 Document` : `${ids.length} Documents`}`,
-        status: 'success'
-      })
+      setOrderOfDocuments(
+        ids,
+        firstOrder ? LexoRank.parse(firstOrder) : undefined,
+        secondOrder ? LexoRank.parse(secondOrder) : undefined
+      )
     },
-    [data, client, toast]
-  )
-
-  // Reset order value on all metadata documents
-  const resetOrderOfAllDocuments = React.useCallback(
-    async (ids: string[]) => {
-      toast.push({
-        title: 'Adding ordering...',
-        status: 'info'
-      })
-
-      const ranks = generateMultipleOrderRanks(ids.length)
-
-      const tx = client.transaction()
-
-      // Create a new in-between value for each document
-      for (let index = 0; index < ids.length; index += 1) {
-        tx.patch(`workflow-metadata.${ids[index]}`, {
-          set: { orderRank: ranks[index].toString() }
-        })
-      }
-
-      await tx.commit()
-
-      toast.push({
-        title: `Added order to ${ids.length === 1 ? `1 Document` : `${ids.length} Documents`}`,
-        status: 'success'
-      })
-    },
-    [client, toast]
+    [data, setOrderOfDocuments]
   )
 
   // A document could be deleted and the workflow metadata left behind
-  const orphanedMetadataDocumentIds = React.useMemo(() => {
-    return data.length ? data.filter(doc => !doc?._id).map(doc => doc._metadata.documentId) : []
-  }, [data])
+  const orphanedMetadataDocumentIds = React.useMemo(
+    () => data.filter(doc => !doc?._id).map(doc => doc._metadata.documentId),
+    [data]
+  )
 
-  const handleOrphans = React.useCallback(async () => {
-    toast.push({
-      title: 'Removing orphaned metadata...',
-      status: 'info'
-    })
-
+  const handleOrphans = React.useCallback(() => {
     const tx = client.transaction()
+
     orphanedMetadataDocumentIds.forEach(id => {
       tx.delete(`workflow-metadata.${id}`)
     })
 
-    try {
-      await tx.commit()
-
-      toast.push({
-        title: `Removed ${orphanedMetadataDocumentIds.length} orphaned metadata documents`,
-        status: 'success'
-      })
-    } catch (err) {
-      console.error(err)
-
-      toast.push({
-        title: 'Failed to remove orphaned metadata',
-        status: 'error'
-      })
-    }
+    runWithToast(toast, () => tx.commit(), {
+      pending: 'Removing orphaned metadata...',
+      success: `Removed ${plural(
+        orphanedMetadataDocumentIds.length,
+        'orphaned metadata document'
+      )}`,
+      error: 'Failed to remove orphaned metadata'
+    })
   }, [client, orphanedMetadataDocumentIds, toast])
 
   return (
@@ -244,11 +202,7 @@ export default function Verify(props: VerifyProps) {
           tone="caution"
           mode="ghost"
           onClick={() => correctDocuments(documentsWithoutValidMetadataIds)}
-          text={
-            documentsWithoutValidMetadataIds.length === 1
-              ? `Correct 1 Document State`
-              : `Correct ${documentsWithoutValidMetadataIds.length} Document States`
-          }
+          text={`Correct ${plural(documentsWithoutValidMetadataIds.length, 'Document State')}`}
         />
       ) : null}
       {documentsWithInvalidUserIds.length > 0 ? (
@@ -256,11 +210,10 @@ export default function Verify(props: VerifyProps) {
           tone="caution"
           mode="ghost"
           onClick={() => removeUsersFromDocuments(documentsWithInvalidUserIds)}
-          text={
-            documentsWithInvalidUserIds.length === 1
-              ? `Remove Invalid Users from 1 Document`
-              : `Remove Invalid Users from ${documentsWithInvalidUserIds.length} Documents`
-          }
+          text={`Remove Invalid Users from ${plural(
+            documentsWithInvalidUserIds.length,
+            'Document'
+          )}`}
         />
       ) : null}
       {documentsWithoutOrderIds.length > 0 ? (
@@ -268,11 +221,7 @@ export default function Verify(props: VerifyProps) {
           tone="caution"
           mode="ghost"
           onClick={() => addOrderToDocuments(documentsWithoutOrderIds)}
-          text={
-            documentsWithoutOrderIds.length === 1
-              ? `Set Order for 1 Document`
-              : `Set Order for ${documentsWithoutOrderIds.length} Documents`
-          }
+          text={`Set Order for ${plural(documentsWithoutOrderIds.length, 'Document')}`}
         />
       ) : null}
       {documentsWithDuplicatedOrderIds.length > 0 ? (
@@ -281,23 +230,16 @@ export default function Verify(props: VerifyProps) {
             tone="caution"
             mode="ghost"
             onClick={() => addOrderToDocuments(documentsWithDuplicatedOrderIds)}
-            text={
-              documentsWithDuplicatedOrderIds.length === 1
-                ? `Set Unique Order for 1 Document`
-                : `Set Unique Order for ${documentsWithDuplicatedOrderIds.length} Documents`
-            }
+            text={`Set Unique Order for ${plural(
+              documentsWithDuplicatedOrderIds.length,
+              'Document'
+            )}`}
           />
           <Button
             tone="caution"
             mode="ghost"
-            onClick={() =>
-              resetOrderOfAllDocuments(data.map(doc => String(doc._metadata?.documentId)))
-            }
-            text={
-              data.length === 1
-                ? `Reset Order for 1 Document`
-                : `Reset Order for all ${data.length} Documents`
-            }
+            onClick={() => setOrderOfDocuments(data.map(doc => doc._metadata.documentId))}
+            text={`Reset Order for ${plural(data.length, 'Document')}`}
           />
         </>
       ) : null}

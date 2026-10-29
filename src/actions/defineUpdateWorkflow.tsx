@@ -7,6 +7,7 @@ import { useToast } from '@sanity/ui/toast'
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
 import { arraysContainMatchingString } from '../helpers/arraysContainMatchingString'
+import { runWithToast } from '../helpers/runWithToast'
 
 import type { State } from '../types'
 import type { DocumentActionProps, DocumentActionDescription } from 'sanity'
@@ -42,26 +43,13 @@ function useUpdateWorkflow(
     console.error(error)
   }
 
-  const onHandle = (documentId: string, newState: State) => {
-    client
-      .patch(`workflow-metadata.${documentId}`)
-      .set({ state: newState.id })
-      .commit()
-      .then(() => {
-        onComplete()
-        toast.push({
-          status: 'success',
-          title: `Document state now "${newState.title}"`
-        })
-      })
-      .catch(err => {
-        onComplete()
-        console.error(err)
-        toast.push({
-          status: 'error',
-          title: `Document state update failed`
-        })
-      })
+  const onHandle = async (documentId: string, newState: State) => {
+    await runWithToast(
+      toast,
+      () => client.patch(`workflow-metadata.${documentId}`).set({ state: newState.id }).commit(),
+      { success: `Document state now "${newState.title}"`, error: 'Document state update failed' }
+    )
+    onComplete()
   }
 
   // Remove button if:
