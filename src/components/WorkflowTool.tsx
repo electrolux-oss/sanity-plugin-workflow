@@ -7,9 +7,9 @@ import { Box, Card, Container, Flex, Grid, Spinner, Text, useTheme_v2 } from '@s
 import { useToast } from '@sanity/ui/toast'
 
 import { API_VERSION } from '../constants'
-import { getDropOrderRank } from '../helpers/dropOrderRank'
 import { filterItemsAndSort } from '../helpers/filterItemsAndSort'
 import { getTransitionBlocker, userHasStateRole } from '../helpers/permissions'
+import { getDropOrderRank } from '../helpers/ranking'
 import {
   readStoredLocales,
   shouldShowDocuments,
@@ -204,16 +204,9 @@ export default function WorkflowTool(props: WorkflowToolProps) {
         return
       }
 
-      if (!data.length) {
-        return
-      }
-
       const newOrder = getDropOrderRank({
-        data,
         columnItems: itemsByState.get(destination.droppableId) ?? [],
-        states,
         draggableId,
-        destinationStateId: destination.droppableId,
         destinationIndex: destination.index
       })
 
@@ -225,7 +218,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
       await move(draggableId, destination, states, newOrder)
       setPatchingIds((ids: string[]) => ids.filter(id => id !== draggableId))
     },
-    [data, itemsByState, toast, move, states]
+    [itemsByState, toast, move, states]
   )
 
   const Clone: DraggableChildrenFn = useCallback(

@@ -1,4 +1,3 @@
-import { LexoRank } from 'lexorank'
 import React from 'react'
 import { useClient } from 'sanity'
 
@@ -6,7 +5,7 @@ import { Button } from '@sanity/ui'
 import { useToast } from '@sanity/ui/toast'
 
 import { API_VERSION } from '../constants'
-import { generateMultipleOrderRanks } from '../helpers/generateMultipleOrderRanks'
+import { rerankStates } from '../helpers/ranking'
 import { runWithToast } from '../helpers/runWithToast'
 import FloatingCard from './FloatingCard'
 
@@ -36,25 +35,25 @@ export default function Verify(props: VerifyProps) {
   const {
     documentsWithoutValidMetadataIds,
     documentsWithInvalidUserIds,
-    documentsWithoutOrderIds,
-    documentsWithDuplicatedOrderIds
+    documentsWithOrderIssueIds
   } = React.useMemo(() => {
     const stateIds = new Set(states.map(s => s.id))
     const userIds = new Set(userList.map(u => u.id))
 
+    // Ranks only order documents within their own State, so duplicates are counted per State
+    const rankKey = (state: string | null, orderRank: string) => JSON.stringify([state, orderRank])
     const orderRankCounts = new Map<string, number>()
-    for (const item of data) {
-      const { orderRank } = item._metadata ?? {}
 
-      if (orderRank) {
-        orderRankCounts.set(orderRank, (orderRankCounts.get(orderRank) ?? 0) + 1)
+    for (const { _metadata } of data) {
+      if (_metadata?.orderRank) {
+        const key = rankKey(_metadata.state, _metadata.orderRank)
+        orderRankCounts.set(key, (orderRankCounts.get(key) ?? 0) + 1)
       }
     }
 
     const withoutValidMetadata: string[] = []
     const withInvalidUsers: string[] = []
-    const withoutOrder: string[] = []
-    const withDuplicatedOrder: string[] = []
+    const withOrderIssue: string[] = []
 
     for (const item of data) {
       const { documentId, state, assignees, orderRank } = item._metadata ?? {}
@@ -71,18 +70,15 @@ export default function Verify(props: VerifyProps) {
         withInvalidUsers.push(documentId)
       }
 
-      if (!orderRank) {
-        withoutOrder.push(documentId)
-      } else if ((orderRankCounts.get(orderRank) ?? 0) > 1) {
-        withDuplicatedOrder.push(documentId)
+      if (!orderRank || (orderRankCounts.get(rankKey(state, orderRank)) ?? 0) > 1) {
+        withOrderIssue.push(documentId)
       }
     }
 
     return {
       documentsWithoutValidMetadataIds: withoutValidMetadata,
       documentsWithInvalidUserIds: withInvalidUsers,
-      documentsWithoutOrderIds: withoutOrder,
-      documentsWithDuplicatedOrderIds: withDuplicatedOrder
+      documentsWithOrderIssueIds: withOrderIssue
     }
   }, [data, states, userList])
 
@@ -141,35 +137,30 @@ export default function Verify(props: VerifyProps) {
     [commitPatches, data, toast, userList]
   )
 
-  const setOrderOfDocuments = React.useCallback(
-    (ids: string[], start?: LexoRank, end?: LexoRank) => {
-      const ranks = generateMultipleOrderRanks(ids.length, start, end)
+  // Re-ranks the States containing the given documents, keeping their current order
+  const fixOrderOfDocuments = React.useCallback(
+    (ids: string[]) => {
+      const affectedIds = new Set(ids)
+      const affectedStateIds = data
+        .filter(d => affectedIds.has(d._metadata?.documentId))
+        .flatMap(d => (d._metadata?.state ? [d._metadata.state] : []))
+      const ranks = rerankStates(data, affectedStateIds)
 
       runWithToast(
         toast,
-        () => commitPatches(ids, (_, index) => ({ orderRank: ranks[index].toString() })),
+        () =>
+          commitPatches(
+            ranks.map(r => r.documentId),
+            (_, index) => ({ orderRank: ranks[index].orderRank })
+          ),
         {
-          pending: 'Adding ordering...',
-          success: `Added order to ${plural(ids.length, 'Document')}`,
-          error: 'Could not set Document order'
+          pending: 'Fixing order...',
+          success: `Fixed order of ${plural(ranks.length, 'Document')}`,
+          error: 'Could not fix Document order'
         }
       )
     },
-    [commitPatches, toast]
-  )
-
-  // Places the given documents between the first two ranked documents
-  const addOrderToDocuments = React.useCallback(
-    (ids: string[]) => {
-      const [firstOrder, secondOrder] = data.slice(0, 2).map(d => d._metadata?.orderRank)
-
-      setOrderOfDocuments(
-        ids,
-        firstOrder ? LexoRank.parse(firstOrder) : undefined,
-        secondOrder ? LexoRank.parse(secondOrder) : undefined
-      )
-    },
-    [data, setOrderOfDocuments]
+    [commitPatches, data, toast]
   )
 
   // A document could be deleted and the workflow metadata left behind
@@ -216,32 +207,13 @@ export default function Verify(props: VerifyProps) {
           )}`}
         />
       ) : null}
-      {documentsWithoutOrderIds.length > 0 ? (
+      {documentsWithOrderIssueIds.length > 0 ? (
         <Button
           tone="caution"
           mode="ghost"
-          onClick={() => addOrderToDocuments(documentsWithoutOrderIds)}
-          text={`Set Order for ${plural(documentsWithoutOrderIds.length, 'Document')}`}
+          onClick={() => fixOrderOfDocuments(documentsWithOrderIssueIds)}
+          text={`Fix Order for ${plural(documentsWithOrderIssueIds.length, 'Document')}`}
         />
-      ) : null}
-      {documentsWithDuplicatedOrderIds.length > 0 ? (
-        <>
-          <Button
-            tone="caution"
-            mode="ghost"
-            onClick={() => addOrderToDocuments(documentsWithDuplicatedOrderIds)}
-            text={`Set Unique Order for ${plural(
-              documentsWithDuplicatedOrderIds.length,
-              'Document'
-            )}`}
-          />
-          <Button
-            tone="caution"
-            mode="ghost"
-            onClick={() => setOrderOfDocuments(data.map(doc => doc._metadata.documentId))}
-            text={`Reset Order for ${plural(data.length, 'Document')}`}
-          />
-        </>
       ) : null}
       {orphanedMetadataDocumentIds.length > 0 ? (
         <Button

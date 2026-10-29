@@ -1,4 +1,3 @@
-import { LexoRank } from 'lexorank'
 import { useCallback, useState } from 'react'
 import { useClient } from 'sanity'
 
@@ -7,6 +6,7 @@ import { useToast } from '@sanity/ui/toast'
 
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
+import { rankBetween } from '../helpers/ranking'
 
 import type { DocumentActionProps, DocumentActionDescription } from 'sanity'
 
@@ -34,9 +34,7 @@ export function useBeginWorkflow({
         _type: `workflow.metadata`,
         documentId: id,
         state: states?.[0]?.id,
-        orderRank: lowestOrderFirstState
-          ? LexoRank.parse(lowestOrderFirstState).genNext().toString()
-          : LexoRank.min().toString(),
+        orderRank: rankBetween(null, lowestOrderFirstState),
         locale: draft?.locale
       })
 
