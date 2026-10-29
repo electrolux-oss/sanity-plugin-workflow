@@ -8,7 +8,7 @@ import { useToast } from '@sanity/ui/toast'
 import { API_VERSION } from '../constants'
 import { runWithToast } from '../helpers/runWithToast'
 
-import type { FilterOptions, Metadata, SanityDocumentWithMetadata, State } from '../types'
+import type { Metadata, SanityDocumentWithMetadata, State } from '../types'
 
 const QUERY = `*[_type == "workflow.metadata" && (!defined($localeFilter) || count($localeFilter) == 0 || locale in $localeFilter)]|order(orderRank){
     "_metadata": {
@@ -49,11 +49,9 @@ type WorkflowDocuments = {
   }
 }
 
-export function useWorkflowDocuments(filterOptions?: FilterOptions): WorkflowDocuments {
+export function useWorkflowDocuments(localeFilter: string[]): WorkflowDocuments {
   const toast = useToast()
   const client = useClient({ apiVersion: API_VERSION })
-
-  const localeFilter = filterOptions?.locales?.length ? filterOptions.locales : []
 
   // Get and listen to changes on documents + workflow metadata documents
   const {

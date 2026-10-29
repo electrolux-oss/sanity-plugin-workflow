@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useCurrentUser } from 'sanity'
 import { Feedback } from 'sanity-plugin-utils'
 
@@ -8,14 +8,10 @@ import { useToast } from '@sanity/ui/toast'
 
 import { API_VERSION } from '../constants'
 import { filterItemsAndSort } from '../helpers/filterItemsAndSort'
+import { shouldShowFilters } from '../helpers/localeFilter'
 import { getTransitionBlocker, userHasStateRole } from '../helpers/permissions'
 import { getDropOrderRank } from '../helpers/ranking'
-import {
-  readStoredLocales,
-  shouldShowDocuments,
-  shouldShowFilters,
-  writeStoredLocales
-} from '../helpers/localeFilter'
+import { useDocumentFilters, useLocaleFilter } from '../hooks/useBoardFilters'
 import { useProjectUsers } from '../hooks/useUsers'
 import { useWorkflowDocuments } from '../hooks/useWorkflowDocuments'
 import { DocumentCard } from './DocumentCard'
@@ -25,26 +21,18 @@ import StateTitle from './StateTitle'
 import Verify from './Verify'
 
 import type { DraggableChildrenFn, DragStart, DropResult } from '@hello-pangea/dnd'
-import type {
-  FilterOptions,
-  SanityDocumentWithMetadata,
-  State,
-  WorkflowConfig
-} from '../types'
+import type { SanityDocumentWithMetadata, State, WorkflowConfig } from '../types'
 import type { Tool } from 'sanity'
-
-const LOCALE_FILTER_STORAGE_KEY = 'studio.plugin.workflow.locale-filter'
 
 type WorkflowToolProps = {
   tool: Tool<WorkflowConfig>
 }
 
 export default function WorkflowTool(props: WorkflowToolProps) {
-  const { schemaTypes = [], states = [], filters = null } = props?.tool?.options ?? {}
+  const { schemaTypes = [], states = [], filters } = props?.tool?.options ?? {}
   const [patchingIds, setPatchingIds] = useState<string[]>([])
   const [draggingFrom, setDraggingFrom] = useState('')
   const [undroppableStates, setUndroppableStates] = useState<string[]>([])
-  const [selectedSchemaTypes, setSelectedSchemaTypes] = useState<string[]>(schemaTypes)
 
   const toast = useToast()
   const isDarkMode = useTheme_v2().color._dark
@@ -58,25 +46,23 @@ export default function WorkflowTool(props: WorkflowToolProps) {
     [user]
   )
 
-  const filterOptions = useMemo(() => filters?.(user), [filters, user])
-  const userLocales = filterOptions?.locales
-
-  const [selectedLocales, setSelectedLocales] = useState<FilterOptions['locales']>(
-    () =>
-      readStoredLocales(LOCALE_FILTER_STORAGE_KEY) ?? (userLocales?.[0] ? [userLocales[0]] : [])
+  const { userLocales, selectedLocales, toggleLocales, showDocuments } = useLocaleFilter(
+    filters,
+    user
   )
 
-  const showDocuments = shouldShowDocuments(userLocales, selectedLocales)
-
-  const passedFilter = selectedLocales ? ({ locales: selectedLocales } as FilterOptions) : undefined
-
-  const { workflowData, operations } = useWorkflowDocuments(passedFilter)
-
-  // Data to display in cards
+  const { workflowData, operations } = useWorkflowDocuments(selectedLocales)
   const { data, loading, error } = workflowData
-
-  // Operations to perform on cards
   const { move } = operations
+
+  const {
+    uniqueAssignedUsers,
+    selectedUserIds,
+    toggleSelectedUser,
+    resetSelectedUsers,
+    selectedSchemaTypes,
+    toggleSelectedSchemaType
+  } = useDocumentFilters(data, userList, schemaTypes)
 
   // When drag starts, mark the States the dragged document cannot move to
   const handleDragStart = useCallback(
@@ -110,57 +96,6 @@ export default function WorkflowTool(props: WorkflowToolProps) {
     },
     [data, states, user, userRoleNames]
   )
-
-  useEffect(() => {
-    writeStoredLocales(LOCALE_FILTER_STORAGE_KEY, selectedLocales)
-  }, [selectedLocales])
-
-  const toggleLocales = useCallback((locales: string[]) => {
-    setSelectedLocales(prev =>
-      Array.from(
-        locales.reduce((set, locale) => {
-          if (set.has(locale)) {
-            set.delete(locale)
-          } else {
-            set.add(locale)
-          }
-          return set
-        }, new Set(prev))
-      )
-    )
-  }, [])
-
-  // Used for the user filter UI
-  const uniqueAssignedUsers = useMemo(() => {
-    const uniqueUserIds = data.reduce((acc, item) => {
-      const { assignees = [] } = item._metadata ?? {}
-      const newAssignees = assignees?.length ? assignees.filter(a => !acc.includes(a)) : []
-      return newAssignees.length ? [...acc, ...newAssignees] : acc
-    }, [] as string[])
-
-    return userList.filter(u => uniqueUserIds.includes(u.id))
-  }, [data, userList])
-
-  // Selected user IDs filter the visible workflow documents
-  const [selectedUserIds, setSelectedUserIds] = useState<string[]>(
-    uniqueAssignedUsers.map(u => u.id)
-  )
-  const toggleSelectedUser = useCallback((userId: string) => {
-    setSelectedUserIds(prev =>
-      prev.includes(userId) ? prev.filter(u => u !== userId) : [...prev, userId]
-    )
-  }, [])
-
-  const resetSelectedUsers = useCallback(() => {
-    setSelectedUserIds([])
-  }, [])
-
-  // Selected schema types filter the visible workflow documents
-  const toggleSelectedSchemaType = useCallback((schemaType: string) => {
-    setSelectedSchemaTypes(prev =>
-      prev.includes(schemaType) ? prev.filter(u => u !== schemaType) : [...prev, schemaType]
-    )
-  }, [])
 
   // Document IDs that have validation errors
   const [invalidDocumentIds, setInvalidDocumentIds] = useState<string[]>([])
