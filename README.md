@@ -19,6 +19,8 @@ State permissions now behave the same in document actions and on the board:
   checked the State a document moved into.
 - `roles: []` allows nobody. The board previously treated it as unrestricted.
 - Users without any Role can no longer move documents into States that set `roles`.
+- `transitions: []` allows moving documents to no other State. It was previously treated as
+  unrestricted; leave `transitions` out to allow every State.
 - `requireAssignment` only gates moving documents into a State. The board previously also stopped
   unassigned users from dragging documents out of it.
 
@@ -118,7 +120,8 @@ Documents can be promoted and demoted in the Workflow with the provided Document
     // Requires the document to be valid before being promoted out of this State
     // Warning: With many documents in the Kanban view this can negatively impact performance
     requireValidation: true,
-    // Defines which States a document can be moved to from this one
+    // Defines which States a document can be moved to from this one.
+    // Leave it out to allow every State; an empty array allows none
     transitions: ['changesRequested', 'approved']
 }
 ```

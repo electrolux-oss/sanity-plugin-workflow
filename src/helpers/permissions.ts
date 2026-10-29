@@ -25,7 +25,8 @@ export function userHasStateRole(userRoleNames: string[], state: State): boolean
 /**
  * The first rule that stops the user moving a document from `from` to `to`, or null when the
  * move is allowed. Roles apply to both states, while assignment is only required by the state
- * the document moves into.
+ * the document moves into. A state without `transitions` may move anywhere, `transitions: []`
+ * nowhere.
  */
 export function getTransitionBlocker({
   from,
@@ -38,7 +39,7 @@ export function getTransitionBlocker({
     return 'role'
   }
 
-  if (from.transitions?.length && !from.transitions.includes(to.id)) {
+  if (from.transitions && !from.transitions.includes(to.id)) {
     return 'transition'
   }
 

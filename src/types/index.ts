@@ -2,7 +2,7 @@ import type { CurrentUser, SanityDocumentLike } from 'sanity'
 
 export type State = {
   id: string
-  transitions: string[]
+  transitions?: string[]
   title: string
   roles?: string[]
   requireAssignment?: boolean

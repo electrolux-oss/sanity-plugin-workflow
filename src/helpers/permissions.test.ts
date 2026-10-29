@@ -5,7 +5,7 @@ import { getTransitionBlocker, userHasStateRole } from './permissions'
 import type { State } from '../types'
 
 function state(id: string, overrides: Partial<State> = {}): State {
-  return { id, title: id, transitions: [], ...overrides }
+  return { id, title: id, ...overrides }
 }
 
 describe('userHasStateRole', () => {
@@ -57,6 +57,13 @@ describe('getTransitionBlocker', () => {
 
     expect(getTransitionBlocker({ ...editor, from, to: state('b') })).toBeNull()
     expect(getTransitionBlocker({ ...editor, from, to: state('c') })).toBe('transition')
+  })
+
+  // Regression: an empty list was treated as unrestricted, unlike roles: []
+  it('allows no transitions from a state with an empty transitions list', () => {
+    const from = state('readyToPublish', { transitions: [] })
+
+    expect(getTransitionBlocker({ ...editor, from, to: state('b') })).toBe('transition')
   })
 
   it('requires assignment to move into a state that asks for it', () => {
