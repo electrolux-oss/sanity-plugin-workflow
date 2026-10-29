@@ -13,6 +13,15 @@
 This release drops support for **Sanity Studio v5** and moves the plugin to `@sanity/ui` v4, the
 version Studio v6 ships with. Stay on v4 of this plugin while on Studio v5.
 
+State permissions now behave the same in document actions and on the board:
+
+- `roles` gates moving documents both into and out of a State. Document actions previously only
+  checked the State a document moved into.
+- `roles: []` allows nobody. The board previously treated it as unrestricted.
+- Users without any Role can no longer move documents into States that set `roles`.
+- `requireAssignment` only gates moving documents into a State. The board previously also stopped
+  unassigned users from dragging documents out of it.
+
 Requirements:
 
 | | Requirement |
@@ -100,9 +109,11 @@ Documents can be promoted and demoted in the Workflow with the provided Document
     // Optional settings:
     // Used for the color of the Document Badge
     color: 'success',
-    // Will limit document actions and drag-and-drop for only users with these Role
+    // Only users with one of these Roles can move documents into or out of this State,
+    // through document actions or drag-and-drop. Leave it out to allow everyone;
+    // an empty array allows nobody
     roles: ['publisher', 'administrator'],
-    // Requires the user to be "assigned" in order to update to this State
+    // Requires the user to be "assigned" in order to move a document into this State
     requireAssignment: true,
     // Requires the document to be valid before being promoted out of this State
     // Warning: With many documents in the Kanban view this can negatively impact performance

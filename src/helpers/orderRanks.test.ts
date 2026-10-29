@@ -1,7 +1,6 @@
 import { LexoRank } from 'lexorank'
 import { describe, expect, it } from 'vitest'
 
-import { arraysContainMatchingString } from './arraysContainMatchingString'
 import { generateMultipleOrderRanks } from './generateMultipleOrderRanks'
 import initialRank from './initialRank'
 
@@ -47,22 +46,5 @@ describe('initialRank', () => {
 
   it('returns a string LexoRank can parse back', () => {
     expect(() => LexoRank.parse(initialRank('0|100000:'))).not.toThrow()
-  })
-})
-
-describe('arraysContainMatchingString', () => {
-  it('detects an overlapping role', () => {
-    expect(arraysContainMatchingString(['editor', 'viewer'], ['administrator', 'editor'])).toBe(
-      true
-    )
-  })
-
-  it('returns false with no overlap', () => {
-    expect(arraysContainMatchingString(['viewer'], ['administrator'])).toBe(false)
-  })
-
-  it('returns false for empty inputs', () => {
-    expect(arraysContainMatchingString([], ['editor'])).toBe(false)
-    expect(arraysContainMatchingString(['editor'], [])).toBe(false)
   })
 })

@@ -7,9 +7,9 @@ import { Box, Card, Container, Flex, Grid, Spinner, Text, useTheme_v2 } from '@s
 import { useToast } from '@sanity/ui/toast'
 
 import { API_VERSION } from '../constants'
-import { arraysContainMatchingString } from '../helpers/arraysContainMatchingString'
 import { getDropOrderRank } from '../helpers/dropOrderRank'
 import { filterItemsAndSort } from '../helpers/filterItemsAndSort'
+import { getTransitionBlocker, userHasStateRole } from '../helpers/permissions'
 import {
   readStoredLocales,
   shouldShowDocuments,
@@ -78,10 +78,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
   // Operations to perform on cards
   const { move } = operations
 
-  // When drag starts, check for any States we should not allow dropping on
-  // Because of either:
-  // 1. The "destination" State requires user assignment and the user is not assigned to the dragged document
-  // 2. The "source" State State has a list of transitions and the "destination" State is not in that list
+  // When drag starts, mark the States the dragged document cannot move to
   const handleDragStart = useCallback(
     (start: DragStart) => {
       const { draggableId, source } = start
@@ -91,38 +88,27 @@ export default function WorkflowTool(props: WorkflowToolProps) {
       const document = data.find(item => item._metadata?.documentId === draggableId)
       const state = states.find(s => s.id === currentStateId)
 
-      // This shouldn't happen but TypeScript
-      if (!document || !state) return
-
-      const undroppableStateIds = []
-      const statesThatRequireAssignmentIds = states.filter(s => s.requireAssignment).map(s => s.id)
-
-      if (statesThatRequireAssignmentIds.length) {
-        const documentAssignees = document._metadata?.assignees ?? []
-        const userIsAssignedToDocument = user?.id ? documentAssignees.includes(user.id) : false
-
-        if (!userIsAssignedToDocument) {
-          undroppableStateIds.push(...statesThatRequireAssignmentIds)
-        }
+      if (!document || !state) {
+        return
       }
 
-      const statesThatCannotBeTransitionedToIds =
-        state.transitions && state.transitions.length
-          ? states.filter(s => !state.transitions?.includes(s.id)).map(s => s.id)
-          : []
-
-      if (statesThatCannotBeTransitionedToIds.length) {
-        undroppableStateIds.push(...statesThatCannotBeTransitionedToIds)
-      }
-
-      // Remove currentStateId from undroppableStates
-      const undroppableExceptSelf = undroppableStateIds.filter(id => id !== currentStateId)
-
-      if (undroppableExceptSelf.length) {
-        setUndroppableStates(undroppableExceptSelf)
-      }
+      setUndroppableStates(
+        states
+          .filter(
+            target =>
+              target.id !== currentStateId &&
+              getTransitionBlocker({
+                from: state,
+                to: target,
+                userId: user?.id,
+                userRoleNames,
+                assignees: document._metadata?.assignees
+              })
+          )
+          .map(target => target.id)
+      )
     },
-    [data, states, user]
+    [data, states, user, userRoleNames]
   )
 
   useEffect(() => {
@@ -311,9 +297,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
       <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <Grid gridTemplateColumns={states.length} height="fill">
           {states.map((state: State, stateIndex: number) => {
-            const userRoleCanDrop = state?.roles?.length
-              ? arraysContainMatchingString(state.roles, userRoleNames)
-              : true
+            const userRoleCanDrop = userHasStateRole(userRoleNames, state)
             const isDropDisabled = !userRoleCanDrop || undroppableStates.includes(state.id)
 
             const stateItems = itemsByState.get(state.id) ?? []
@@ -361,10 +345,8 @@ export default function WorkflowTool(props: WorkflowToolProps) {
                               items={stateItems}
                               invalidDocumentIds={invalidDocumentIds}
                               patchingIds={patchingIds}
-                              state={state}
                               states={states}
                               toggleInvalidDocumentId={toggleInvalidDocumentId}
-                              user={user}
                               userList={userList}
                               userRoleCanDrop={userRoleCanDrop}
                             />
