@@ -17,7 +17,8 @@ const QUERY = `*[_type == "workflow.metadata" && (!defined($localeFilter) || cou
       state,
       orderRank,
       "draftDocumentId": "drafts." + documentId,
-      "hasDraft": defined(*[_id == "drafts." + ^.documentId][0]._id),
+      "draftUpdatedAt": *[_id == "drafts." + ^.documentId][0]._updatedAt,
+      "publishedUpdatedAt": *[_id == ^.documentId][0]._updatedAt,
     }
   }{
     ...,

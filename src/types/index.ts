@@ -38,7 +38,8 @@ export type Metadata = SanityDocumentLike & {
   assignees: string[] | null
   documentId: string
   draftDocumentId?: string
-  hasDraft?: boolean
+  draftUpdatedAt?: string | null
+  publishedUpdatedAt?: string | null
   state: string | null
   orderRank: string | null
   locale: string | null

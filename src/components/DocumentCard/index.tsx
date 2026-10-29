@@ -2,15 +2,17 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Preview, useSchema } from 'sanity'
 
 import { DragHandleIcon } from '@sanity/icons/DragHandle'
+import { EditIcon } from '@sanity/icons/Edit'
+import { PublishIcon } from '@sanity/icons/Publish'
 import { Box, Card, Flex, Stack, useTheme_v2 } from '@sanity/ui'
 
+import { getValidationId } from '../../helpers/validationId'
 import UserDisplay from '../UserDisplay'
 import CompleteButton from './CompleteButton'
-import { DraftStatus } from './core/DraftStatus'
-import { PublishedStatus } from './core/PublishedStatus'
 import EditButton from './EditButton'
 import Validate from './Validate'
 import { ValidationStatus } from './ValidationStatus'
+import { VersionStatus } from './VersionStatus'
 
 import type { SchemaType, ValidationMarker } from 'sanity'
 import type { CardTone } from '@sanity/ui'
@@ -40,14 +42,11 @@ export function DocumentCard(props: DocumentCardProps) {
     toggleInvalidDocumentId,
     userList
   } = props
-  const { assignees = [], documentId } = item._metadata ?? {}
+  const { assignees = [], documentId, draftUpdatedAt, publishedUpdatedAt } = item._metadata ?? {}
   const schema = useSchema()
   const state = states.find(s => s.id === item._metadata?.state)
 
-  // Sanity picks the validation target from the id it is given, so validate the draft
-  // when one exists — otherwise the card reports the published document's markers
-  const { draftDocumentId, hasDraft } = item._metadata ?? {}
-  const validationId = hasDraft ? (draftDocumentId ?? `drafts.${documentId}`) : documentId
+  const validationId = getValidationId(item._metadata)
 
   const isDarkMode = useTheme_v2().color._dark
   const defaultCardTone = isDarkMode ? `transparent` : `default`
@@ -168,8 +167,20 @@ export function DocumentCard(props: DocumentCardProps) {
                   )}
                 </Box>
                 {validation.length > 0 ? <ValidationStatus validation={validation} /> : null}
-                <DraftStatus document={item} />
-                <PublishedStatus document={item} />
+                <VersionStatus
+                  updatedAt={draftUpdatedAt}
+                  icon={EditIcon}
+                  tone="caution"
+                  label="Edited"
+                  missingLabel="No unpublished edits"
+                />
+                <VersionStatus
+                  updatedAt={publishedUpdatedAt}
+                  icon={PublishIcon}
+                  tone="positive"
+                  label="Published"
+                  missingLabel="Not published"
+                />
                 <EditButton id={item._id} type={item._type} disabled={!userRoleCanDrop} />
                 {isLastState && states.length <= 3 ? (
                   <CompleteButton documentId={documentId} disabled={!userRoleCanDrop} />
