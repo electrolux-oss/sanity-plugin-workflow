@@ -14,13 +14,17 @@ export default function AvatarGroup(props: AvatarGroupProps) {
   const currentUser = useCurrentUser()
   const { users, max = 4 } = props
 
-  const len = users?.length
-  const { me, visibleUsers } = React.useMemo(() => {
+  const { me, visibleUsers, hiddenCount } = React.useMemo(() => {
+    const currentUserInList = users.find(u => u.id === currentUser?.id)
+    const others = users.filter(u => u.id !== currentUser?.id)
+    const visibleOthers = others.slice(0, currentUserInList ? max - 1 : max)
+
     return {
-      me: currentUser?.id ? users.find(u => u.id === currentUser.id) : undefined,
-      visibleUsers: users.filter(u => u.id !== currentUser?.id).slice(0, max - 1)
+      me: currentUserInList,
+      visibleUsers: visibleOthers,
+      hiddenCount: others.length - visibleOthers.length
     }
-  }, [users, max, currentUser])
+  }, [users, max, currentUser?.id])
 
   if (!users?.length) {
     return null
@@ -34,9 +38,9 @@ export default function AvatarGroup(props: AvatarGroupProps) {
           <UserAvatar user={user} />
         </Box>
       ))}
-      {len > max && (
+      {hiddenCount > 0 && (
         <Box paddingLeft={2}>
-          <Text size={1}>+{len - max}</Text>
+          <Text size={1}>+{hiddenCount}</Text>
         </Box>
       )}
     </Flex>

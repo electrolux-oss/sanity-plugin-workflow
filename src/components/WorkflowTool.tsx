@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useCurrentUser } from 'sanity'
 import { Feedback } from 'sanity-plugin-utils'
 
@@ -13,7 +13,8 @@ import { filterItemsAndSort } from '../helpers/filterItemsAndSort'
 import {
   readStoredLocales,
   shouldShowDocuments,
-  shouldShowFilters
+  shouldShowFilters,
+  writeStoredLocales
 } from '../helpers/localeFilter'
 import { useProjectUsers } from '../hooks/useUsers'
 import { useWorkflowDocuments } from '../hooks/useWorkflowDocuments'
@@ -124,9 +125,13 @@ export default function WorkflowTool(props: WorkflowToolProps) {
     [data, states, user]
   )
 
+  useEffect(() => {
+    writeStoredLocales(LOCALE_FILTER_STORAGE_KEY, selectedLocales)
+  }, [selectedLocales])
+
   const toggleLocales = useCallback((locales: string[]) => {
-    setSelectedLocales(prev => {
-      const updatedLocales = Array.from(
+    setSelectedLocales(prev =>
+      Array.from(
         locales.reduce((set, locale) => {
           if (set.has(locale)) {
             set.delete(locale)
@@ -136,12 +141,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
           return set
         }, new Set(prev))
       )
-
-      // Store in localStorage
-      localStorage.setItem(LOCALE_FILTER_STORAGE_KEY, JSON.stringify(updatedLocales))
-
-      return updatedLocales
-    })
+    )
   }, [])
 
   // Used for the user filter UI

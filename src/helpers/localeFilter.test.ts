@@ -4,7 +4,8 @@ import {
   isLocaleFilterEnabled,
   readStoredLocales,
   shouldShowDocuments,
-  shouldShowFilters
+  shouldShowFilters,
+  writeStoredLocales
 } from './localeFilter'
 
 describe('isLocaleFilterEnabled', () => {
@@ -108,5 +109,34 @@ describe('readStoredLocales', () => {
 
     withStorage(JSON.stringify([1, 2]))
     expect(readStoredLocales(KEY)).toBeUndefined()
+  })
+})
+
+describe('writeStoredLocales', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('stores the selection as JSON', () => {
+    const setItem = vi.fn()
+    vi.stubGlobal('window', { localStorage: { setItem } })
+
+    writeStoredLocales('key', ['en', 'sv'])
+
+    expect(setItem).toHaveBeenCalledWith('key', '["en","sv"]')
+  })
+
+  // Regression: toggling a locale crashed the tool where storage throws, such as some
+  // private browsing modes, although reading was already guarded.
+  it('does not throw when storage is unavailable', () => {
+    vi.stubGlobal('window', {
+      localStorage: {
+        setItem: () => {
+          throw new Error('QuotaExceededError')
+        }
+      }
+    })
+
+    expect(() => writeStoredLocales('key', ['en'])).not.toThrow()
   })
 })

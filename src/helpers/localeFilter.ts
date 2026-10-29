@@ -48,3 +48,11 @@ export function readStoredLocales(storageKey: string): FilterOptions['locales'] 
     return undefined
   }
 }
+
+export function writeStoredLocales(storageKey: string, locales: FilterOptions['locales']): void {
+  try {
+    window.localStorage.setItem(storageKey, JSON.stringify(locales))
+  } catch {
+    // Unavailable or full storage only costs the remembered selection
+  }
+}
