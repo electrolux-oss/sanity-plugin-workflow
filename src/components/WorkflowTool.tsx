@@ -369,8 +369,6 @@ export default function WorkflowTool(props: WorkflowToolProps) {
                               userRoleCanDrop={userRoleCanDrop}
                             />
                           )}
-                          {/* Not required for virtualized lists */}
-                          {/* {provided.placeholder} */}
                         </Card>
                       )}
                     </Droppable>

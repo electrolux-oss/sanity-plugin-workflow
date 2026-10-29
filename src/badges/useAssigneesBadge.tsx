@@ -14,14 +14,10 @@ export function useAssigneesBadge({
   const userList = useProjectUsers({ apiVersion: API_VERSION })
 
   if (loading || error || !metadata) {
-    if (error) {
-      console.error(error)
-    }
-
     return null
   }
 
-  const assignees = metadata?.assignees
+  const { assignees } = metadata
 
   if (!assignees?.length) {
     return {

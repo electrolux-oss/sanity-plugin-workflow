@@ -26,10 +26,6 @@ export function useCompleteWorkflow({
   const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
 
-  if (error) {
-    console.error(error)
-  }
-
   const handle = useCallback(async () => {
     await completeWorkflow(client, toast, id)
   }, [client, toast, id])
@@ -39,7 +35,7 @@ export function useCompleteWorkflow({
   }
 
   const state = states.find(s => s.id === metadata.state)
-  const isLastState = state?.id === states?.[states?.length - 1]?.id
+  const isLastState = state?.id === states[states.length - 1]?.id
 
   return {
     icon: CheckmarkIcon,

@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 import { DEFAULT_CONFIG } from '../constants'
 import { useWorkflowMetadata } from '../hooks/useWorkflowMetadata'
@@ -48,22 +48,20 @@ export function WorkflowProvider(props: WorkflowProviderProps) {
   )
   const removeId = useCallback((id: string) => setIds(current => current.filter(i => i !== id)), [])
   const { data, loading, error } = useWorkflowMetadata(ids)
+  const { states, schemaTypes, filters } = props
+
+  useEffect(() => {
+    if (error) {
+      console.error(error)
+    }
+  }, [error])
+
+  const value = useMemo(
+    () => ({ data, loading, error, ids, addId, removeId, states, schemaTypes, filters }),
+    [data, loading, error, ids, addId, removeId, states, schemaTypes, filters]
+  )
 
   return (
-    <WorkflowContext.Provider
-      value={{
-        data,
-        loading,
-        error,
-        ids,
-        addId,
-        removeId,
-        states: props.states,
-        schemaTypes: props.schemaTypes,
-        filters: props.filters
-      }}
-    >
-      {props.renderDefault(props)}
-    </WorkflowContext.Provider>
+    <WorkflowContext.Provider value={value}>{props.renderDefault(props)}</WorkflowContext.Provider>
   )
 }

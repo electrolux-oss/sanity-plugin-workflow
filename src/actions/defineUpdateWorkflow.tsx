@@ -39,10 +39,6 @@ function useUpdateWorkflow(
     validation?.length > 0 &&
     validation.find(v => v.level === 'error')
 
-  if (error) {
-    console.error(error)
-  }
-
   const onHandle = async (documentId: string, newState: State) => {
     await runWithToast(
       toast,

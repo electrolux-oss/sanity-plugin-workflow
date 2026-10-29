@@ -20,10 +20,6 @@ export function useBeginWorkflow({
   const [beginning, setBeginning] = useState(false)
   const [complete, setComplete] = useState(false)
 
-  if (error) {
-    console.error(error)
-  }
-
   const handle = useCallback(async () => {
     setBeginning(true)
 
@@ -70,7 +66,7 @@ export function useBeginWorkflow({
 
   return {
     icon: SplitVerticalIcon,
-    disabled: metadata || loading || Boolean(error) || beginning || complete,
+    disabled: loading || Boolean(error) || beginning,
     label: beginning ? `Beginning...` : `Begin Workflow`,
     onHandle: handle
   }

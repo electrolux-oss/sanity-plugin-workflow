@@ -71,23 +71,28 @@ export function DocumentCard(props: DocumentCardProps) {
     []
   )
 
-  const cardTone = useMemo(() => {
-    let tone: CardTone = defaultCardTone
+  const hasError = !isValidating && validation.some(v => v.level === 'error')
 
-    if (!userRoleCanDrop) return isDarkMode ? `default` : `transparent`
-    if (!documentId) return tone
-    if (isPatching) tone = isDarkMode ? `default` : `transparent`
-    if (isDragging) tone = `positive`
+  const cardTone = useMemo((): CardTone => {
+    const mutedTone = isDarkMode ? `default` : `transparent`
 
-    if (state?.requireValidation && !isValidating && validation.length > 0) {
-      if (validation.some(v => v.level === 'error')) {
-        tone = `critical`
-      } else {
-        tone = `caution`
-      }
+    if (!userRoleCanDrop) {
+      return mutedTone
     }
 
-    return tone
+    if (!documentId) {
+      return defaultCardTone
+    }
+
+    if (state?.requireValidation && !isValidating && validation.length > 0) {
+      return hasError ? `critical` : `caution`
+    }
+
+    if (isDragging) {
+      return `positive`
+    }
+
+    return isPatching ? mutedTone : defaultCardTone
   }, [
     defaultCardTone,
     userRoleCanDrop,
@@ -97,32 +102,15 @@ export function DocumentCard(props: DocumentCardProps) {
     isDragging,
     isValidating,
     validation,
+    hasError,
     state?.requireValidation
   ])
 
-  // Update validation status
-  // Cannot be done in the above memo because it would set state during render
   useEffect(() => {
-    if (!isValidating && validation.length > 0) {
-      if (validation.some(v => v.level === 'error')) {
-        toggleInvalidDocumentId(documentId, 'ADD')
-      } else {
-        toggleInvalidDocumentId(documentId, 'REMOVE')
-      }
-    } else {
-      toggleInvalidDocumentId(documentId, 'REMOVE')
-    }
-  }, [documentId, isValidating, toggleInvalidDocumentId, validation])
+    toggleInvalidDocumentId(documentId, hasError ? 'ADD' : 'REMOVE')
+  }, [documentId, hasError, toggleInvalidDocumentId])
 
-  const hasError = useMemo(
-    () => (isValidating ? false : validation.some(v => v.level === 'error')),
-    [isValidating, validation]
-  )
-
-  const isLastState = useMemo(
-    () => states?.[states?.length - 1]?.id === item._metadata?.state,
-    [states, item._metadata.state]
-  )
+  const isLastState = states[states.length - 1]?.id === item._metadata?.state
 
   return (
     <>
