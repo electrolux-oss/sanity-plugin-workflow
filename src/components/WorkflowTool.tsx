@@ -124,46 +124,6 @@ export default function WorkflowTool(props: WorkflowToolProps) {
     [data, states, user]
   )
 
-  const handleDragEnd = useCallback(
-    async (result: DropResult) => {
-      // Reset undroppable states
-      setUndroppableStates([])
-      setDraggingFrom(``)
-
-      const { draggableId, source, destination } = result
-
-      if (
-        // No destination?
-        !destination ||
-        // No change in position?
-        (destination.droppableId === source.droppableId && destination.index === source.index)
-      ) {
-        return
-      }
-
-      if (!data.length) {
-        return
-      }
-
-      const newOrder = getDropOrderRank({
-        data,
-        states,
-        draggableId,
-        destinationStateId: destination.droppableId,
-        destinationIndex: destination.index
-      })
-
-      setPatchingIds([...patchingIds, draggableId])
-      toast.push({
-        status: 'info',
-        title: 'Updating document state...'
-      })
-      await move(draggableId, destination, states, newOrder)
-      setPatchingIds((ids: string[]) => ids.filter(id => id !== draggableId))
-    },
-    [data, patchingIds, toast, move, states]
-  )
-
   const toggleLocales = useCallback((locales: string[]) => {
     setSelectedLocales(prev => {
       const updatedLocales = Array.from(
@@ -240,6 +200,47 @@ export default function WorkflowTool(props: WorkflowToolProps) {
 
     return map
   }, [data, states, selectedUserIds, selectedSchemaTypes])
+
+  const handleDragEnd = useCallback(
+    async (result: DropResult) => {
+      // Reset undroppable states
+      setUndroppableStates([])
+      setDraggingFrom(``)
+
+      const { draggableId, source, destination } = result
+
+      if (
+        // No destination?
+        !destination ||
+        // No change in position?
+        (destination.droppableId === source.droppableId && destination.index === source.index)
+      ) {
+        return
+      }
+
+      if (!data.length) {
+        return
+      }
+
+      const newOrder = getDropOrderRank({
+        data,
+        columnItems: itemsByState.get(destination.droppableId) ?? [],
+        states,
+        draggableId,
+        destinationStateId: destination.droppableId,
+        destinationIndex: destination.index
+      })
+
+      setPatchingIds(ids => [...ids, draggableId])
+      toast.push({
+        status: 'info',
+        title: 'Updating document state...'
+      })
+      await move(draggableId, destination, states, newOrder)
+      setPatchingIds((ids: string[]) => ids.filter(id => id !== draggableId))
+    },
+    [data, itemsByState, toast, move, states]
+  )
 
   const Clone: DraggableChildrenFn = useCallback(
     (provided, snapshot, rubric) => {

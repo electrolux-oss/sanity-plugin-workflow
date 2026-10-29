@@ -1,11 +1,10 @@
 import { LexoRank } from 'lexorank'
 
-import { filterItemsAndSort } from './filterItemsAndSort'
-
 import type { SanityDocumentWithMetadata, State } from '../types'
 
 type DropOrderRankOptions = {
   data: SanityDocumentWithMetadata[]
+  columnItems: SanityDocumentWithMetadata[]
   states: State[]
   draggableId: string
   destinationStateId: string
@@ -14,17 +13,20 @@ type DropOrderRankOptions = {
 
 /**
  * The orderRank for a document dropped at `destinationIndex` in a state column.
+ * `columnItems` must be the destination column exactly as rendered, filters included,
+ * because that is the list dnd's index points into.
  * `data` must be sorted by orderRank, as the workflow query returns it.
  */
 export function getDropOrderRank({
   data,
+  columnItems,
   states,
   draggableId,
   destinationStateId,
   destinationIndex
 }: DropOrderRankOptions): string {
   // dnd reports the destination index as if the dragged item were already removed from the list
-  const destinationStateItems = filterItemsAndSort(data, destinationStateId, [], null).filter(
+  const destinationStateItems = columnItems.filter(
     item => item._metadata?.documentId !== draggableId
   )
   const destinationStateIndex = states.findIndex(s => s.id === destinationStateId)
