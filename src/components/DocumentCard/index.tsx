@@ -7,6 +7,7 @@ import { PublishIcon } from '@sanity/icons/Publish'
 import { Box, Card, Flex, Stack, useTheme_v2 } from '@sanity/ui'
 
 import { getValidationId } from '../../helpers/validationId'
+import { useCanAssignUsers } from '../../hooks/useUsers'
 import UserDisplay from '../UserDisplay'
 import CompleteButton from './CompleteButton'
 import EditButton from './EditButton'
@@ -111,6 +112,7 @@ export function DocumentCard(props: DocumentCardProps) {
   }, [documentId, hasError, toggleInvalidDocumentId])
 
   const isLastState = states[states.length - 1]?.id === item._metadata?.state
+  const canAssign = useCanAssignUsers(item._metadata?.state, item._metadata?.locale)
 
   return (
     <>
@@ -151,7 +153,7 @@ export function DocumentCard(props: DocumentCardProps) {
                       assignees={assignees}
                       documentId={documentId}
                       locale={item._metadata.locale}
-                      disabled={!userRoleCanDrop}
+                      disabled={!canAssign}
                     />
                   )}
                 </Box>
