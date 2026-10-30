@@ -41,7 +41,7 @@ export default function UserDisplay(props: UserDisplayProps) {
       }
       portal
       open={isOpen}
-      placement="right-start"
+      placement="right"
       fallbackPlacements={['left-start']}
     >
       {!assignees || assignees.length === 0 ? (
