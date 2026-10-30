@@ -29,7 +29,7 @@ export default function CompleteButton(props: CompleteButtonProps) {
       portal
       content={
         <Box padding={2}>
-          <Text size={1}>Remove this document from Workflow</Text>
+          <Text size={1}>Ends the workflow for this document.</Text>
         </Box>
       }
     >

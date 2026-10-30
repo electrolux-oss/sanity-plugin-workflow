@@ -42,7 +42,7 @@ export function useCompleteWorkflow({
     disabled: loading || Boolean(error) || !isLastState,
     label: `Complete Workflow`,
     title: isLastState
-      ? `Removes the document from the Workflow process`
+      ? `Ends the workflow for this document.`
       : `Cannot remove from workflow until in the last state`,
     onHandle: async () => {
       await handle()
