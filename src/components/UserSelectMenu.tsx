@@ -5,7 +5,7 @@ import { AddCircleIcon } from '@sanity/icons/AddCircle'
 import { CheckmarkIcon } from '@sanity/icons/Checkmark'
 import { RemoveCircleIcon } from '@sanity/icons/RemoveCircle'
 import { RestoreIcon } from '@sanity/icons/Restore'
-import { Badge, Box, Button, Flex, Stack, Text, TextInput } from '@sanity/ui'
+import { Badge, Box, Button, Card, Flex, Stack, Text, TextInput } from '@sanity/ui'
 
 import { searchUsers } from '../helpers/users'
 
@@ -54,12 +54,15 @@ type UserSelectMenuProps = {
 
 /**
  * Built from plain buttons rather than MenuItems: a Menu focuses whichever item is hovered,
- * which scrolls the list as the pointer moves and pulls focus out of the search field.
+ * which scrolls the list as the pointer moves and pulls focus out of the search field. User
+ * rows reuse the Menu's colours instead: pressed when assigned, selected while hovered or
+ * focused.
  */
 export default function UserSelectMenu(props: UserSelectMenuProps) {
   const { value, userList, onAdd, onRemove, onClear } = props
   const labels = { ...LABELS, ...props.labels }
   const [query, setQuery] = useState('')
+  const [activeUserId, setActiveUserId] = useState<string | null>(null)
 
   const me = userList.find(user => user.isCurrentUser)
   const meSelected = Boolean(me && value.includes(me.id))
@@ -137,11 +140,17 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
             const selected = value.includes(user.id)
 
             return (
-              <Button
+              <Card
                 key={user.id}
-                mode="bleed"
+                as="button"
+                radius={2}
                 padding={3}
-                selected={selected}
+                pressed={selected}
+                selected={activeUserId === user.id}
+                onMouseEnter={() => setActiveUserId(user.id)}
+                onMouseLeave={() => setActiveUserId(null)}
+                onFocus={() => setActiveUserId(user.id)}
+                onBlur={() => setActiveUserId(null)}
                 onClick={() => (selected ? onRemove(user.id) : onAdd(user.id))}
               >
                 <Flex align="center">
@@ -164,7 +173,7 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
                     </Box>
                   ) : null}
                 </Flex>
-              </Button>
+              </Card>
             )
           })}
         </Stack>
