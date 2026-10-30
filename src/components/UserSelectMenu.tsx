@@ -29,10 +29,11 @@ type UserSelectMenuProps = {
   onRemove: (userId: string) => void
   onClear: () => void
   labels?: Partial<typeof LABELS>
+  width?: number | string
 }
 
 export default function UserSelectMenu(props: UserSelectMenuProps) {
-  const { value, userList, onAdd, onRemove, onClear } = props
+  const { value, userList, onAdd, onRemove, onClear, width = MENU_WIDTH } = props
   const labels = { ...LABELS, ...props.labels }
   const [query, setQuery] = useState('')
 
@@ -41,7 +42,7 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
   const results = useMemo(() => searchUsers(userList, query), [userList, query])
 
   return (
-    <Menu style={{ width: MENU_WIDTH }}>
+    <Menu style={{ width }}>
       {meSelected ? (
         <MenuItem
           tone="caution"

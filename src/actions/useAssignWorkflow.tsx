@@ -20,12 +20,19 @@ export function useAssignWorkflow({ id }: DocumentActionProps): DocumentActionDe
     disabled: loading || Boolean(error),
     label: `Assign`,
     dialog: isDialogOpen && {
-      type: 'popover',
+      type: 'dialog',
+      header: 'Assign users',
+      width: 'small',
       onClose: () => {
         setDialogOpen(false)
       },
       content: (
-        <UserAssignment assignees={metadata.assignees} documentId={id} locale={metadata.locale} />
+        <UserAssignment
+          assignees={metadata.assignees}
+          documentId={id}
+          locale={metadata.locale}
+          menuWidth="100%"
+        />
       )
     },
     onHandle: () => {
