@@ -22,6 +22,12 @@ const LABELS = {
 }
 
 const MENU_WIDTH = 320
+const ACTION_BUTTON_PROPS = {
+  mode: 'bleed',
+  justify: 'flex-start',
+  fontSize: 1,
+  padding: 3
+} as const
 const USER_LIST_MAX_HEIGHT = 360
 
 /** Moves focus between the search field and the enabled buttons with the arrow keys. */
@@ -74,6 +80,14 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
 
   const me = userList.find(user => user.isCurrentUser)
   const meSelected = Boolean(me && value.includes(me.id))
+  const meAction = meSelected
+    ? ({
+        tone: 'caution',
+        icon: RemoveCircleIcon,
+        text: labels.removeMe,
+        onClick: onRemove
+      } as const)
+    : ({ tone: 'positive', icon: AddCircleIcon, text: labels.addMe, onClick: onAdd } as const)
   const results = useMemo(() => searchUsers(userList, query), [userList, query])
 
   // Hold the height of the unfiltered list while searching: a popover that shrinks with its
@@ -89,35 +103,16 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
 
   return (
     <Stack padding={1} gap={1} style={{ width: MENU_WIDTH }} onKeyDown={handleArrowKeys}>
-      {meSelected ? (
-        <Button
-          mode="bleed"
-          justify="flex-start"
-          fontSize={1}
-          padding={3}
-          tone="caution"
-          icon={RemoveCircleIcon}
-          text={labels.removeMe}
-          onClick={() => me && onRemove(me.id)}
-        />
-      ) : (
-        <Button
-          mode="bleed"
-          justify="flex-start"
-          fontSize={1}
-          padding={3}
-          tone="positive"
-          icon={AddCircleIcon}
-          text={labels.addMe}
-          disabled={!me}
-          onClick={() => me && onAdd(me.id)}
-        />
-      )}
       <Button
-        mode="bleed"
-        justify="flex-start"
-        fontSize={1}
-        padding={3}
+        {...ACTION_BUTTON_PROPS}
+        tone={meAction.tone}
+        icon={meAction.icon}
+        text={meAction.text}
+        disabled={!me}
+        onClick={() => me && meAction.onClick(me.id)}
+      />
+      <Button
+        {...ACTION_BUTTON_PROPS}
         tone="critical"
         icon={RestoreIcon}
         text={labels.clear}
