@@ -36,9 +36,15 @@ export default function UserDisplay(props: UserDisplayProps) {
   return (
     <Popover
       ref={setPopover}
-      content={<UserAssignment assignees={assignees} documentId={documentId} locale={locale} />}
+      content={
+        isOpen ? (
+          <UserAssignment assignees={assignees} documentId={documentId} locale={locale} />
+        ) : null
+      }
       portal
       open={isOpen}
+      placement="right-start"
+      fallbackPlacements={['left-start']}
     >
       {!assignees || assignees.length === 0 ? (
         <Button

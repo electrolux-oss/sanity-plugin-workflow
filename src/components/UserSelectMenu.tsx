@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { UserAvatar } from 'sanity'
 
 import { AddCircleIcon } from '@sanity/icons/AddCircle'
@@ -63,6 +63,14 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
   const labels = { ...LABELS, ...props.labels }
   const [query, setQuery] = useState('')
   const [activeUserId, setActiveUserId] = useState<string | null>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
+
+  // Focus once the popover has been laid out; autoFocus fires before that and is lost
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => searchRef.current?.focus())
+
+    return () => cancelAnimationFrame(frame)
+  }, [])
 
   const me = userList.find(user => user.isCurrentUser)
   const meSelected = Boolean(me && value.includes(me.id))
@@ -118,7 +126,7 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
       />
       <Box padding={1}>
         <TextInput
-          autoFocus
+          ref={searchRef}
           value={query}
           placeholder={labels.searchPlaceholder}
           onChange={event => setQuery(event.currentTarget.value)}
