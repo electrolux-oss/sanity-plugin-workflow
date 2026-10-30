@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 import { useClient } from 'sanity'
 
-import { ChevronDownIcon } from '@sanity/icons/ChevronDown'
 import { WarningOutlineIcon } from '@sanity/icons/WarningOutline'
 import { Box, Button, Dialog, Flex, Text } from '@sanity/ui'
 import { Menu, MenuButton, MenuDivider, MenuItem } from '@sanity/ui/menu'
@@ -12,6 +11,7 @@ import { API_VERSION } from '../constants'
 import { countAffectedDocuments } from '../helpers/dataIssues'
 import { rerankStates } from '../helpers/ranking'
 import { runWithToast } from '../helpers/runWithToast'
+import FilterBarButtonContent from './FilterBarButtonContent'
 
 import type { ToastMessages } from '../helpers/runWithToast'
 import type { DataIssuesResult } from '../hooks/useDataIssues'
@@ -42,6 +42,7 @@ export default function DataIssuesMenu(props: DataIssuesMenuProps) {
   const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
   const [confirmation, setConfirmation] = useState<Confirmation>()
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const runRepair = useCallback(
     (write: () => Promise<unknown>, messages: ToastMessages) => {
@@ -164,6 +165,7 @@ export default function DataIssuesMenu(props: DataIssuesMenuProps) {
     <>
       <Tooltip
         portal
+        disabled={menuOpen}
         content={
           <Box padding={2}>
             <Text size={1}>{tooltip}</Text>
@@ -174,16 +176,21 @@ export default function DataIssuesMenu(props: DataIssuesMenuProps) {
         <Box>
           <MenuButton
             id="workflow-data-issues"
+            onOpen={() => setMenuOpen(true)}
+            onClose={() => setMenuOpen(false)}
             button={
               <Button
                 mode="ghost"
                 tone={affectedCount > 0 ? 'caution' : 'default'}
-                icon={WarningOutlineIcon}
-                iconRight={ChevronDownIcon}
-                text={affectedCount > 0 ? `Data issues (${affectedCount})` : 'Data issues'}
                 disabled={affectedCount === 0}
                 style={{ pointerEvents: affectedCount > 0 ? 'auto' : 'none' }}
-              />
+              >
+                <FilterBarButtonContent
+                  text={affectedCount > 0 ? `Data issues (${affectedCount})` : 'Data issues'}
+                  icon={WarningOutlineIcon}
+                  dropdown
+                />
+              </Button>
             }
             popover={{ portal: true, placement: 'bottom-end' }}
             menu={

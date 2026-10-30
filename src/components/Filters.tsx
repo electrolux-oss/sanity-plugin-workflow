@@ -1,14 +1,14 @@
 import { memo, useCallback, useMemo } from 'react'
 import { UserAvatar, useSchema } from 'sanity'
 
-import { ChevronDownIcon } from '@sanity/icons/ChevronDown'
 import { EarthAmericasIcon } from '@sanity/icons/EarthAmericas'
 import { RestoreIcon } from '@sanity/icons/Restore'
 import { UserIcon } from '@sanity/icons/User'
-import { AvatarStack, Button, Flex, Text } from '@sanity/ui'
+import { AvatarStack, Button, Flex } from '@sanity/ui'
 import { Menu, MenuButton } from '@sanity/ui/menu'
 
 import { getLanguageTitle } from '../helpers/localeFilter'
+import FilterBarButtonContent from './FilterBarButtonContent'
 import MultiSelectMenu from './MultiSelectMenu'
 import UserSelectMenu from './UserSelectMenu'
 
@@ -52,26 +52,24 @@ const AssigneeFilterButton = memo(function AssigneeFilterButton({
   return (
     <MenuButton
       button={
-        <Button mode="ghost">
-          <Flex align="center" gap={3}>
-            {selectedUsers.length > 0 ? (
-              <AvatarStack maxLength={3} size={0}>
-                {selectedUsers.map(user => (
-                  <UserAvatar key={user.id} user={user} size={0} />
-                ))}
-              </AvatarStack>
-            ) : (
-              <Text size={1}>
-                <UserIcon />
-              </Text>
-            )}
-            <Text size={1} weight="medium">
-              Assignees
-            </Text>
-            <Text size={1}>
-              <ChevronDownIcon />
-            </Text>
-          </Flex>
+        <Button
+          mode="ghost"
+          disabled={uniqueAssignedUsers.length === 0 && selectedUserIds.length === 0}
+        >
+          <FilterBarButtonContent
+            text="Assignees"
+            icon={UserIcon}
+            media={
+              selectedUsers.length > 0 && (
+                <AvatarStack maxLength={3} size={0}>
+                  {selectedUsers.map(user => (
+                    <UserAvatar key={user.id} user={user} size={0} />
+                  ))}
+                </AvatarStack>
+              )
+            }
+            dropdown
+          />
         </Button>
       }
       id="user-filters"
@@ -134,13 +132,15 @@ const LocaleFilterButton = memo(function LocaleFilterButton({
   return (
     <MenuButton
       button={
-        <Button
-          mode="ghost"
-          text={selectedLocales.length > 0 ? `Languages (${selectedLocales.length})` : 'Languages'}
-          icon={EarthAmericasIcon}
-          iconRight={ChevronDownIcon}
-          disabled={localeFilterDisabled}
-        />
+        <Button mode="ghost" disabled={localeFilterDisabled}>
+          <FilterBarButtonContent
+            text={
+              selectedLocales.length > 0 ? `Languages (${selectedLocales.length})` : 'Languages'
+            }
+            icon={EarthAmericasIcon}
+            dropdown
+          />
+        </Button>
       }
       popover={{ portal: true, placement: 'bottom-start', animate: true }}
       id="locale-filters"
@@ -183,14 +183,12 @@ const SchemaTypeButtons = memo(function SchemaTypeButtons({
 
         return (
           <Button
-            padding={3}
-            fontSize={1}
             key={typeName}
-            text={schemaType?.title ?? typeName}
-            icon={schemaType?.icon ?? undefined}
             mode={selectedSchemaTypes.includes(typeName) ? `default` : `ghost`}
             onClick={() => toggleSelectedSchemaType(typeName)}
-          />
+          >
+            <FilterBarButtonContent text={schemaType.title ?? typeName} icon={schemaType.icon} />
+          </Button>
         )
       })}
     </Flex>
@@ -241,15 +239,13 @@ function Filters(props: FiltersProps) {
   return (
     <Flex align="center" flex={1}>
       <Flex align="center" gap={4} flex={1}>
-        {(uniqueAssignedUsers.length > 0 || selectedUserIds.length > 0) && (
-          <AssigneeFilterButton
-            selectedUserIds={selectedUserIds}
-            onAddUserToFilter={onAddUserToFilter}
-            onRemoveUserFromFilter={onRemoveUserFromFilter}
-            onClearUserFilter={onClearUserFilter}
-            uniqueAssignedUsers={uniqueAssignedUsers}
-          />
-        )}
+        <AssigneeFilterButton
+          selectedUserIds={selectedUserIds}
+          onAddUserToFilter={onAddUserToFilter}
+          onRemoveUserFromFilter={onRemoveUserFromFilter}
+          onClearUserFilter={onClearUserFilter}
+          uniqueAssignedUsers={uniqueAssignedUsers}
+        />
         {userLocales && (
           <LocaleFilterButton
             userLocales={userLocales}
