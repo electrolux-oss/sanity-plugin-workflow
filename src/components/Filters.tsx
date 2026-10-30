@@ -8,7 +8,7 @@ import { AvatarStack, Button, Flex } from '@sanity/ui'
 import { Menu, MenuButton } from '@sanity/ui/menu'
 
 import { getLanguageTitle } from '../helpers/localeFilter'
-import FilterBarButtonContent from './FilterBarButtonContent'
+import FilterBarButtonContent, { FILTER_BAR_BUTTON_PADDING } from './FilterBarButtonContent'
 import MultiSelectMenu from './MultiSelectMenu'
 import UserSelectMenu from './UserSelectMenu'
 
@@ -53,6 +53,7 @@ const AssigneeFilterButton = memo(function AssigneeFilterButton({
     <MenuButton
       button={
         <Button
+          {...FILTER_BAR_BUTTON_PADDING}
           mode="ghost"
           disabled={uniqueAssignedUsers.length === 0 && selectedUserIds.length === 0}
         >
@@ -132,7 +133,7 @@ const LocaleFilterButton = memo(function LocaleFilterButton({
   return (
     <MenuButton
       button={
-        <Button mode="ghost" disabled={localeFilterDisabled}>
+        <Button {...FILTER_BAR_BUTTON_PADDING} mode="ghost" disabled={localeFilterDisabled}>
           <FilterBarButtonContent
             text={
               selectedLocales.length > 0 ? `Languages (${selectedLocales.length})` : 'Languages'
@@ -184,6 +185,7 @@ const SchemaTypeButtons = memo(function SchemaTypeButtons({
         return (
           <Button
             key={typeName}
+            {...FILTER_BAR_BUTTON_PADDING}
             mode={selectedSchemaTypes.includes(typeName) ? `default` : `ghost`}
             onClick={() => toggleSelectedSchemaType(typeName)}
           >

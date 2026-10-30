@@ -7,6 +7,8 @@ import type { ComponentType, ReactNode } from 'react'
 
 type IconProp = ReactNode | ComponentType
 
+export const FILTER_BAR_BUTTON_PADDING = { paddingX: 3, paddingY: 2 } as const
+
 type FilterBarButtonContentProps = {
   text: string
   icon?: IconProp
