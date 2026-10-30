@@ -3,7 +3,7 @@ import { useClient, useCurrentUser } from 'sanity'
 
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
-import { canAssignUsers, getAssignableUsers } from '../helpers/users'
+import { getAssignableUsers } from '../helpers/users'
 
 import type { SanityClient } from 'sanity'
 
@@ -172,19 +172,4 @@ export function useAssignableUsers(
     () => getAssignableUsers(users, { states, filters, locale, assignees }),
     [users, states, filters, locale, assignees]
   )
-}
-
-/** Whether the current user may change the assignees of a document in `stateId` and `locale`. */
-export function useCanAssignUsers(
-  stateId: string | null | undefined,
-  locale: string | null | undefined
-): boolean {
-  const currentUser = useCurrentUser()
-  const { states, filters } = useWorkflowContext()
-
-  return canAssignUsers(currentUser, {
-    state: states.find(state => state.id === stateId),
-    filters,
-    locale
-  })
 }

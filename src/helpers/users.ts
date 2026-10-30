@@ -1,7 +1,5 @@
 import type { CurrentUser } from 'sanity'
 
-import { userHasStateRole } from './permissions'
-
 import type { UserExtended } from '../hooks/useUsers'
 import type { State, WorkflowConfig } from '../types'
 
@@ -45,15 +43,6 @@ function toCurrentUser(user: UserExtended): CurrentUser {
   }
 }
 
-/** Whether `user` works in `locale`, according to the `filters` config. Unrestricted without either. */
-export function worksInLocale(
-  user: CurrentUser,
-  filters: WorkflowConfig['filters'],
-  locale: string | null | undefined
-): boolean {
-  return !filters || !locale || (filters(user)?.locales ?? []).includes(locale)
-}
-
 type AssignableUsersOptions = {
   states: State[]
   filters: WorkflowConfig['filters']
@@ -72,35 +61,12 @@ export function getAssignableUsers(
 ): UserExtended[] {
   const eligibleIds = new Set(
     filterUsersByStateRoles(users, states)
-      .filter(user => worksInLocale(toCurrentUser(user), filters, locale))
+      .filter(
+        user =>
+          !filters || !locale || (filters(toCurrentUser(user))?.locales ?? []).includes(locale)
+      )
       .map(user => user.id)
   )
 
   return users.filter(user => eligibleIds.has(user.id) || assignees.includes(user.id))
-}
-
-type CanAssignOptions = {
-  state: State | undefined
-  filters: WorkflowConfig['filters']
-  locale: string | null | undefined
-}
-
-/**
- * Whether `user` may change a document's assignees: they hold a role for the State the document
- * is in and work in its locale.
- */
-export function canAssignUsers(
-  user: CurrentUser | null,
-  { state, filters, locale }: CanAssignOptions
-): boolean {
-  if (!user || !state) {
-    return false
-  }
-
-  return (
-    userHasStateRole(
-      user.roles.map(role => role.name),
-      state
-    ) && worksInLocale(user, filters, locale)
-  )
 }

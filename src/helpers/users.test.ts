@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { canAssignUsers, filterUsersByStateRoles, getAssignableUsers, searchUsers } from './users'
-
-import type { CurrentUser } from 'sanity'
+import { filterUsersByStateRoles, getAssignableUsers, searchUsers } from './users'
 
 import type { UserExtended } from '../hooks/useUsers'
 import type { State, WorkflowConfig } from '../types'
@@ -73,25 +71,27 @@ describe('filterUsersByStateRoles', () => {
   })
 })
 
-const states: State[] = [{ id: 'wip', title: 'WIP', roles: ['km---contributor', 'administrator'] }]
-const contributorRole = { name: 'km---contributor', title: 'Contributor' }
-const swedish = user('sv', { roles: [contributorRole, { name: 'locale-sv-se', title: 'sv' }] })
-const german = user('de', { roles: [contributorRole, { name: 'locale-de-de', title: 'de' }] })
-const admin = user('admin', { roles: [{ name: 'administrator', title: 'Admin' }] })
-const outsider = user('out', { roles: [{ name: 'viewer', title: 'Viewer' }] })
-const users = [swedish, german, admin, outsider]
-
-// Mirrors how KM derives locales from locale-* roles, with admins seeing every locale
-const localeByRole: Record<string, string[]> = {
-  'locale-sv-se': ['sv-SE'],
-  'locale-de-de': ['de-DE'],
-  administrator: ['sv-SE', 'de-DE']
-}
-const filters: WorkflowConfig['filters'] = currentUser => ({
-  locales: (currentUser?.roles ?? []).flatMap(role => localeByRole[role.name] ?? [])
-})
-
 describe('getAssignableUsers', () => {
+  const states: State[] = [
+    { id: 'wip', title: 'WIP', roles: ['km---contributor', 'administrator'] }
+  ]
+  const contributorRole = { name: 'km---contributor', title: 'Contributor' }
+  const swedish = user('sv', { roles: [contributorRole, { name: 'locale-sv-se', title: 'sv' }] })
+  const german = user('de', { roles: [contributorRole, { name: 'locale-de-de', title: 'de' }] })
+  const admin = user('admin', { roles: [{ name: 'administrator', title: 'Admin' }] })
+  const outsider = user('out', { roles: [{ name: 'viewer', title: 'Viewer' }] })
+  const users = [swedish, german, admin, outsider]
+
+  // Mirrors how KM derives locales from locale-* roles, with admins seeing every locale
+  const localeByRole: Record<string, string[]> = {
+    'locale-sv-se': ['sv-SE'],
+    'locale-de-de': ['de-DE'],
+    administrator: ['sv-SE', 'de-DE']
+  }
+  const filters: WorkflowConfig['filters'] = currentUser => ({
+    locales: (currentUser?.roles ?? []).flatMap(role => localeByRole[role.name] ?? [])
+  })
+
   function assignable(options: Partial<Parameters<typeof getAssignableUsers>[1]> = {}) {
     return getAssignableUsers(users, {
       states,
@@ -116,37 +116,5 @@ describe('getAssignableUsers', () => {
 
   it('keeps current assignees so they can be removed', () => {
     expect(assignable({ assignees: ['out'] })).toEqual(['sv', 'admin', 'out'])
-  })
-})
-
-describe('canAssignUsers', () => {
-  function asCurrentUser({ id, displayName, email, roles = [] }: UserExtended): CurrentUser {
-    return { id, name: displayName, email, role: '', roles }
-  }
-
-  const [wip] = states
-
-  it('lets users with a role for the current State and its locale assign', () => {
-    expect(canAssignUsers(asCurrentUser(swedish), { state: wip, filters, locale: 'sv-SE' })).toBe(
-      true
-    )
-  })
-
-  it('stops users without a role for the current State', () => {
-    expect(canAssignUsers(asCurrentUser(outsider), { state: wip, filters, locale: null })).toBe(
-      false
-    )
-  })
-
-  it('stops users who do not work in the document locale', () => {
-    expect(canAssignUsers(asCurrentUser(german), { state: wip, filters, locale: 'sv-SE' })).toBe(
-      false
-    )
-  })
-
-  it('stops everyone while the document is not in a known State', () => {
-    expect(
-      canAssignUsers(asCurrentUser(admin), { state: undefined, filters, locale: 'sv-SE' })
-    ).toBe(false)
   })
 })

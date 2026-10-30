@@ -14,11 +14,10 @@ type UserDisplayProps = {
   assignees: string[] | null
   documentId: string
   locale: string | null
-  disabled?: boolean
 }
 
 export default function UserDisplay(props: UserDisplayProps) {
-  const { assignees, userList, documentId, locale, disabled = false } = props
+  const { assignees, userList, documentId, locale } = props
 
   const [button, setButton] = useState<HTMLButtonElement | null>(null)
   const [popover, setPopover] = useState<HTMLDivElement | null>(null)
@@ -52,11 +51,10 @@ export default function UserDisplay(props: UserDisplayProps) {
           text="Assign"
           tone="positive"
           mode="ghost"
-          disabled={disabled}
         />
       ) : (
         <Grid>
-          <Button ref={setButton} onClick={toggle} padding={0} mode="bleed" disabled={disabled}>
+          <Button ref={setButton} onClick={toggle} padding={0} mode="bleed">
             <AvatarGroup users={assignedUsers} />
           </Button>
         </Grid>
