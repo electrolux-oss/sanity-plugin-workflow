@@ -39,6 +39,8 @@ export default function UserDisplay(props: UserDisplayProps) {
       content={<UserAssignment assignees={assignees} documentId={documentId} locale={locale} />}
       portal
       open={isOpen}
+      placement="top"
+      fallbackPlacements={['bottom']}
     >
       {!assignees || assignees.length === 0 ? (
         <Button
