@@ -20,6 +20,12 @@ export default function UserAssignment(props: UserAssignmentProps) {
   const { documentId, locale } = props
   const assignees = props.assignees ?? NO_ASSIGNEES
   const userList = useAssignableUsers(locale, assignees)
+  const [selected, setSelected] = React.useState(assignees)
+
+  // Show changes straight away instead of waiting for the listener to echo the patch back
+  React.useEffect(() => {
+    setSelected(assignees)
+  }, [assignees])
   const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
 
@@ -39,14 +45,16 @@ export default function UserAssignment(props: UserAssignmentProps) {
   )
 
   const addAssignee = React.useCallback(
-    (userId: string) => {
+    async (userId: string) => {
       const user = findUser(userId)
 
       if (!user) {
         return
       }
 
-      runWithToast(
+      setSelected(current => [...current, userId])
+
+      const added = await runWithToast(
         toast,
         () =>
           client
@@ -56,19 +64,25 @@ export default function UserAssignment(props: UserAssignmentProps) {
             .commit(),
         { success: `Added ${user.displayName} to assignees`, error: 'Failed to add assignee' }
       )
+
+      if (!added) {
+        setSelected(current => current.filter(id => id !== userId))
+      }
     },
     [client, toast, metadataId, findUser]
   )
 
   const removeAssignee = React.useCallback(
-    (userId: string) => {
+    async (userId: string) => {
       const user = findUser(userId)
 
       if (!user) {
         return
       }
 
-      runWithToast(
+      setSelected(current => current.filter(id => id !== userId))
+
+      const removed = await runWithToast(
         toast,
         () =>
           client
@@ -80,20 +94,32 @@ export default function UserAssignment(props: UserAssignmentProps) {
           error: 'Failed to remove assignee'
         }
       )
+
+      if (!removed) {
+        setSelected(current => [...current, userId])
+      }
     },
     [client, toast, metadataId, findUser]
   )
 
-  const clearAssignees = React.useCallback(() => {
-    runWithToast(toast, () => client.patch(metadataId).unset([`assignees`]).commit(), {
-      success: 'Cleared assignees',
-      error: 'Failed to clear assignees'
-    })
-  }, [client, toast, metadataId])
+  const clearAssignees = React.useCallback(async () => {
+    const previous = selected
+    setSelected(NO_ASSIGNEES)
+
+    const cleared = await runWithToast(
+      toast,
+      () => client.patch(metadataId).unset([`assignees`]).commit(),
+      { success: 'Cleared assignees', error: 'Failed to clear assignees' }
+    )
+
+    if (!cleared) {
+      setSelected(previous)
+    }
+  }, [client, toast, metadataId, selected])
 
   return (
     <UserSelectMenu
-      value={assignees}
+      value={selected}
       userList={userList}
       onAdd={addAssignee}
       onClear={clearAssignees}
