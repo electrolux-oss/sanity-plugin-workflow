@@ -34,6 +34,17 @@ State permissions now behave the same in document actions and on the board:
 - `requireAssignment` only gates moving documents into a State. The board previously also stopped
   unassigned users from dragging documents out of it.
 
+New in v5:
+
+- A "Data issues" menu at the right of the board's filter bar replaces the floating repair panel.
+  It lists repairs for broken workflow metadata, asks before fixing order or deleting orphaned
+  metadata, and is disabled when there is nothing to fix. The new `dataIssueRoles` option limits
+  who sees it.
+- The new `languages` option sets the names shown in the language filter, in the same
+  `{ id, title }` shape as `supportedLanguages` in `@sanity/document-internationalization`.
+- The language and assignee filters are searchable dropdowns that stay open while picking several
+  options.
+
 Requirements:
 
 | | Requirement |
