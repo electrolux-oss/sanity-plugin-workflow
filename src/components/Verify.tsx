@@ -188,15 +188,15 @@ export default function Verify(props: VerifyProps) {
 
   return (
     <FloatingCard>
-      {documentsWithoutValidMetadataIds.length > 0 ? (
+      {documentsWithoutValidMetadataIds.length > 0 && (
         <Button
           tone="caution"
           mode="ghost"
           onClick={() => correctDocuments(documentsWithoutValidMetadataIds)}
           text={`Correct ${plural(documentsWithoutValidMetadataIds.length, 'Document State')}`}
         />
-      ) : null}
-      {documentsWithInvalidUserIds.length > 0 ? (
+      )}
+      {documentsWithInvalidUserIds.length > 0 && (
         <Button
           tone="caution"
           mode="ghost"
@@ -206,23 +206,23 @@ export default function Verify(props: VerifyProps) {
             'Document'
           )}`}
         />
-      ) : null}
-      {documentsWithOrderIssueIds.length > 0 ? (
+      )}
+      {documentsWithOrderIssueIds.length > 0 && (
         <Button
           tone="caution"
           mode="ghost"
           onClick={() => fixOrderOfDocuments(documentsWithOrderIssueIds)}
           text={`Fix Order for ${plural(documentsWithOrderIssueIds.length, 'Document')}`}
         />
-      ) : null}
-      {orphanedMetadataDocumentIds.length > 0 ? (
+      )}
+      {orphanedMetadataDocumentIds.length > 0 && (
         <Button
           text="Cleanup orphaned metadata"
           onClick={handleOrphans}
           tone="caution"
           mode="ghost"
         />
-      ) : null}
+      )}
     </FloatingCard>
   )
 }

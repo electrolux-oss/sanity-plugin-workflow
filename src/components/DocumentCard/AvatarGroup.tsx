@@ -32,7 +32,7 @@ export default function AvatarGroup(props: AvatarGroupProps) {
 
   return (
     <Flex align="center" gap={1}>
-      {me ? <UserAvatar user={me} /> : null}
+      {me && <UserAvatar user={me} />}
       {visibleUsers.map(user => (
         <Box key={user.id} style={{ marginRight: -8 }}>
           <UserAvatar user={user} />

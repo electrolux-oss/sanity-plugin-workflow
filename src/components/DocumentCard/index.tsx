@@ -114,9 +114,9 @@ export function DocumentCard(props: DocumentCardProps) {
 
   return (
     <>
-      {state?.requireValidation ? (
+      {state?.requireValidation && (
         <Validate documentId={validationId} type={item._type} onChange={handleValidation} />
-      ) : null}
+      )}
       <Box paddingBottom={3} paddingX={3}>
         <Card radius={2} shadow={isDragging ? 3 : 1} tone={cardTone}>
           <Stack>
@@ -137,7 +137,7 @@ export function DocumentCard(props: DocumentCardProps) {
                   />
                 </Box>
                 <Box style={{ flexShrink: 0 }}>
-                  {hasError || isDragDisabled || isPatching ? null : <DragHandleIcon />}
+                  {!hasError && !isDragDisabled && !isPatching && <DragHandleIcon />}
                 </Box>
               </Flex>
             </Card>
@@ -154,7 +154,7 @@ export function DocumentCard(props: DocumentCardProps) {
                     />
                   )}
                 </Box>
-                {validation.length > 0 ? <ValidationStatus validation={validation} /> : null}
+                {validation.length > 0 && <ValidationStatus validation={validation} />}
                 <VersionStatus
                   updatedAt={draftUpdatedAt}
                   icon={EditIcon}
@@ -170,15 +170,15 @@ export function DocumentCard(props: DocumentCardProps) {
                   missingLabel="Not published"
                 />
                 <EditButton id={item._id} type={item._type} disabled={!userRoleCanDrop} />
-                {isLastState && states.length <= 3 ? (
+                {isLastState && states.length <= 3 && (
                   <CompleteButton documentId={documentId} disabled={!userRoleCanDrop} />
-                ) : null}
+                )}
               </Flex>
-              {isLastState && states.length > 3 ? (
+              {isLastState && states.length > 3 && (
                 <Stack paddingTop={2}>
                   <CompleteButton documentId={documentId} disabled={!userRoleCanDrop} />
                 </Stack>
-              ) : null}
+              )}
             </Card>
           </Stack>
         </Card>

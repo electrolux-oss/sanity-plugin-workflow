@@ -37,9 +37,7 @@ export default function UserDisplay(props: UserDisplayProps) {
     <Popover
       ref={setPopover}
       content={
-        isOpen ? (
-          <UserAssignment assignees={assignees} documentId={documentId} locale={locale} />
-        ) : null
+        isOpen && <UserAssignment assignees={assignees} documentId={documentId} locale={locale} />
       }
       portal
       open={isOpen}

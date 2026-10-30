@@ -16,7 +16,7 @@ export default function FloatingCard({ children }: PropsWithChildren) {
 
   return (
     <AnimatePresence>
-      {childrenHaveValues ? (
+      {childrenHaveValues && (
         <motion.div
           key="floater"
           initial={{ opacity: 0 }}
@@ -27,7 +27,7 @@ export default function FloatingCard({ children }: PropsWithChildren) {
             <Grid gap={2}>{children}</Grid>
           </StyledFloatingCard>
         </motion.div>
-      ) : null}
+      )}
     </AnimatePresence>
   )
 }

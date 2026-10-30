@@ -137,13 +137,13 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
         style={{ height: listHeight, maxHeight: USER_LIST_MAX_HEIGHT, overflowY: 'auto' }}
       >
         <Stack gap={1}>
-          {results.length === 0 ? (
+          {results.length === 0 && (
             <Box padding={3}>
               <Text size={1} muted>
                 {labels.notFound}
               </Text>
             </Box>
-          ) : null}
+          )}
           {results.map(user => {
             const selected = value.includes(user.id)
 
@@ -168,18 +168,18 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
                       {user.displayName}
                     </Text>
                   </Box>
-                  {user.isCurrentUser ? (
+                  {user.isCurrentUser && (
                     <Badge fontSize={1} tone="positive">
                       Me
                     </Badge>
-                  ) : null}
-                  {selected ? (
+                  )}
+                  {selected && (
                     <Box paddingLeft={2}>
                       <Text size={1}>
                         <CheckmarkIcon />
                       </Text>
                     </Box>
-                  ) : null}
+                  )}
                 </Flex>
               </Card>
             )
