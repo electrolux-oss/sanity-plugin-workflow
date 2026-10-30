@@ -5,6 +5,7 @@ import { AddCircleIcon } from '@sanity/icons/AddCircle'
 import { CheckmarkIcon } from '@sanity/icons/Checkmark'
 import { RemoveCircleIcon } from '@sanity/icons/RemoveCircle'
 import { RestoreIcon } from '@sanity/icons/Restore'
+import { SearchIcon } from '@sanity/icons/Search'
 import { Badge, Box, Button, Card, Flex, Stack, Text, TextInput } from '@sanity/ui'
 
 import { searchUsers } from '../helpers/users'
@@ -88,6 +89,7 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
         onClick: onRemove
       } as const)
     : ({ tone: 'positive', icon: AddCircleIcon, text: labels.addMe, onClick: onAdd } as const)
+
   const results = useMemo(() => searchUsers(userList, query), [userList, query])
 
   // Hold the height of the unfiltered list while searching: a popover that shrinks with its
@@ -122,6 +124,8 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
       <Box padding={1}>
         <TextInput
           ref={searchRef}
+          icon={SearchIcon}
+          fontSize={1}
           value={query}
           placeholder={labels.searchPlaceholder}
           onChange={event => setQuery(event.currentTarget.value)}
