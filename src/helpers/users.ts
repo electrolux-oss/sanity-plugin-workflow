@@ -3,21 +3,6 @@ import type { CurrentUser } from 'sanity'
 import type { UserExtended } from '../hooks/useUsers'
 import type { State, WorkflowConfig } from '../types'
 
-/** Matches anywhere in a user's names or email, ignoring case. */
-export function searchUsers(users: UserExtended[], query: string): UserExtended[] {
-  const needle = query.trim().toLowerCase()
-
-  if (!needle) {
-    return users
-  }
-
-  return users.filter(user =>
-    [user.displayName, user.givenName, user.middleName, user.familyName, user.email].some(field =>
-      field?.toLowerCase().includes(needle)
-    )
-  )
-}
-
 /**
  * Users holding at least one role that can work with documents in some State. When a State
  * sets no `roles` it is open to everyone, so every user is eligible.

@@ -46,7 +46,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
     [user]
   )
 
-  const { userLocales, selectedLocales, toggleLocales, showDocuments } = useLocaleFilter(
+  const { userLocales, selectedLocales, setSelectedLocales, showDocuments } = useLocaleFilter(
     filters,
     user
   )
@@ -218,7 +218,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
           selectedSchemaTypes={selectedSchemaTypes}
           toggleSelectedSchemaType={toggleSelectedSchemaType}
           selectedLocales={selectedLocales}
-          toggleLocales={toggleLocales}
+          setSelectedLocales={setSelectedLocales}
           userLocales={userLocales}
         />
       )}

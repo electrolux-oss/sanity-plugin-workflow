@@ -12,7 +12,7 @@ const LOCALE_FILTER_STORAGE_KEY = 'studio.plugin.workflow.locale-filter'
 type LocaleFilter = {
   userLocales: string[] | undefined
   selectedLocales: string[]
-  toggleLocales: (locales: string[]) => void
+  setSelectedLocales: (locales: string[]) => void
   showDocuments: boolean
 }
 
@@ -58,14 +58,10 @@ export function useLocaleFilter(
     writeStoredLocales(LOCALE_FILTER_STORAGE_KEY, selectedLocales)
   }, [selectedLocales])
 
-  const toggleLocales = useCallback((locales: string[]) => {
-    setSelectedLocales(prev => toggleItems(prev, locales))
-  }, [])
-
   return {
     userLocales,
     selectedLocales,
-    toggleLocales,
+    setSelectedLocales,
     showDocuments: shouldShowDocuments(userLocales, selectedLocales)
   }
 }

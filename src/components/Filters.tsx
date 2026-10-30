@@ -2,16 +2,19 @@ import { memo, useCallback, useMemo } from 'react'
 import { useCurrentUser, UserAvatar, useSchema } from 'sanity'
 
 import { CheckmarkCircleIcon } from '@sanity/icons/CheckmarkCircle'
-import { CircleIcon } from '@sanity/icons/Circle'
 import { EarthAmericasIcon } from '@sanity/icons/EarthAmericas'
 import { ResetIcon } from '@sanity/icons/Reset'
+import { RestoreIcon } from '@sanity/icons/Restore'
 import { UserIcon } from '@sanity/icons/User'
 import { Button, Card, Flex } from '@sanity/ui'
-import { Menu, MenuButton, MenuItem } from '@sanity/ui/menu'
+import { Menu, MenuButton } from '@sanity/ui/menu'
 
+import MultiSelectMenu from './MultiSelectMenu'
 import UserSelectMenu from './UserSelectMenu'
 
 import type { CurrentUser, Schema as SchemaRegistry } from 'sanity'
+
+import type { MultiSelectAction } from './MultiSelectMenu'
 
 import type { UserExtended } from '../hooks/useUsers'
 
@@ -29,7 +32,7 @@ type FiltersProps = {
   toggleSelectedUser: (userId: string) => void
   resetSelectedUsers: () => void
   toggleSelectedSchemaType: (schemaType: string) => void
-  toggleLocales: (locales: FilterOptions['locales']) => void
+  setSelectedLocales: (locales: FilterOptions['locales']) => void
 }
 
 const UserFilterButton = memo(function UserFilterButton({
@@ -54,7 +57,7 @@ const UserFilterButton = memo(function UserFilterButton({
         id="user-filters"
         popover={{ portal: true, placement: 'top' }}
         menu={
-          <Menu>
+          <Menu padding={0}>
             <UserSelectMenu
               value={selectedUserIds}
               userList={uniqueAssignedUsers}
@@ -140,24 +143,42 @@ const SlimUserFilterButton = memo(function SlimUserFilterButton({
 const LocaleFilterButton = memo(function LocaleFilterButton({
   userLocales,
   selectedLocales,
-  toggleLocales,
+  setSelectedLocales,
   localeFilterDisabled
 }: {
-  userLocales?: FilterOptions['locales'] | undefined
+  userLocales: FilterOptions['locales']
   selectedLocales: FilterOptions['locales']
-  toggleLocales: (locales: FilterOptions['locales']) => void
+  setSelectedLocales: (locales: FilterOptions['locales']) => void
   localeFilterDisabled: boolean
 }) {
-  const sortedLocales = useMemo(
+  const options = useMemo(
     () =>
-      userLocales &&
-      [...userLocales].sort((a, b) => {
-        const aSelected = selectedLocales.includes(a) ? -1 : 1
-        const bSelected = selectedLocales.includes(b) ? -1 : 1
-        return aSelected - bSelected
-      }),
-    [userLocales, selectedLocales]
+      userLocales
+        .map(locale => ({
+          id: locale,
+          label: languageNames.of(locale) ?? locale,
+          keywords: [locale]
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [userLocales]
   )
+
+  const actions: MultiSelectAction[] = [
+    {
+      tone: 'positive',
+      icon: CheckmarkCircleIcon,
+      text: 'Select all',
+      disabled: userLocales.every(locale => selectedLocales.includes(locale)),
+      onClick: () => setSelectedLocales(userLocales)
+    },
+    {
+      tone: 'critical',
+      icon: RestoreIcon,
+      text: 'Clear',
+      disabled: selectedLocales.length === 0,
+      onClick: () => setSelectedLocales([])
+    }
+  ]
 
   return (
     <Card tone="default">
@@ -166,7 +187,7 @@ const LocaleFilterButton = memo(function LocaleFilterButton({
           <Button
             padding={3}
             fontSize={1}
-            text="Filter Languages"
+            text={`Languages (${selectedLocales.length})`}
             tone="primary"
             icon={EarthAmericasIcon}
             disabled={localeFilterDisabled}
@@ -175,34 +196,16 @@ const LocaleFilterButton = memo(function LocaleFilterButton({
         popover={{ portal: true, placement: 'top', animate: true }}
         id="locale-filters"
         menu={
-          <Menu style={{ maxHeight: '70dvh' }}>
-            <MenuItem
-              fontSize={1}
-              onClick={() => toggleLocales(userLocales!)}
-              disabled={localeFilterDisabled}
-              tone="positive"
-              padding={3}
-              text="Toggle all"
+          <Menu padding={0}>
+            <MultiSelectMenu
+              options={options}
+              value={selectedLocales}
+              onAdd={locale => setSelectedLocales([...selectedLocales, locale])}
+              onRemove={locale => setSelectedLocales(selectedLocales.filter(l => l !== locale))}
+              actions={actions}
+              searchPlaceholder="Search languages"
+              notFound="No languages found"
             />
-            {sortedLocales?.map(locale => {
-              const selected = selectedLocales.includes(locale)
-              return (
-                <MenuItem
-                  key={locale}
-                  text={languageNames.of(locale)}
-                  icon={
-                    selected ? (
-                      <CheckmarkCircleIcon
-                        style={{ color: 'var(--card-badge-positive-icon-color)' }}
-                      />
-                    ) : (
-                      CircleIcon
-                    )
-                  }
-                  onClick={() => toggleLocales([locale])}
-                />
-              )
-            })}
           </Menu>
         }
       />
@@ -256,7 +259,7 @@ function Filters(props: FiltersProps) {
     toggleSelectedUser,
     resetSelectedUsers,
     toggleSelectedSchemaType,
-    toggleLocales,
+    setSelectedLocales,
     userLocales
   } = props
 
@@ -326,7 +329,7 @@ function Filters(props: FiltersProps) {
             <LocaleFilterButton
               userLocales={userLocales}
               selectedLocales={selectedLocales}
-              toggleLocales={toggleLocales}
+              setSelectedLocales={setSelectedLocales}
               localeFilterDisabled={localeFilterDisabled}
             />
           )}

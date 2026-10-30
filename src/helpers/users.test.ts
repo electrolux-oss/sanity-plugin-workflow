@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { filterUsersByStateRoles, getAssignableUsers, searchUsers } from './users'
+import { filterUsersByStateRoles, getAssignableUsers } from './users'
 
 import type { UserExtended } from '../hooks/useUsers'
 import type { State, WorkflowConfig } from '../types'
@@ -17,34 +17,6 @@ function user(id: string, overrides: Partial<UserExtended> = {}): UserExtended {
     ...overrides
   } as UserExtended
 }
-
-const philip = user('p1', {
-  displayName: 'Philip Åkerfeldt',
-  givenName: 'Philip',
-  familyName: 'Åkerfeldt',
-  email: 'philip.akerfeldt@example.com'
-})
-const anna = user('a1', { displayName: 'Anna Svensson', email: 'anna@example.com' })
-
-describe('searchUsers', () => {
-  it('returns everyone for an empty search', () => {
-    expect(searchUsers([philip, anna], '  ')).toEqual([philip, anna])
-  })
-
-  // Regression: the search lowercased names but not the query, so any capital letter found nobody
-  it('ignores case in the query', () => {
-    expect(searchUsers([philip, anna], 'Philip')).toEqual([philip])
-  })
-
-  // Regression: only the start of each name matched
-  it('matches anywhere in a name', () => {
-    expect(searchUsers([philip, anna], 'kerfeldt')).toEqual([philip])
-  })
-
-  it('matches the email address', () => {
-    expect(searchUsers([philip, anna], 'anna@')).toEqual([anna])
-  })
-})
 
 describe('filterUsersByStateRoles', () => {
   const contributor = user('c1', { roles: [{ name: 'km---contributor', title: 'Contributor' }] })
