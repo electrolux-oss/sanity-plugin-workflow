@@ -1,4 +1,13 @@
-import type { FilterOptions } from '../types'
+import type { FilterOptions, Language } from '../types'
+
+const languageNames = new Intl.DisplayNames('en', { type: 'language' })
+
+/** A locale's configured title, falling back to its English name and then to the code itself. */
+export function getLanguageTitle(locale: string, languages: Language[]): string {
+  return (
+    languages.find(language => language.id === locale)?.title ?? languageNames.of(locale) ?? locale
+  )
+}
 
 /**
  * Locale filtering is opt-in via the plugin's `filters` config. When it is not

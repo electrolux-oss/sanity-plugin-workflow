@@ -102,10 +102,23 @@ Add it as a plugin in `sanity.config.ts` (or .js) file:
             schemaTypes: [],
             // Optional, see below
             // states: [],
+            // Optional, see "Filtering by language"
+            // filters: (user) => ({ locales: ['sv-SE', 'de-CH'] }),
+            // languages: [{ id: 'de-CH', title: 'German (Switzerland)' }],
          })
      ]
  })
 ```
+
+## Filtering by language
+
+Workflow documents store the `locale` of the document they track. To let users filter the board
+by language, return the locales each user works in from `filters`. With no languages selected,
+the board shows every locale the user works in.
+
+`languages` sets the names shown in the language filter, in the same `{ id, title }` shape as
+`supportedLanguages` in `@sanity/document-internationalization`, so the same list can be passed to
+both. Locales without an entry fall back to their English name, such as "Swedish (Sweden)".
 
 ## Configuring "States"
 
@@ -190,6 +203,18 @@ When you modify the plugin code:
 1. The `link-watch` command will automatically rebuild
 2. In your studio, run `npx yalc update` to pull the latest changes
 3. Restart your dev server: `npm run dev`
+
+### Trying the data repairs
+
+The board's "Data issues" menu repairs broken workflow metadata, such as orphaned metadata or
+duplicate order ranks. To try it without broken data, run this in the browser console and reload:
+
+```js
+localStorage.setItem('studio.plugin.workflow.simulate-data-issues', 'true')
+```
+
+The menu then reports made-up issues on real documents, and its repairs only show what they would
+have done. Remove the key to switch back.
 
 ### Running the checks
 

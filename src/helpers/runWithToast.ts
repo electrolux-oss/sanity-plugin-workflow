@@ -1,6 +1,6 @@
 import type { ToastContextValue } from '@sanity/ui/toast'
 
-type ToastMessages = {
+export type ToastMessages = {
   pending?: string
   success: string
   error: string

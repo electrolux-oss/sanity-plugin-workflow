@@ -7,18 +7,20 @@ import { Box, Card, Container, Flex, Grid, Spinner, useTheme_v2 } from '@sanity/
 import { useToast } from '@sanity/ui/toast'
 
 import { API_VERSION } from '../constants'
+import { countAffectedDocuments } from '../helpers/dataIssues'
 import { filterItemsAndSort } from '../helpers/filterItemsAndSort'
 import { getQueryLocales, shouldShowFilters } from '../helpers/localeFilter'
 import { getTransitionBlocker, userHasStateRole } from '../helpers/permissions'
 import { getDropOrderRank } from '../helpers/ranking'
 import { useDocumentFilters, useLocaleFilter } from '../hooks/useBoardFilters'
+import { useDataIssues } from '../hooks/useDataIssues'
 import { useProjectUsers } from '../hooks/useUsers'
 import { useWorkflowDocuments } from '../hooks/useWorkflowDocuments'
 import { DocumentCard } from './DocumentCard'
 import DocumentList from './DocumentList'
+import DataIssuesMenu from './DataIssuesMenu'
 import Filters from './Filters'
 import StateTitle from './StateTitle'
-import Verify from './Verify'
 
 import type { DraggableChildrenFn, DragStart, DropResult } from '@hello-pangea/dnd'
 import type { SanityDocumentWithMetadata, State, WorkflowConfig } from '../types'
@@ -29,7 +31,7 @@ type WorkflowToolProps = {
 }
 
 export default function WorkflowTool(props: WorkflowToolProps) {
-  const { schemaTypes = [], states = [], filters } = props?.tool?.options ?? {}
+  const { schemaTypes = [], states = [], filters, languages = [] } = props?.tool?.options ?? {}
   const [patchingIds, setPatchingIds] = useState<string[]>([])
   const [draggingFrom, setDraggingFrom] = useState('')
   const [undroppableStates, setUndroppableStates] = useState<string[]>([])
@@ -62,6 +64,10 @@ export default function WorkflowTool(props: WorkflowToolProps) {
     selectedSchemaTypes,
     toggleSelectedSchemaType
   } = useDocumentFilters(data, userList, schemaTypes)
+
+  const dataIssues = useDataIssues(data, states, userList)
+  const hasDataIssues = countAffectedDocuments(dataIssues) > 0
+  const showFilters = shouldShowFilters(userLocales, schemaTypes, uniqueAssignedUsers.length)
 
   // When drag starts, mark the States the dragged document cannot move to
   const handleDragStart = useCallback(
@@ -206,20 +212,27 @@ export default function WorkflowTool(props: WorkflowToolProps) {
 
   return (
     <Flex direction="column" height="fill" overflow="hidden">
-      <Verify data={data} userList={userList} states={states} />
-      {shouldShowFilters(userLocales, schemaTypes, uniqueAssignedUsers.length) && (
-        <Filters
-          uniqueAssignedUsers={uniqueAssignedUsers}
-          selectedUserIds={selectedUserIds}
-          toggleSelectedUser={toggleSelectedUser}
-          resetSelectedUsers={resetSelectedUsers}
-          schemaTypes={schemaTypes}
-          selectedSchemaTypes={selectedSchemaTypes}
-          toggleSelectedSchemaType={toggleSelectedSchemaType}
-          selectedLocales={selectedLocales}
-          setSelectedLocales={setSelectedLocales}
-          userLocales={userLocales}
-        />
+      {(showFilters || hasDataIssues) && (
+        <Card padding={2} borderBottom style={{ overflowX: 'hidden' }}>
+          <Flex align="center" justify="flex-end" gap={2}>
+            {showFilters && (
+              <Filters
+                uniqueAssignedUsers={uniqueAssignedUsers}
+                selectedUserIds={selectedUserIds}
+                toggleSelectedUser={toggleSelectedUser}
+                resetSelectedUsers={resetSelectedUsers}
+                schemaTypes={schemaTypes}
+                selectedSchemaTypes={selectedSchemaTypes}
+                toggleSelectedSchemaType={toggleSelectedSchemaType}
+                selectedLocales={selectedLocales}
+                setSelectedLocales={setSelectedLocales}
+                userLocales={userLocales}
+                languages={languages}
+              />
+            )}
+            <DataIssuesMenu issues={dataIssues} data={data} states={states} userList={userList} />
+          </Flex>
+        </Card>
       )}
       <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <Grid gridTemplateColumns={states.length} height="fill">

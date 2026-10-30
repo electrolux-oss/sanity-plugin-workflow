@@ -18,7 +18,7 @@ import type { WorkflowConfig } from './types'
 
 export const workflow: Plugin<WorkflowConfig> = definePlugin<WorkflowConfig>(
   (config = DEFAULT_CONFIG) => {
-    const { schemaTypes, states, filters } = { ...DEFAULT_CONFIG, ...config }
+    const { schemaTypes, states, filters, languages } = { ...DEFAULT_CONFIG, ...config }
 
     if (!states?.length) {
       throw new Error(`Workflow plugin: Missing "states" in config`)
@@ -45,6 +45,7 @@ export const workflow: Plugin<WorkflowConfig> = definePlugin<WorkflowConfig>(
               schemaTypes={schemaTypes}
               states={states}
               filters={filters}
+              languages={languages}
             />
           )
         }
@@ -92,7 +93,7 @@ export const workflow: Plugin<WorkflowConfig> = definePlugin<WorkflowConfig>(
       },
       tools: [
         // TODO: These configs could be read from Context
-        workflowTool({ schemaTypes, states, filters })
+        workflowTool({ schemaTypes, states, filters, languages })
       ]
     }
   }

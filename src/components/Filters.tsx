@@ -5,9 +5,10 @@ import { ChevronDownIcon } from '@sanity/icons/ChevronDown'
 import { EarthAmericasIcon } from '@sanity/icons/EarthAmericas'
 import { RestoreIcon } from '@sanity/icons/Restore'
 import { UserIcon } from '@sanity/icons/User'
-import { AvatarStack, Button, Card, Flex, Text } from '@sanity/ui'
+import { AvatarStack, Button, Flex, Text } from '@sanity/ui'
 import { Menu, MenuButton } from '@sanity/ui/menu'
 
+import { getLanguageTitle } from '../helpers/localeFilter'
 import MultiSelectMenu from './MultiSelectMenu'
 import UserSelectMenu from './UserSelectMenu'
 
@@ -17,9 +18,7 @@ import type { MultiSelectAction } from './MultiSelectMenu'
 
 import type { UserExtended } from '../hooks/useUsers'
 
-import type { FilterOptions } from '../types'
-
-const languageNames = new Intl.DisplayNames('en', { type: 'language' })
+import type { FilterOptions, Language } from '../types'
 
 type FiltersProps = {
   uniqueAssignedUsers: UserExtended[]
@@ -28,6 +27,7 @@ type FiltersProps = {
   schemaTypes: string[]
   selectedSchemaTypes: string[]
   userLocales?: FilterOptions['locales'] | undefined
+  languages: Language[]
   toggleSelectedUser: (userId: string) => void
   resetSelectedUsers: () => void
   toggleSelectedSchemaType: (schemaType: string) => void
@@ -98,11 +98,13 @@ const AssigneeFilterButton = memo(function AssigneeFilterButton({
 
 const LocaleFilterButton = memo(function LocaleFilterButton({
   userLocales,
+  languages,
   selectedLocales,
   setSelectedLocales,
   localeFilterDisabled
 }: {
   userLocales: FilterOptions['locales']
+  languages: Language[]
   selectedLocales: FilterOptions['locales']
   setSelectedLocales: (locales: FilterOptions['locales']) => void
   localeFilterDisabled: boolean
@@ -112,11 +114,11 @@ const LocaleFilterButton = memo(function LocaleFilterButton({
       userLocales
         .map(locale => ({
           id: locale,
-          label: languageNames.of(locale) ?? locale,
+          label: getLanguageTitle(locale, languages),
           keywords: [locale]
         }))
         .sort((a, b) => a.label.localeCompare(b.label)),
-    [userLocales]
+    [userLocales, languages]
   )
 
   const actions: MultiSelectAction[] = [
@@ -206,7 +208,8 @@ function Filters(props: FiltersProps) {
     resetSelectedUsers,
     toggleSelectedSchemaType,
     setSelectedLocales,
-    userLocales
+    userLocales,
+    languages
   } = props
 
   const schema = useSchema()
@@ -236,38 +239,37 @@ function Filters(props: FiltersProps) {
   const localeFilterDisabled = Boolean(userLocales && userLocales.length < 2)
 
   return (
-    <Card padding={2} borderBottom style={{ overflowX: 'hidden' }}>
-      <Flex align="center">
-        <Flex align="center" gap={4} flex={1}>
-          {(uniqueAssignedUsers.length > 0 || selectedUserIds.length > 0) && (
-            <AssigneeFilterButton
-              selectedUserIds={selectedUserIds}
-              onAddUserToFilter={onAddUserToFilter}
-              onRemoveUserFromFilter={onRemoveUserFromFilter}
-              onClearUserFilter={onClearUserFilter}
-              uniqueAssignedUsers={uniqueAssignedUsers}
-            />
-          )}
-          {userLocales && (
-            <LocaleFilterButton
-              userLocales={userLocales}
-              selectedLocales={selectedLocales}
-              setSelectedLocales={setSelectedLocales}
-              localeFilterDisabled={localeFilterDisabled}
-            />
-          )}
-        </Flex>
-
-        {schemaTypes.length > 1 && (
-          <SchemaTypeButtons
-            schemaTypes={schemaTypes}
-            selectedSchemaTypes={selectedSchemaTypes}
-            toggleSelectedSchemaType={toggleSelectedSchemaType}
-            schema={schema}
+    <Flex align="center" flex={1}>
+      <Flex align="center" gap={4} flex={1}>
+        {(uniqueAssignedUsers.length > 0 || selectedUserIds.length > 0) && (
+          <AssigneeFilterButton
+            selectedUserIds={selectedUserIds}
+            onAddUserToFilter={onAddUserToFilter}
+            onRemoveUserFromFilter={onRemoveUserFromFilter}
+            onClearUserFilter={onClearUserFilter}
+            uniqueAssignedUsers={uniqueAssignedUsers}
+          />
+        )}
+        {userLocales && (
+          <LocaleFilterButton
+            userLocales={userLocales}
+            languages={languages}
+            selectedLocales={selectedLocales}
+            setSelectedLocales={setSelectedLocales}
+            localeFilterDisabled={localeFilterDisabled}
           />
         )}
       </Flex>
-    </Card>
+
+      {schemaTypes.length > 1 && (
+        <SchemaTypeButtons
+          schemaTypes={schemaTypes}
+          selectedSchemaTypes={selectedSchemaTypes}
+          toggleSelectedSchemaType={toggleSelectedSchemaType}
+          schema={schema}
+        />
+      )}
+    </Flex>
   )
 }
 

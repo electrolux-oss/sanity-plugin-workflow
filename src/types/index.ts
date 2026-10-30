@@ -21,10 +21,17 @@ export type FilterOptions = {
   locales: string[]
 }
 
+export type Language = {
+  id: string
+  title: string
+}
+
 export type WorkflowConfig = {
   schemaTypes: string[]
   states?: State[]
   filters?: (user: CurrentUser | null) => FilterOptions | undefined
+  /** Display names for locales, in document-internationalization's `supportedLanguages` shape */
+  languages?: Language[]
 }
 
 export function defineStates<Id extends string, States extends StateCheck<Id, States>[]>(

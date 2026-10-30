@@ -48,7 +48,7 @@ export function WorkflowProvider(props: WorkflowProviderProps) {
   )
   const removeId = useCallback((id: string) => setIds(current => current.filter(i => i !== id)), [])
   const { data, loading, error } = useWorkflowMetadata(ids)
-  const { states, schemaTypes, filters } = props
+  const { states, schemaTypes, filters, languages } = props
 
   useEffect(() => {
     if (error) {
@@ -57,8 +57,8 @@ export function WorkflowProvider(props: WorkflowProviderProps) {
   }, [error])
 
   const value = useMemo(
-    () => ({ data, loading, error, ids, addId, removeId, states, schemaTypes, filters }),
-    [data, loading, error, ids, addId, removeId, states, schemaTypes, filters]
+    () => ({ data, loading, error, ids, addId, removeId, states, schemaTypes, filters, languages }),
+    [data, loading, error, ids, addId, removeId, states, schemaTypes, filters, languages]
   )
 
   return (

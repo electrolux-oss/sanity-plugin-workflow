@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  getLanguageTitle,
   getQueryLocales,
   isLocaleFilterEnabled,
   readStoredLocales,
@@ -19,6 +20,18 @@ describe('isLocaleFilterEnabled', () => {
 
   it('is on for a single locale', () => {
     expect(isLocaleFilterEnabled(['en'])).toBe(true)
+  })
+})
+
+describe('getLanguageTitle', () => {
+  const languages = [{ id: 'de-CH', title: 'German (Switzerland)' }]
+
+  it('uses the configured title', () => {
+    expect(getLanguageTitle('de-CH', languages)).toBe('German (Switzerland)')
+  })
+
+  it('falls back to the English language name', () => {
+    expect(getLanguageTitle('sv-SE', languages)).toBe('Swedish (Sweden)')
   })
 })
 
