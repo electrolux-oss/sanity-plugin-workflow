@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
+import { styled } from 'styled-components'
 
 import { AddIcon } from '@sanity/icons/Add'
 import { Button, Grid, useClickOutsideEvent } from '@sanity/ui'
@@ -8,6 +9,19 @@ import AvatarGroup from './DocumentCard/AvatarGroup'
 import UserAssignment from './UserAssignment'
 
 import type { UserExtended } from '../hooks/useUsers'
+
+// Popover has no offset option, so widen the gap to the button on whichever side it opened
+const AssignPopover = styled(Popover)`
+  margin-top: -12px;
+
+  &[data-placement^='right'] {
+    margin-left: 8px;
+  }
+
+  &[data-placement^='left'] {
+    margin-left: -8px;
+  }
+`
 
 type UserDisplayProps = {
   userList: UserExtended[]
@@ -34,7 +48,7 @@ export default function UserDisplay(props: UserDisplayProps) {
   )
 
   return (
-    <Popover
+    <AssignPopover
       ref={setPopover}
       content={
         isOpen ? (
@@ -65,6 +79,6 @@ export default function UserDisplay(props: UserDisplayProps) {
           </Button>
         </Grid>
       )}
-    </Popover>
+    </AssignPopover>
   )
 }
