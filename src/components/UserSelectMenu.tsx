@@ -19,6 +19,7 @@ const LABELS = {
   notFound: 'No users found'
 }
 
+const MENU_WIDTH = 320
 const USER_LIST_MAX_HEIGHT = 360
 
 type UserSelectMenuProps = {
@@ -40,7 +41,7 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
   const results = useMemo(() => searchUsers(userList, query), [userList, query])
 
   return (
-    <Menu>
+    <Menu style={{ width: MENU_WIDTH }}>
       {meSelected ? (
         <MenuItem
           tone="caution"
@@ -85,8 +86,8 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
               >
                 <Flex align="center">
                   <UserAvatar user={user} size={1} />
-                  <Box paddingX={2} flex={1}>
-                    <Text>{user.displayName}</Text>
+                  <Box paddingX={2} flex={1} style={{ minWidth: 0 }}>
+                    <Text textOverflow="ellipsis">{user.displayName}</Text>
                   </Box>
                   {user.isCurrentUser ? (
                     <Badge fontSize={1} tone="positive">
