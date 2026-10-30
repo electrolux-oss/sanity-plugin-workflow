@@ -32,7 +32,7 @@ export function useWorkflowContext(id?: string) {
   return { ...current, metadata: current.data[id ?? ''] }
 }
 
-type WorkflowProviderProps = LayoutProps & Required<WorkflowConfig>
+type WorkflowProviderProps = LayoutProps & { config: Required<WorkflowConfig> }
 
 /**
  * This Provider wraps the Studio and provides the workflow context to document actions and badges.
@@ -48,7 +48,7 @@ export function WorkflowProvider(props: WorkflowProviderProps) {
   )
   const removeId = useCallback((id: string) => setIds(current => current.filter(i => i !== id)), [])
   const { data, loading, error } = useWorkflowMetadata(ids)
-  const { states, schemaTypes, filters, languages } = props
+  const { config } = props
 
   useEffect(() => {
     if (error) {
@@ -57,8 +57,8 @@ export function WorkflowProvider(props: WorkflowProviderProps) {
   }, [error])
 
   const value = useMemo(
-    () => ({ data, loading, error, ids, addId, removeId, states, schemaTypes, filters, languages }),
-    [data, loading, error, ids, addId, removeId, states, schemaTypes, filters, languages]
+    () => ({ data, loading, error, ids, addId, removeId, ...config }),
+    [data, loading, error, ids, addId, removeId, config]
   )
 
   return (

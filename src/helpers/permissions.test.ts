@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { getTransitionBlocker, userHasStateRole } from './permissions'
+import { getTransitionBlocker, hasAnyRole } from './permissions'
 
 import type { State } from '../types'
 
@@ -8,27 +8,27 @@ function state(id: string, overrides: Partial<State> = {}): State {
   return { id, title: id, ...overrides }
 }
 
-describe('userHasStateRole', () => {
-  it('opens a state without roles to everyone', () => {
-    expect(userHasStateRole([], state('draft'))).toBe(true)
+describe('hasAnyRole', () => {
+  it('allows everyone when no roles are set', () => {
+    expect(hasAnyRole([], undefined)).toBe(true)
   })
 
-  it('opens a state to users with one of its roles', () => {
-    expect(userHasStateRole(['editor'], state('review', { roles: ['admin', 'editor'] }))).toBe(true)
+  it('allows users with one of the roles', () => {
+    expect(hasAnyRole(['editor'], ['admin', 'editor'])).toBe(true)
   })
 
-  it('closes a state to users without one of its roles', () => {
-    expect(userHasStateRole(['viewer'], state('review', { roles: ['editor'] }))).toBe(false)
+  it('denies users without one of the roles', () => {
+    expect(hasAnyRole(['viewer'], ['editor'])).toBe(false)
   })
 
   // Regression: the document actions let a user without roles into restricted states
-  it('closes a restricted state to users without any roles', () => {
-    expect(userHasStateRole([], state('review', { roles: ['editor'] }))).toBe(false)
+  it('denies users without any roles when roles are set', () => {
+    expect(hasAnyRole([], ['editor'])).toBe(false)
   })
 
   // Regression: the board treated an empty list as unrestricted
-  it('closes a state with an empty role list to everyone', () => {
-    expect(userHasStateRole(['admin'], state('locked', { roles: [] }))).toBe(false)
+  it('denies everyone for an empty role list', () => {
+    expect(hasAnyRole(['admin'], [])).toBe(false)
   })
 })
 

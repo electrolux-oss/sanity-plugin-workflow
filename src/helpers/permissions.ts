@@ -11,15 +11,15 @@ type TransitionCheck = {
 }
 
 /**
- * Whether the user may work with documents in `state`. A state without `roles` is open to
- * everyone, `roles: []` to nobody, and a user without roles only to states without `roles`.
+ * Whether the user holds one of `roles`. Leaving `roles` out allows everyone, an empty list
+ * allows nobody, and a user without roles is only allowed where `roles` is left out.
  */
-export function userHasStateRole(userRoleNames: string[], state: State): boolean {
-  if (!state.roles) {
+export function hasAnyRole(userRoleNames: string[], roles: string[] | undefined): boolean {
+  if (!roles) {
     return true
   }
 
-  return state.roles.some(role => userRoleNames.includes(role))
+  return roles.some(role => userRoleNames.includes(role))
 }
 
 /**
@@ -35,7 +35,7 @@ export function getTransitionBlocker({
   userRoleNames,
   assignees
 }: TransitionCheck): TransitionBlocker | null {
-  if (!userHasStateRole(userRoleNames, from) || !userHasStateRole(userRoleNames, to)) {
+  if (!hasAnyRole(userRoleNames, from.roles) || !hasAnyRole(userRoleNames, to.roles)) {
     return 'role'
   }
 

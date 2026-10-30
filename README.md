@@ -105,6 +105,8 @@ Add it as a plugin in `sanity.config.ts` (or .js) file:
             // Optional, see "Filtering by language"
             // filters: (user) => ({ locales: ['sv-SE', 'de-CH'] }),
             // languages: [{ id: 'de-CH', title: 'German (Switzerland)' }],
+            // Optional, roles that see the "Data issues" menu; leave out to show it to everyone
+            // dataIssueRoles: ['administrator'],
          })
      ]
  })
@@ -207,7 +209,8 @@ When you modify the plugin code:
 ### Trying the data repairs
 
 The board's "Data issues" menu repairs broken workflow metadata, such as orphaned metadata or
-duplicate order ranks. To try it without broken data, run this in the browser console and reload:
+duplicate order ranks. Only users holding one of the `dataIssueRoles` see it, when that option is
+set. To try it without broken data, run this in the browser console and reload:
 
 ```js
 localStorage.setItem('studio.plugin.workflow.simulate-data-issues', 'true')

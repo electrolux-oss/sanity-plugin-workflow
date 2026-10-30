@@ -10,7 +10,7 @@ import { API_VERSION } from '../constants'
 import { countAffectedDocuments } from '../helpers/dataIssues'
 import { filterItemsAndSort } from '../helpers/filterItemsAndSort'
 import { getQueryLocales, shouldShowFilters } from '../helpers/localeFilter'
-import { getTransitionBlocker, userHasStateRole } from '../helpers/permissions'
+import { getTransitionBlocker, hasAnyRole } from '../helpers/permissions'
 import { getDropOrderRank } from '../helpers/ranking'
 import { useDocumentFilters, useLocaleFilter } from '../hooks/useBoardFilters'
 import { useDataIssues } from '../hooks/useDataIssues'
@@ -31,7 +31,13 @@ type WorkflowToolProps = {
 }
 
 export default function WorkflowTool(props: WorkflowToolProps) {
-  const { schemaTypes = [], states = [], filters, languages = [] } = props?.tool?.options ?? {}
+  const {
+    schemaTypes = [],
+    states = [],
+    filters,
+    languages = [],
+    dataIssueRoles
+  } = props?.tool?.options ?? {}
   const [patchingIds, setPatchingIds] = useState<string[]>([])
   const [draggingFrom, setDraggingFrom] = useState('')
   const [undroppableStates, setUndroppableStates] = useState<string[]>([])
@@ -66,7 +72,8 @@ export default function WorkflowTool(props: WorkflowToolProps) {
   } = useDocumentFilters(data, userList, schemaTypes)
 
   const dataIssues = useDataIssues(data, states, userList)
-  const hasDataIssues = countAffectedDocuments(dataIssues) > 0
+  const canSeeDataIssues = hasAnyRole(userRoleNames, dataIssueRoles)
+  const hasDataIssues = canSeeDataIssues && countAffectedDocuments(dataIssues) > 0
   const showFilters = shouldShowFilters(userLocales, schemaTypes, uniqueAssignedUsers.length)
 
   // When drag starts, mark the States the dragged document cannot move to
@@ -230,14 +237,16 @@ export default function WorkflowTool(props: WorkflowToolProps) {
                 languages={languages}
               />
             )}
-            <DataIssuesMenu issues={dataIssues} data={data} states={states} userList={userList} />
+            {canSeeDataIssues && (
+              <DataIssuesMenu issues={dataIssues} data={data} states={states} userList={userList} />
+            )}
           </Flex>
         </Card>
       )}
       <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <Grid gridTemplateColumns={states.length} height="fill">
           {states.map((state: State, stateIndex: number) => {
-            const userRoleCanDrop = userHasStateRole(userRoleNames, state)
+            const userRoleCanDrop = hasAnyRole(userRoleNames, state.roles)
             const isDropDisabled = !userRoleCanDrop || undroppableStates.includes(state.id)
 
             const stateItems = itemsByState.get(state.id) ?? []

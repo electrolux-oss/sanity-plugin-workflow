@@ -32,6 +32,11 @@ export type WorkflowConfig = {
   filters?: (user: CurrentUser | null) => FilterOptions | undefined
   /** Display names for locales, in document-internationalization's `supportedLanguages` shape */
   languages?: Language[]
+  /**
+   * Roles that see the board's Data issues menu. Leave it out to show it to everyone; an empty
+   * array shows it to nobody.
+   */
+  dataIssueRoles?: string[] | undefined
 }
 
 export function defineStates<Id extends string, States extends StateCheck<Id, States>[]>(
