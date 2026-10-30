@@ -4,7 +4,6 @@ import { UserAvatar } from 'sanity'
 import { AddCircleIcon } from '@sanity/icons/AddCircle'
 import { RemoveCircleIcon } from '@sanity/icons/RemoveCircle'
 import { RestoreIcon } from '@sanity/icons/Restore'
-import { Badge } from '@sanity/ui'
 
 import MultiSelectMenu from './MultiSelectMenu'
 
@@ -35,17 +34,14 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
 
   const options = useMemo(
     (): MultiSelectOption[] =>
-      userList.map(user => ({
-        id: user.id,
-        label: user.displayName,
-        keywords: [user.givenName, user.middleName, user.familyName, user.email],
-        media: <UserAvatar user={user} size={1} />,
-        badge: user.isCurrentUser && (
-          <Badge fontSize={1} tone="positive">
-            Me
-          </Badge>
-        )
-      })),
+      userList
+        .filter(user => !user.isCurrentUser)
+        .map(user => ({
+          id: user.id,
+          label: user.displayName,
+          keywords: [user.givenName, user.middleName, user.familyName, user.email],
+          media: <UserAvatar user={user} size={1} />
+        })),
     [userList]
   )
 

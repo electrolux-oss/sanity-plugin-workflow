@@ -15,7 +15,6 @@ export type MultiSelectOption = {
   label: string
   keywords?: (string | undefined)[]
   media?: ReactNode
-  badge?: ReactNode
 }
 
 export type MultiSelectAction = {
@@ -156,7 +155,6 @@ export default function MultiSelectMenu(props: MultiSelectMenuProps) {
                       {option.label}
                     </Text>
                   </Box>
-                  {option.badge}
                   {selected && (
                     <Text size={1}>
                       <CheckmarkIcon />
