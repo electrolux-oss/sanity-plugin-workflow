@@ -2,6 +2,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { UserAvatar } from 'sanity'
 
 import { AddCircleIcon } from '@sanity/icons/AddCircle'
+import { CheckmarkIcon } from '@sanity/icons/Checkmark'
 import { RemoveCircleIcon } from '@sanity/icons/RemoveCircle'
 import { RestoreIcon } from '@sanity/icons/Restore'
 import { Badge, Box, Flex, Stack, Text, TextInput } from '@sanity/ui'
@@ -108,6 +109,13 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
                     <Badge fontSize={1} tone="positive">
                       Me
                     </Badge>
+                  ) : null}
+                  {selected ? (
+                    <Box paddingLeft={2}>
+                      <Text size={1}>
+                        <CheckmarkIcon />
+                      </Text>
+                    </Box>
                   ) : null}
                 </Flex>
               </MenuItem>
