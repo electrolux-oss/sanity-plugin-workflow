@@ -42,7 +42,11 @@ export function readStoredLocales(storageKey: string): FilterOptions['locales'] 
 
     const parsed: unknown = JSON.parse(stored)
 
-    return Array.isArray(parsed) && parsed.every(l => typeof l === 'string') ? parsed : undefined
+    if (!Array.isArray(parsed) || !parsed.every(l => typeof l === 'string')) {
+      return undefined
+    }
+
+    return parsed
   } catch {
     // Corrupt or unavailable storage must not take the whole tool down
     return undefined

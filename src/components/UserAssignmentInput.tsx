@@ -11,18 +11,14 @@ const UserAssignmentInput: FunctionComponent<
   ArrayOfPrimitivesInputProps<string | number | boolean, ArraySchemaType>
 > = props => {
   const documentId = useFormValue([`documentId`])
-  const locale = useFormValue([`locale`])
+  const locale = useFormValue([`locale`]) as string | undefined
 
   const stringValue =
     Array.isArray(props?.value) && props?.value?.length ? props.value.map(item => String(item)) : []
 
   return (
     <Card border padding={1}>
-      <UserAssignment
-        assignees={stringValue}
-        documentId={String(documentId)}
-        locale={typeof locale === 'string' ? locale : null}
-      />
+      <UserAssignment assignees={stringValue} documentId={String(documentId)} locale={locale} />
     </Card>
   )
 }

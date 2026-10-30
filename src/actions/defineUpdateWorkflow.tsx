@@ -58,15 +58,15 @@ function useUpdateWorkflow(
   const DirectionIcon = direction === 'promote' ? ArrowRightIcon : ArrowLeftIcon
   const directionLabel = direction === 'promote' ? 'Promote' : 'Demote'
 
-  const blocker = currentState
-    ? getTransitionBlocker({
-        from: currentState,
-        to: actionState,
-        userId: user?.id,
-        userRoleNames: user?.roles?.map(r => r.name) ?? [],
-        assignees: metadata.assignees
-      })
-    : null
+  const blocker =
+    currentState &&
+    getTransitionBlocker({
+      from: currentState,
+      to: actionState,
+      userId: user?.id,
+      userRoleNames: user?.roles?.map(r => r.name) ?? [],
+      assignees: metadata.assignees
+    })
   const isAwaitingValidation = Boolean(currentState?.requireValidation && isValidating)
   const action = `${directionLabel} State to "${actionState.title}"`
   const blockedTitles: Record<TransitionBlocker, string> = {

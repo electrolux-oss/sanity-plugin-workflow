@@ -45,7 +45,7 @@ export type Metadata = SanityDocumentLike & {
   locale: string | null
 }
 
-export type KeyedMetadata = { [key: string]: Metadata }
+export type KeyedMetadata = Partial<Record<string, Metadata>>
 
 export type SanityDocumentWithMetadata = {
   _metadata: Metadata

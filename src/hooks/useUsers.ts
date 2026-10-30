@@ -104,7 +104,7 @@ export function useProjectUsers({ apiVersion }: HookConfig = {}): UserExtended[]
   const { projectId } = client.config()
 
   const [users, setUsers] = useState<UserExtended[]>(
-    () => (projectId ? resolved.get(projectId)?.users : undefined) ?? EMPTY_USERS
+    () => resolved.get(projectId ?? '')?.users ?? EMPTY_USERS
   )
 
   useEffect(() => {

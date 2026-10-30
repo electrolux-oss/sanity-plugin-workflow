@@ -29,7 +29,7 @@ const WorkflowContext = createContext<WorkflowContextValue>({
 export function useWorkflowContext(id?: string) {
   const current = useContext(WorkflowContext)
 
-  return { ...current, metadata: id ? current.data[id] : null }
+  return { ...current, metadata: current.data[id ?? ''] }
 }
 
 type WorkflowProviderProps = LayoutProps & Required<WorkflowConfig>

@@ -150,13 +150,12 @@ const LocaleFilterButton = memo(function LocaleFilterButton({
 }) {
   const sortedLocales = useMemo(
     () =>
-      userLocales
-        ? [...userLocales].sort((a, b) => {
-            const aSelected = selectedLocales.includes(a) ? -1 : 1
-            const bSelected = selectedLocales.includes(b) ? -1 : 1
-            return aSelected - bSelected
-          })
-        : undefined,
+      userLocales &&
+      [...userLocales].sort((a, b) => {
+        const aSelected = selectedLocales.includes(a) ? -1 : 1
+        const bSelected = selectedLocales.includes(b) ? -1 : 1
+        return aSelected - bSelected
+      }),
     [userLocales, selectedLocales]
   )
 
@@ -287,8 +286,7 @@ function Filters(props: FiltersProps) {
   }, [resetSelectedUsers])
 
   const meInUniqueAssignees = useMemo(
-    () =>
-      currentUser?.id ? uniqueAssignedUsers.find(u => u.id === currentUser.id) : undefined,
+    () => uniqueAssignedUsers.find(u => u.id === currentUser?.id),
     [currentUser?.id, uniqueAssignedUsers]
   )
 
