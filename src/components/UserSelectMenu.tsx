@@ -4,12 +4,10 @@ import { UserAvatar } from 'sanity'
 import { AddCircleIcon } from '@sanity/icons/AddCircle'
 import { RemoveCircleIcon } from '@sanity/icons/RemoveCircle'
 import { RestoreIcon } from '@sanity/icons/Restore'
-import { Badge, Box, Flex, Text, TextInput } from '@sanity/ui'
+import { Badge, Box, Flex, Stack, Text, TextInput } from '@sanity/ui'
 import { Menu, MenuItem } from '@sanity/ui/menu'
 
 import { searchUsers } from '../helpers/users'
-
-import type { CSSProperties } from 'react'
 
 import type { UserExtended } from '../hooks/useUsers'
 
@@ -21,6 +19,8 @@ const LABELS = {
   notFound: 'No users found'
 }
 
+const USER_LIST_MAX_HEIGHT = 360
+
 type UserSelectMenuProps = {
   value: string[]
   userList: UserExtended[]
@@ -28,11 +28,10 @@ type UserSelectMenuProps = {
   onRemove: (userId: string) => void
   onClear: () => void
   labels?: Partial<typeof LABELS>
-  style?: CSSProperties
 }
 
 export default function UserSelectMenu(props: UserSelectMenuProps) {
-  const { value, userList, onAdd, onRemove, onClear, style } = props
+  const { value, userList, onAdd, onRemove, onClear } = props
   const labels = { ...LABELS, ...props.labels }
   const [query, setQuery] = useState('')
 
@@ -41,7 +40,7 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
   const results = useMemo(() => searchUsers(userList, query), [userList, query])
 
   return (
-    <Menu style={style}>
+    <Menu>
       {meSelected ? (
         <MenuItem
           tone="caution"
@@ -72,30 +71,34 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
           onChange={event => setQuery(event.currentTarget.value)}
         />
       </Box>
-      {results.length === 0 ? <MenuItem disabled text={labels.notFound} /> : null}
-      {results.map(user => {
-        const selected = value.includes(user.id)
+      <Box style={{ maxHeight: USER_LIST_MAX_HEIGHT, overflowY: 'auto' }}>
+        <Stack gap={1}>
+          {results.length === 0 ? <MenuItem disabled text={labels.notFound} /> : null}
+          {results.map(user => {
+            const selected = value.includes(user.id)
 
-        return (
-          <MenuItem
-            key={user.id}
-            pressed={selected}
-            onClick={() => (selected ? onRemove(user.id) : onAdd(user.id))}
-          >
-            <Flex align="center">
-              <UserAvatar user={user} size={1} />
-              <Box paddingX={2} flex={1}>
-                <Text>{user.displayName}</Text>
-              </Box>
-              {user.isCurrentUser ? (
-                <Badge fontSize={1} tone="positive">
-                  Me
-                </Badge>
-              ) : null}
-            </Flex>
-          </MenuItem>
-        )
-      })}
+            return (
+              <MenuItem
+                key={user.id}
+                pressed={selected}
+                onClick={() => (selected ? onRemove(user.id) : onAdd(user.id))}
+              >
+                <Flex align="center">
+                  <UserAvatar user={user} size={1} />
+                  <Box paddingX={2} flex={1}>
+                    <Text>{user.displayName}</Text>
+                  </Box>
+                  {user.isCurrentUser ? (
+                    <Badge fontSize={1} tone="positive">
+                      Me
+                    </Badge>
+                  ) : null}
+                </Flex>
+              </MenuItem>
+            )
+          })}
+        </Stack>
+      </Box>
     </Menu>
   )
 }

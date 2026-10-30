@@ -56,7 +56,6 @@ const UserFilterButton = memo(function UserFilterButton({
         menu={
           <Menu>
             <UserSelectMenu
-              style={{ maxHeight: '70dvh' }}
               value={selectedUserIds}
               userList={uniqueAssignedUsers}
               onAdd={onAddUserToFilter}

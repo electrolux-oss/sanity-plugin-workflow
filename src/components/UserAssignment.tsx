@@ -93,7 +93,6 @@ export default function UserAssignment(props: UserAssignmentProps) {
 
   return (
     <UserSelectMenu
-      style={{ maxHeight: 300 }}
       value={assignees}
       userList={userList}
       onAdd={addAssignee}
