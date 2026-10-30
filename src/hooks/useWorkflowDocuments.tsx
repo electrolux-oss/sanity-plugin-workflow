@@ -10,7 +10,7 @@ import { runWithToast } from '../helpers/runWithToast'
 
 import type { Metadata, SanityDocumentWithMetadata, State } from '../types'
 
-const QUERY = `*[_type == "workflow.metadata" && (!defined($localeFilter) || count($localeFilter) == 0 || locale in $localeFilter)]|order(orderRank){
+const QUERY = `*[_type == "workflow.metadata" && (!$filterByLocale || locale in $localeFilter)]|order(orderRank){
     "_metadata": {
       _rev,
       assignees,
@@ -50,7 +50,8 @@ type WorkflowDocuments = {
   }
 }
 
-export function useWorkflowDocuments(localeFilter: string[]): WorkflowDocuments {
+/** `localeFilter` restricts documents to these locales; leave it out to load every locale. */
+export function useWorkflowDocuments(localeFilter: string[] | undefined): WorkflowDocuments {
   const toast = useToast()
   const client = useClient({ apiVersion: API_VERSION })
 
@@ -60,7 +61,7 @@ export function useWorkflowDocuments(localeFilter: string[]): WorkflowDocuments 
     loading,
     error
   } = useListeningQuery<SanityDocumentWithMetadata[]>(QUERY, {
-    params: { localeFilter },
+    params: { filterByLocale: localeFilter !== undefined, localeFilter: localeFilter ?? [] },
     initialValue: []
   })
 

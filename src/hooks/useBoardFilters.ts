@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { readStoredLocales, shouldShowDocuments, writeStoredLocales } from '../helpers/localeFilter'
+import { readStoredLocales, writeStoredLocales } from '../helpers/localeFilter'
 
 import type { CurrentUser } from 'sanity'
 
@@ -13,7 +13,6 @@ type LocaleFilter = {
   userLocales: string[] | undefined
   selectedLocales: string[]
   setSelectedLocales: (locales: string[]) => void
-  showDocuments: boolean
 }
 
 type DocumentFilters = {
@@ -50,8 +49,10 @@ export function useLocaleFilter(
 ): LocaleFilter {
   const userLocales = useMemo(() => filters?.(user)?.locales, [filters, user])
 
-  const [selectedLocales, setSelectedLocales] = useState<string[]>(
-    () => readStoredLocales(LOCALE_FILTER_STORAGE_KEY) ?? (userLocales?.[0] ? [userLocales[0]] : [])
+  const [selectedLocales, setSelectedLocales] = useState<string[]>(() =>
+    (readStoredLocales(LOCALE_FILTER_STORAGE_KEY) ?? []).filter(locale =>
+      userLocales?.includes(locale)
+    )
   )
 
   useEffect(() => {
@@ -61,8 +62,7 @@ export function useLocaleFilter(
   return {
     userLocales,
     selectedLocales,
-    setSelectedLocales,
-    showDocuments: shouldShowDocuments(userLocales, selectedLocales)
+    setSelectedLocales
   }
 }
 
@@ -76,7 +76,10 @@ export function useDocumentFilters(
   const [selectedSchemaTypes, setSelectedSchemaTypes] = useState<string[]>(schemaTypes)
 
   const uniqueAssignedUsers = useMemo(() => {
-    const assignedIds = new Set(data.flatMap(item => item._metadata?.assignees ?? []))
+    // Orphaned metadata never shows on the board, so its assignees must not appear as filters
+    const assignedIds = new Set(
+      data.filter(item => item._id).flatMap(item => item._metadata?.assignees ?? [])
+    )
 
     return userList.filter(u => assignedIds.has(u.id))
   }, [data, userList])

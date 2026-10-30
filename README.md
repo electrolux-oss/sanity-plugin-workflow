@@ -21,6 +21,9 @@ State permissions now behave the same in document actions and on the board:
 - Users without any Role can no longer move documents into States that set `roles`.
 - `transitions: []` allows moving documents to no other State. It was previously treated as
   unrestricted; leave `transitions` out to allow every State.
+- With no languages selected, the board shows documents in every language the user works in
+  instead of none, so it can be filtered by assignee alone. The board no longer preselects the
+  first language.
 - The assign menu only lists users holding a role from some State's `roles`. When the `filters`
   config returns locales, it also only lists users whose locales include the document's locale.
   Current assignees are always listed so they can be removed.
@@ -206,7 +209,7 @@ published package.
 Two areas are worth knowing about when adding tests:
 
 - **Pure helpers** (`src/helpers/`) are tested directly — filtering and sorting of
-  board items, LexoRank ordering, and whether the locale filter should gate the board.
+  board items, LexoRank ordering, and which locales the board queries.
 - **The GROQ query** in `src/hooks/useWorkflowDocuments.tsx` is tested by reading the
   `QUERY` constant out of the source file and evaluating it with
   [`groq-js`](https://github.com/sanity-io/groq-js) against a small in-memory dataset.

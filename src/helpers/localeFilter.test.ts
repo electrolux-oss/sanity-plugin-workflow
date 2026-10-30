@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  getQueryLocales,
   isLocaleFilterEnabled,
   readStoredLocales,
-  shouldShowDocuments,
   shouldShowFilters,
   writeStoredLocales
 } from './localeFilter'
@@ -22,23 +22,19 @@ describe('isLocaleFilterEnabled', () => {
   })
 })
 
-describe('shouldShowDocuments', () => {
-  // Regression: with no `filters` configured the board rendered "Have you selected a
-  // language in the filter?" forever, with no filter UI to act on.
-  it('shows documents when locale filtering is not configured', () => {
-    expect(shouldShowDocuments(undefined, [])).toBe(true)
+describe('getQueryLocales', () => {
+  it('applies no locale constraint when locale filtering is not configured', () => {
+    expect(getQueryLocales(undefined, [])).toBeUndefined()
+    expect(getQueryLocales([], ['en'])).toBeUndefined()
   })
 
-  it('shows documents when `filters` returns no locales', () => {
-    expect(shouldShowDocuments([], [])).toBe(true)
+  it('queries exactly the selected locales when locale filtering is configured', () => {
+    expect(getQueryLocales(['en', 'sv'], ['sv'])).toEqual(['sv'])
   })
 
-  it('hides documents when locales exist but none are selected', () => {
-    expect(shouldShowDocuments(['en', 'sv'], [])).toBe(false)
-  })
-
-  it('shows documents once a locale is selected', () => {
-    expect(shouldShowDocuments(['en', 'sv'], ['en'])).toBe(true)
+  // An empty selection means every locale the user works in, never every locale in the dataset
+  it('queries all of the user locales for an empty selection', () => {
+    expect(getQueryLocales(['en', 'sv'], [])).toEqual(['en', 'sv'])
   })
 })
 

@@ -9,11 +9,23 @@ export function isLocaleFilterEnabled(userLocales?: FilterOptions['locales']): b
   return Boolean(userLocales?.length)
 }
 
-export function shouldShowDocuments(
+/**
+ * The locales to query for: no constraint when locale filtering is not configured, otherwise the
+ * selection, where an empty selection means every locale the user works in.
+ */
+export function getQueryLocales(
   userLocales: FilterOptions['locales'] | undefined,
   selectedLocales: FilterOptions['locales']
-): boolean {
-  return !isLocaleFilterEnabled(userLocales) || selectedLocales.length > 0
+): FilterOptions['locales'] | undefined {
+  if (!isLocaleFilterEnabled(userLocales)) {
+    return undefined
+  }
+
+  if (selectedLocales.length === 0) {
+    return userLocales
+  }
+
+  return selectedLocales
 }
 
 /**

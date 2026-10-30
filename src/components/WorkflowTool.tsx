@@ -3,12 +3,12 @@ import { useCurrentUser } from 'sanity'
 import { Feedback } from 'sanity-plugin-utils'
 
 import { DragDropContext, Droppable } from '@hello-pangea/dnd'
-import { Box, Card, Container, Flex, Grid, Spinner, Text, useTheme_v2 } from '@sanity/ui'
+import { Box, Card, Container, Flex, Grid, Spinner, useTheme_v2 } from '@sanity/ui'
 import { useToast } from '@sanity/ui/toast'
 
 import { API_VERSION } from '../constants'
 import { filterItemsAndSort } from '../helpers/filterItemsAndSort'
-import { shouldShowFilters } from '../helpers/localeFilter'
+import { getQueryLocales, shouldShowFilters } from '../helpers/localeFilter'
 import { getTransitionBlocker, userHasStateRole } from '../helpers/permissions'
 import { getDropOrderRank } from '../helpers/ranking'
 import { useDocumentFilters, useLocaleFilter } from '../hooks/useBoardFilters'
@@ -46,12 +46,11 @@ export default function WorkflowTool(props: WorkflowToolProps) {
     [user]
   )
 
-  const { userLocales, selectedLocales, setSelectedLocales, showDocuments } = useLocaleFilter(
-    filters,
-    user
-  )
+  const { userLocales, selectedLocales, setSelectedLocales } = useLocaleFilter(filters, user)
 
-  const { workflowData, operations } = useWorkflowDocuments(selectedLocales)
+  const { workflowData, operations } = useWorkflowDocuments(
+    getQueryLocales(userLocales, selectedLocales)
+  )
   const { data, loading, error } = workflowData
   const { move } = operations
 
@@ -239,7 +238,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
                     userRoleCanDrop={userRoleCanDrop}
                     isDropDisabled={isDropDisabled}
                     draggingFrom={draggingFrom}
-                    documentCount={showDocuments ? stateItems.length : 0}
+                    documentCount={stateItems.length}
                   />
                   <Box flex={1}>
                     <Droppable
@@ -260,25 +259,15 @@ export default function WorkflowTool(props: WorkflowToolProps) {
                               <Spinner muted />
                             </Flex>
                           )}
-                          {!loading && !showDocuments && (
-                            <Flex align="center" justify="center" height="fill" padding={6}>
-                              <Text size={3} align="center">
-                                No documents found.
-                                <br /> Have you selected a language in the filter?
-                              </Text>
-                            </Flex>
-                          )}
-                          {showDocuments && (
-                            <DocumentList
-                              items={stateItems}
-                              invalidDocumentIds={invalidDocumentIds}
-                              patchingIds={patchingIds}
-                              states={states}
-                              toggleInvalidDocumentId={toggleInvalidDocumentId}
-                              userList={userList}
-                              userRoleCanDrop={userRoleCanDrop}
-                            />
-                          )}
+                          <DocumentList
+                            items={stateItems}
+                            invalidDocumentIds={invalidDocumentIds}
+                            patchingIds={patchingIds}
+                            states={states}
+                            toggleInvalidDocumentId={toggleInvalidDocumentId}
+                            userList={userList}
+                            userRoleCanDrop={userRoleCanDrop}
+                          />
                         </Card>
                       )}
                     </Droppable>

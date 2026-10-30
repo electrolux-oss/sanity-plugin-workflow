@@ -29,8 +29,11 @@ function article(id: string, updatedAt: string): Doc {
   return { _id: id, _type: 'article', _rev: `rev-${id}`, _updatedAt: updatedAt }
 }
 
-async function run(dataset: Doc[], localeFilter: string[] = []) {
-  const result = await evaluate(parse(QUERY), { dataset, params: { localeFilter } })
+async function run(dataset: Doc[], localeFilter?: string[]) {
+  const result = await evaluate(parse(QUERY), {
+    dataset,
+    params: { filterByLocale: localeFilter !== undefined, localeFilter: localeFilter ?? [] }
+  })
 
   return (await result.get()) as { _id?: string; _metadata: Metadata }[]
 }
@@ -102,12 +105,18 @@ describe('workflow documents query', () => {
       article('b', '2026-01-01T00:00:00Z')
     ]
 
-    // An empty filter must mean "no locale constraint", which is what lets the
+    // No filter must mean "no locale constraint", which is what lets the
     // board work when the optional `filters` config is not supplied.
-    it('returns every locale when the filter is empty', async () => {
-      const result = await run(dataset, [])
+    it('returns every locale without a filter', async () => {
+      const result = await run(dataset)
 
       expect(result.map(i => i._metadata.documentId).sort()).toEqual(['a', 'b'])
+    })
+
+    // Regression: an empty selection loaded every locale, so the assignee filter and Verify
+    // saw documents in languages the editor had not selected
+    it('returns nothing for an empty selection', async () => {
+      expect(await run(dataset, [])).toEqual([])
     })
 
     it('restricts to the selected locales', async () => {
