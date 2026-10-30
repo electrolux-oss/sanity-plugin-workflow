@@ -76,7 +76,9 @@ async function fetchProjectUsers(client: SanityClient, projectId: string): Promi
   const rolesByUserId = new Map(acl.map(entry => [entry.projectUserId, entry.roles]))
 
   const userIds = acl
-    .filter(entry => !(entry.roles.length === 1 && entry.roles[0]?.name === 'viewer'))
+    .filter(
+      entry => !entry.isRobot && !(entry.roles.length === 1 && entry.roles[0]?.name === 'viewer')
+    )
     .map(entry => entry.projectUserId)
 
   if (!userIds.length) {
