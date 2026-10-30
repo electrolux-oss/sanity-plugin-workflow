@@ -5,10 +5,11 @@ import { AddCircleIcon } from '@sanity/icons/AddCircle'
 import { CheckmarkIcon } from '@sanity/icons/Checkmark'
 import { RemoveCircleIcon } from '@sanity/icons/RemoveCircle'
 import { RestoreIcon } from '@sanity/icons/Restore'
-import { Badge, Box, Flex, Stack, Text, TextInput } from '@sanity/ui'
-import { Menu, MenuItem } from '@sanity/ui/menu'
+import { Badge, Box, Button, Flex, Stack, Text, TextInput } from '@sanity/ui'
 
 import { searchUsers } from '../helpers/users'
+
+import type { KeyboardEvent } from 'react'
 
 import type { UserExtended } from '../hooks/useUsers'
 
@@ -23,6 +24,25 @@ const LABELS = {
 const MENU_WIDTH = 320
 const USER_LIST_MAX_HEIGHT = 360
 
+/** Moves focus between the search field and the enabled buttons with the arrow keys. */
+function handleArrowKeys(event: KeyboardEvent<HTMLDivElement>) {
+  if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {
+    return
+  }
+
+  const focusable = Array.from(
+    event.currentTarget.querySelectorAll<HTMLElement>('input, button:not([disabled])')
+  )
+  const current = focusable.indexOf(document.activeElement as HTMLElement)
+  const next = focusable[event.key === 'ArrowDown' ? current + 1 : current - 1]
+
+  if (next) {
+    event.preventDefault()
+    event.stopPropagation()
+    next.focus()
+  }
+}
+
 type UserSelectMenuProps = {
   value: string[]
   userList: UserExtended[]
@@ -32,6 +52,10 @@ type UserSelectMenuProps = {
   labels?: Partial<typeof LABELS>
 }
 
+/**
+ * Built from plain buttons rather than MenuItems: a Menu focuses whichever item is hovered,
+ * which scrolls the list as the pointer moves and pulls focus out of the search field.
+ */
 export default function UserSelectMenu(props: UserSelectMenuProps) {
   const { value, userList, onAdd, onRemove, onClear } = props
   const labels = { ...LABELS, ...props.labels }
@@ -53,16 +77,24 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
   }, [query, userList])
 
   return (
-    <Menu style={{ width: MENU_WIDTH }}>
+    <Stack padding={1} gap={1} style={{ width: MENU_WIDTH }} onKeyDown={handleArrowKeys}>
       {meSelected ? (
-        <MenuItem
+        <Button
+          mode="bleed"
+          justify="flex-start"
+          fontSize={1}
+          padding={3}
           tone="caution"
           icon={RemoveCircleIcon}
           text={labels.removeMe}
           onClick={() => me && onRemove(me.id)}
         />
       ) : (
-        <MenuItem
+        <Button
+          mode="bleed"
+          justify="flex-start"
+          fontSize={1}
+          padding={3}
           tone="positive"
           icon={AddCircleIcon}
           text={labels.addMe}
@@ -70,7 +102,11 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
           onClick={() => me && onAdd(me.id)}
         />
       )}
-      <MenuItem
+      <Button
+        mode="bleed"
+        justify="flex-start"
+        fontSize={1}
+        padding={3}
         tone="critical"
         icon={RestoreIcon}
         text={labels.clear}
@@ -90,20 +126,30 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
         style={{ height: listHeight, maxHeight: USER_LIST_MAX_HEIGHT, overflowY: 'auto' }}
       >
         <Stack gap={1}>
-          {results.length === 0 ? <MenuItem disabled text={labels.notFound} /> : null}
+          {results.length === 0 ? (
+            <Box padding={3}>
+              <Text size={1} muted>
+                {labels.notFound}
+              </Text>
+            </Box>
+          ) : null}
           {results.map(user => {
             const selected = value.includes(user.id)
 
             return (
-              <MenuItem
+              <Button
                 key={user.id}
-                pressed={selected}
+                mode="bleed"
+                padding={3}
+                selected={selected}
                 onClick={() => (selected ? onRemove(user.id) : onAdd(user.id))}
               >
                 <Flex align="center">
                   <UserAvatar user={user} size={1} />
                   <Box paddingX={2} flex={1} style={{ minWidth: 0 }}>
-                    <Text textOverflow="ellipsis">{user.displayName}</Text>
+                    <Text size={1} textOverflow="ellipsis">
+                      {user.displayName}
+                    </Text>
                   </Box>
                   {user.isCurrentUser ? (
                     <Badge fontSize={1} tone="positive">
@@ -118,11 +164,11 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
                     </Box>
                   ) : null}
                 </Flex>
-              </MenuItem>
+              </Button>
             )
           })}
         </Stack>
       </Box>
-    </Menu>
+    </Stack>
   )
 }
