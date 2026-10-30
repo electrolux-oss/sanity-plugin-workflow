@@ -1,22 +1,25 @@
 import React from 'react'
 import { useClient } from 'sanity'
-import { UserSelectMenu } from 'sanity-plugin-utils'
 
 import { useToast } from '@sanity/ui/toast'
 
 import { API_VERSION } from '../constants'
 import { runWithToast } from '../helpers/runWithToast'
+import { useAssignableUsers } from '../hooks/useUsers'
+import UserSelectMenu from './UserSelectMenu'
 
-import type { UserExtended } from '../hooks/useUsers'
+const NO_ASSIGNEES: string[] = []
 
 type UserAssignmentProps = {
-  userList: UserExtended[]
   assignees: string[] | null
   documentId: string
+  locale: string | null | undefined
 }
 
 export default function UserAssignment(props: UserAssignmentProps) {
-  const { assignees, userList, documentId } = props
+  const { documentId, locale } = props
+  const assignees = props.assignees ?? NO_ASSIGNEES
+  const userList = useAssignableUsers(locale, assignees)
   const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
 
@@ -91,7 +94,7 @@ export default function UserAssignment(props: UserAssignmentProps) {
   return (
     <UserSelectMenu
       style={{ maxHeight: 300 }}
-      value={assignees || []}
+      value={assignees}
       userList={userList}
       onAdd={addAssignee}
       onClear={clearAssignees}

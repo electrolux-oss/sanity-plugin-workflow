@@ -1,6 +1,5 @@
 import { memo, useCallback, useMemo } from 'react'
 import { useCurrentUser, UserAvatar, useSchema } from 'sanity'
-import { UserSelectMenu } from 'sanity-plugin-utils'
 
 import { CheckmarkCircleIcon } from '@sanity/icons/CheckmarkCircle'
 import { CircleIcon } from '@sanity/icons/Circle'
@@ -9,6 +8,8 @@ import { ResetIcon } from '@sanity/icons/Reset'
 import { UserIcon } from '@sanity/icons/User'
 import { Button, Card, Flex } from '@sanity/ui'
 import { Menu, MenuButton, MenuItem } from '@sanity/ui/menu'
+
+import UserSelectMenu from './UserSelectMenu'
 
 import type { CurrentUser, Schema as SchemaRegistry } from 'sanity'
 

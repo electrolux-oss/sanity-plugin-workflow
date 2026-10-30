@@ -123,6 +123,12 @@ describe('workflow documents query', () => {
     })
   })
 
+  it('returns the document locale, which decides who can be assigned', async () => {
+    const [item] = await run([metadata('a', 'sv-SE'), article('a', '2026-01-01T00:00:00Z')])
+
+    expect(item?._metadata.locale).toBe('sv-SE')
+  })
+
   it('leaves _id undefined for orphaned metadata so Verify can detect it', async () => {
     const [item] = await run([metadata('gone')])
 

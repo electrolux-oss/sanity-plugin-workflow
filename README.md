@@ -21,6 +21,11 @@ State permissions now behave the same in document actions and on the board:
 - Users without any Role can no longer move documents into States that set `roles`.
 - `transitions: []` allows moving documents to no other State. It was previously treated as
   unrestricted; leave `transitions` out to allow every State.
+- The assign menu only lists users holding a role from some State's `roles`. When the `filters`
+  config returns locales, it also only lists users whose locales include the document's locale.
+  Current assignees are always listed so they can be removed.
+- User search in the assign menu and the assignee filter ignores case and matches anywhere in a
+  user's name or email.
 - `requireAssignment` only gates moving documents into a State. The board previously also stopped
   unassigned users from dragging documents out of it.
 

@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useClient, useCurrentUser } from 'sanity'
 
+import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
+import { getAssignableUsers } from '../helpers/users'
 
 import type { SanityClient } from 'sanity'
 
@@ -155,5 +157,19 @@ export function useProjectUsers({ apiVersion }: HookConfig = {}): UserExtended[]
   return useMemo(
     () => users.map(user => ({ ...user, isCurrentUser: user.id === currentUser?.id })),
     [users, currentUser?.id]
+  )
+}
+
+/** Project users who may be assigned to a document in `locale`, plus its current assignees. */
+export function useAssignableUsers(
+  locale: string | null | undefined,
+  assignees: string[]
+): UserExtended[] {
+  const users = useProjectUsers()
+  const { states, filters } = useWorkflowContext()
+
+  return useMemo(
+    () => getAssignableUsers(users, { states, filters, locale, assignees }),
+    [users, states, filters, locale, assignees]
   )
 }

@@ -4,15 +4,12 @@ import { UsersIcon } from '@sanity/icons/Users'
 
 import UserAssignment from '../components/UserAssignment'
 import { useWorkflowContext } from '../components/WorkflowContext'
-import { API_VERSION } from '../constants'
-import { useProjectUsers } from '../hooks/useUsers'
 
 import type { DocumentActionProps, DocumentActionDescription } from 'sanity'
 
 export function useAssignWorkflow({ id }: DocumentActionProps): DocumentActionDescription | null {
   const { metadata, loading, error } = useWorkflowContext(id)
   const [isDialogOpen, setDialogOpen] = useState(false)
-  const userList = useProjectUsers({ apiVersion: API_VERSION })
 
   if (!metadata) {
     return null
@@ -28,7 +25,7 @@ export function useAssignWorkflow({ id }: DocumentActionProps): DocumentActionDe
         setDialogOpen(false)
       },
       content: (
-        <UserAssignment userList={userList} assignees={metadata.assignees ?? []} documentId={id} />
+        <UserAssignment assignees={metadata.assignees} documentId={id} locale={metadata.locale} />
       )
     },
     onHandle: () => {

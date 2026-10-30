@@ -13,11 +13,12 @@ type UserDisplayProps = {
   userList: UserExtended[]
   assignees: string[] | null
   documentId: string
+  locale: string | null
   disabled?: boolean
 }
 
 export default function UserDisplay(props: UserDisplayProps) {
-  const { assignees, userList, documentId, disabled = false } = props
+  const { assignees, userList, documentId, locale, disabled = false } = props
 
   const [button, setButton] = useState<HTMLButtonElement | null>(null)
   const [popover, setPopover] = useState<HTMLDivElement | null>(null)
@@ -36,7 +37,7 @@ export default function UserDisplay(props: UserDisplayProps) {
   return (
     <Popover
       ref={setPopover}
-      content={<UserAssignment userList={userList} assignees={assignees} documentId={documentId} />}
+      content={<UserAssignment assignees={assignees} documentId={documentId} locale={locale} />}
       portal
       open={isOpen}
     >
