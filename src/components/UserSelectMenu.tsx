@@ -67,6 +67,7 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
       />
       <Box padding={1}>
         <TextInput
+          autoFocus
           value={query}
           placeholder={labels.searchPlaceholder}
           onChange={event => setQuery(event.currentTarget.value)}
