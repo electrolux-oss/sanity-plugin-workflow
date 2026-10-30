@@ -1,7 +1,8 @@
 import { isValidElement } from 'react'
 
 import { ChevronDownIcon } from '@sanity/icons/ChevronDown'
-import { Flex, Text, useTheme_v2 } from '@sanity/ui'
+import { Box, Flex, Text, useTheme_v2 } from '@sanity/ui'
+import { Tooltip } from '@sanity/ui/tooltip'
 
 import type { ComponentType, ReactNode } from 'react'
 
@@ -54,5 +55,31 @@ export default function FilterBarButtonContent(props: FilterBarButtonContentProp
         </Text>
       )}
     </Flex>
+  )
+}
+
+type FilterBarTooltipProps = {
+  text: string
+  disabled?: boolean
+  children: ReactNode
+}
+
+/**
+ * A tooltip for a filter bar button. A disabled button gets no hover events, so the tooltip
+ * listens on a wrapper; give a disabled button `pointerEvents: 'none'` so the pointer reaches it.
+ */
+export function FilterBarTooltip({ text, disabled = false, children }: FilterBarTooltipProps) {
+  return (
+    <Tooltip
+      portal
+      disabled={disabled}
+      content={
+        <Box padding={2}>
+          <Text size={1}>{text}</Text>
+        </Box>
+      }
+    >
+      <Box>{children}</Box>
+    </Tooltip>
   )
 }

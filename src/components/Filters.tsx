@@ -8,7 +8,10 @@ import { AvatarStack, Button, Flex } from '@sanity/ui'
 import { Menu, MenuButton } from '@sanity/ui/menu'
 
 import { getLanguageTitle } from '../helpers/localeFilter'
-import FilterBarButtonContent, { FILTER_BAR_BUTTON_PADDING } from './FilterBarButtonContent'
+import FilterBarButtonContent, {
+  FILTER_BAR_BUTTON_PADDING,
+  FilterBarTooltip
+} from './FilterBarButtonContent'
 import MultiSelectMenu from './MultiSelectMenu'
 import UserSelectMenu from './UserSelectMenu'
 
@@ -48,50 +51,57 @@ const AssigneeFilterButton = memo(function AssigneeFilterButton({
   uniqueAssignedUsers: UserExtended[]
 }) {
   const selectedUsers = uniqueAssignedUsers.filter(user => selectedUserIds.includes(user.id))
+  const nobodyToFilter = uniqueAssignedUsers.length === 0 && selectedUserIds.length === 0
 
   return (
-    <MenuButton
-      button={
-        <Button
-          {...FILTER_BAR_BUTTON_PADDING}
-          mode="ghost"
-          disabled={uniqueAssignedUsers.length === 0 && selectedUserIds.length === 0}
-        >
-          <FilterBarButtonContent
-            text="Assignees"
-            icon={UserIcon}
-            media={
-              selectedUsers.length > 0 && (
-                <AvatarStack maxLength={3} size={0}>
-                  {selectedUsers.map(user => (
-                    <UserAvatar key={user.id} user={user} size={0} />
-                  ))}
-                </AvatarStack>
-              )
-            }
-            dropdown
-          />
-        </Button>
-      }
-      id="user-filters"
-      popover={{ portal: true, placement: 'bottom-start' }}
-      menu={
-        <Menu padding={0}>
-          <UserSelectMenu
-            value={selectedUserIds}
-            userList={uniqueAssignedUsers}
-            onAdd={onAddUserToFilter}
-            onRemove={onRemoveUserFromFilter}
-            onClear={onClearUserFilter}
-            labels={{
-              addMe: 'Filter mine',
-              removeMe: 'Clear mine',
-              clear: 'Clear filters'
-            }}
-          />
-        </Menu>
-      }
-    />
+    <FilterBarTooltip
+      text="No one is assigned to the documents on the board"
+      disabled={!nobodyToFilter}
+    >
+      <MenuButton
+        button={
+          <Button
+            {...FILTER_BAR_BUTTON_PADDING}
+            mode="ghost"
+            disabled={nobodyToFilter}
+            style={{ pointerEvents: nobodyToFilter ? 'none' : 'auto' }}
+          >
+            <FilterBarButtonContent
+              text="Assignees"
+              icon={UserIcon}
+              media={
+                selectedUsers.length > 0 && (
+                  <AvatarStack maxLength={3} size={0}>
+                    {selectedUsers.map(user => (
+                      <UserAvatar key={user.id} user={user} size={0} />
+                    ))}
+                  </AvatarStack>
+                )
+              }
+              dropdown
+            />
+          </Button>
+        }
+        id="user-filters"
+        popover={{ portal: true, placement: 'bottom-start' }}
+        menu={
+          <Menu padding={0}>
+            <UserSelectMenu
+              value={selectedUserIds}
+              userList={uniqueAssignedUsers}
+              onAdd={onAddUserToFilter}
+              onRemove={onRemoveUserFromFilter}
+              onClear={onClearUserFilter}
+              labels={{
+                addMe: 'Filter mine',
+                removeMe: 'Clear mine',
+                clear: 'Clear filters'
+              }}
+            />
+          </Menu>
+        }
+      />
+    </FilterBarTooltip>
   )
 })
 

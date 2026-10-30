@@ -5,13 +5,15 @@ import { WarningOutlineIcon } from '@sanity/icons/WarningOutline'
 import { Box, Button, Dialog, Flex, Text } from '@sanity/ui'
 import { Menu, MenuButton, MenuDivider, MenuItem } from '@sanity/ui/menu'
 import { useToast } from '@sanity/ui/toast'
-import { Tooltip } from '@sanity/ui/tooltip'
 
 import { API_VERSION } from '../constants'
 import { countAffectedDocuments } from '../helpers/dataIssues'
 import { rerankStates } from '../helpers/ranking'
 import { runWithToast } from '../helpers/runWithToast'
-import FilterBarButtonContent, { FILTER_BAR_BUTTON_PADDING } from './FilterBarButtonContent'
+import FilterBarButtonContent, {
+  FILTER_BAR_BUTTON_PADDING,
+  FilterBarTooltip
+} from './FilterBarButtonContent'
 
 import type { ToastMessages } from '../helpers/runWithToast'
 import type { DataIssuesResult } from '../hooks/useDataIssues'
@@ -163,95 +165,81 @@ export default function DataIssuesMenu(props: DataIssuesMenuProps) {
 
   return (
     <>
-      <Tooltip
-        portal
-        disabled={menuOpen}
-        content={
-          <Box padding={2}>
-            <Text size={1}>{tooltip}</Text>
-          </Box>
-        }
-      >
-        {/* A disabled button gets no hover events, so the tooltip listens on this wrapper */}
-        <Box>
-          <MenuButton
-            id="workflow-data-issues"
-            onOpen={() => setMenuOpen(true)}
-            onClose={() => setMenuOpen(false)}
-            button={
-              <Button
-                {...FILTER_BAR_BUTTON_PADDING}
-                mode="ghost"
-                tone={affectedCount > 0 ? 'caution' : 'default'}
-                disabled={affectedCount === 0}
-                style={{ pointerEvents: affectedCount > 0 ? 'auto' : 'none' }}
-              >
-                <FilterBarButtonContent
-                  text={affectedCount > 0 ? `Data issues (${affectedCount})` : 'Data issues'}
-                  icon={WarningOutlineIcon}
-                  dropdown
+      <FilterBarTooltip text={tooltip} disabled={menuOpen}>
+        <MenuButton
+          id="workflow-data-issues"
+          onOpen={() => setMenuOpen(true)}
+          onClose={() => setMenuOpen(false)}
+          button={
+            <Button
+              {...FILTER_BAR_BUTTON_PADDING}
+              mode="ghost"
+              tone={affectedCount > 0 ? 'caution' : 'default'}
+              disabled={affectedCount === 0}
+              style={{ pointerEvents: affectedCount > 0 ? 'auto' : 'none' }}
+            >
+              <FilterBarButtonContent
+                text={affectedCount > 0 ? `Data issues (${affectedCount})` : 'Data issues'}
+                icon={WarningOutlineIcon}
+                dropdown
+              />
+            </Button>
+          }
+          popover={{ portal: true, placement: 'bottom-end' }}
+          menu={
+            <Menu>
+              {issues.invalidStateIds.length > 0 && (
+                <MenuItem
+                  tone="caution"
+                  text={`Correct ${plural(issues.invalidStateIds.length, 'Document State')}`}
+                  onClick={correctStates}
                 />
-              </Button>
-            }
-            popover={{ portal: true, placement: 'bottom-end' }}
-            menu={
-              <Menu>
-                {issues.invalidStateIds.length > 0 && (
-                  <MenuItem
-                    tone="caution"
-                    text={`Correct ${plural(issues.invalidStateIds.length, 'Document State')}`}
-                    onClick={correctStates}
-                  />
-                )}
-                {issues.invalidAssigneeIds.length > 0 && (
-                  <MenuItem
-                    tone="caution"
-                    text={`Remove Invalid Users from ${plural(
-                      issues.invalidAssigneeIds.length,
-                      'Document'
-                    )}`}
-                    onClick={removeInvalidAssignees}
-                  />
-                )}
-                {issues.orderIssueIds.length > 0 && (
-                  <MenuItem
-                    tone="caution"
-                    text={`Fix Order for ${plural(issues.orderIssueIds.length, 'Document')}`}
-                    onClick={() =>
-                      setConfirmation({
-                        title: 'Fix document order',
-                        description:
-                          'Every document in the affected States gets a new order rank. Their current order is kept.',
-                        confirmText: 'Fix order',
-                        onConfirm: fixOrder
-                      })
-                    }
-                  />
-                )}
-                {hasRepairs && issues.orphanIds.length > 0 && <MenuDivider />}
-                {issues.orphanIds.length > 0 && (
-                  <MenuItem
-                    tone="critical"
-                    text={`Clean Up ${plural(
-                      issues.orphanIds.length,
-                      'Orphaned Metadata Document'
-                    )}`}
-                    onClick={() =>
-                      setConfirmation({
-                        title: 'Clean up orphaned metadata',
-                        description:
-                          'Workflow metadata whose document no longer exists is deleted. This cannot be undone.',
-                        confirmText: 'Delete metadata',
-                        onConfirm: removeOrphans
-                      })
-                    }
-                  />
-                )}
-              </Menu>
-            }
-          />
-        </Box>
-      </Tooltip>
+              )}
+              {issues.invalidAssigneeIds.length > 0 && (
+                <MenuItem
+                  tone="caution"
+                  text={`Remove Invalid Users from ${plural(
+                    issues.invalidAssigneeIds.length,
+                    'Document'
+                  )}`}
+                  onClick={removeInvalidAssignees}
+                />
+              )}
+              {issues.orderIssueIds.length > 0 && (
+                <MenuItem
+                  tone="caution"
+                  text={`Fix Order for ${plural(issues.orderIssueIds.length, 'Document')}`}
+                  onClick={() =>
+                    setConfirmation({
+                      title: 'Fix document order',
+                      description:
+                        'Every document in the affected States gets a new order rank. Their current order is kept.',
+                      confirmText: 'Fix order',
+                      onConfirm: fixOrder
+                    })
+                  }
+                />
+              )}
+              {hasRepairs && issues.orphanIds.length > 0 && <MenuDivider />}
+              {issues.orphanIds.length > 0 && (
+                <MenuItem
+                  tone="critical"
+                  text={`Clean Up ${plural(issues.orphanIds.length, 'Orphaned Metadata Document')}`}
+                  onClick={() =>
+                    setConfirmation({
+                      title: 'Clean up orphaned metadata',
+                      description:
+                        'Workflow metadata whose document no longer exists is deleted. This cannot be undone.',
+                      confirmText: 'Delete metadata',
+                      onConfirm: removeOrphans
+                    })
+                  }
+                />
+              )}
+            </Menu>
+          }
+        />
+      </FilterBarTooltip>
       {confirmation && (
         <Dialog
           id="workflow-data-issue-confirmation"
