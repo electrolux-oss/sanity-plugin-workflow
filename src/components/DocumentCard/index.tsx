@@ -151,6 +151,7 @@ export function DocumentCard(props: DocumentCardProps) {
                       assignees={assignees}
                       documentId={documentId}
                       locale={item._metadata.locale}
+                      disabled={!userRoleCanDrop}
                     />
                   )}
                 </Box>

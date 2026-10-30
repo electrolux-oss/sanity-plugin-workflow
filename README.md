@@ -27,8 +27,8 @@ State permissions now behave the same in document actions and on the board:
 - The assign menu only lists users holding a role from some State's `roles`. When the `filters`
   config returns locales, it also only lists users whose locales include the document's locale.
   Current assignees are always listed so they can be removed.
-- Anyone who can open a document can change its assignees, also from the board. The board
-  previously disabled assigning on cards in States where the user lacked a role.
+- Only users holding a role for the State a document is in can change its assignees, through the
+  "Assign" document action or on the board. The document action previously allowed everyone.
 - User search in the assign menu and the assignee filter ignores case and matches anywhere in a
   user's name or email.
 - `requireAssignment` only gates moving documents into a State. The board previously also stopped
