@@ -14,11 +14,10 @@ type UserAssignmentProps = {
   assignees: string[] | null
   documentId: string
   locale: string | null | undefined
-  menuWidth?: number | string
 }
 
 export default function UserAssignment(props: UserAssignmentProps) {
-  const { documentId, locale, menuWidth } = props
+  const { documentId, locale } = props
   const assignees = props.assignees ?? NO_ASSIGNEES
   const userList = useAssignableUsers(locale, assignees)
   const client = useClient({ apiVersion: API_VERSION })
@@ -95,7 +94,6 @@ export default function UserAssignment(props: UserAssignmentProps) {
   return (
     <UserSelectMenu
       value={assignees}
-      {...(menuWidth !== undefined && { width: menuWidth })}
       userList={userList}
       onAdd={addAssignee}
       onClear={clearAssignees}

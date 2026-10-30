@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { UserAvatar } from 'sanity'
 
 import { AddCircleIcon } from '@sanity/icons/AddCircle'
@@ -29,11 +29,10 @@ type UserSelectMenuProps = {
   onRemove: (userId: string) => void
   onClear: () => void
   labels?: Partial<typeof LABELS>
-  width?: number | string
 }
 
 export default function UserSelectMenu(props: UserSelectMenuProps) {
-  const { value, userList, onAdd, onRemove, onClear, width = MENU_WIDTH } = props
+  const { value, userList, onAdd, onRemove, onClear } = props
   const labels = { ...LABELS, ...props.labels }
   const [query, setQuery] = useState('')
 
@@ -41,8 +40,19 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
   const meSelected = Boolean(me && value.includes(me.id))
   const results = useMemo(() => searchUsers(userList, query), [userList, query])
 
+  // Hold the height of the unfiltered list while searching: a popover that shrinks with its
+  // results gets repositioned by the Studio, which moves it beside the button and drops focus
+  const listRef = useRef<HTMLDivElement>(null)
+  const [listHeight, setListHeight] = useState<number>()
+
+  useLayoutEffect(() => {
+    if (!query && listRef.current) {
+      setListHeight(listRef.current.scrollHeight)
+    }
+  }, [query, userList])
+
   return (
-    <Menu style={{ width }}>
+    <Menu style={{ width: MENU_WIDTH }}>
       {meSelected ? (
         <MenuItem
           tone="caution"
@@ -74,7 +84,10 @@ export default function UserSelectMenu(props: UserSelectMenuProps) {
           onChange={event => setQuery(event.currentTarget.value)}
         />
       </Box>
-      <Box style={{ maxHeight: USER_LIST_MAX_HEIGHT, overflowY: 'auto' }}>
+      <Box
+        ref={listRef}
+        style={{ height: listHeight, maxHeight: USER_LIST_MAX_HEIGHT, overflowY: 'auto' }}
+      >
         <Stack gap={1}>
           {results.length === 0 ? <MenuItem disabled text={labels.notFound} /> : null}
           {results.map(user => {
