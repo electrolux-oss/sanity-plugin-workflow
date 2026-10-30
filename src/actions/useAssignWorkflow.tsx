@@ -5,7 +5,7 @@ import { UsersIcon } from '@sanity/icons/Users'
 
 import UserAssignment from '../components/UserAssignment'
 import { useWorkflowContext } from '../components/WorkflowContext'
-import { hasAnyRole } from '../helpers/permissions'
+import { cannotChangeAssigneesMessage, hasAnyRole } from '../helpers/permissions'
 
 import type { DocumentActionProps, DocumentActionDescription } from 'sanity'
 
@@ -26,7 +26,7 @@ export function useAssignWorkflow({ id }: DocumentActionProps): DocumentActionDe
     disabled: loading || Boolean(error) || !canChangeAssignees,
     label: `Assign`,
     ...(!canChangeAssignees && {
-      title: `Your role cannot change assignees in "${state?.title}"`
+      title: cannotChangeAssigneesMessage(state?.title)
     }),
     dialog: isDialogOpen && {
       type: 'popover',

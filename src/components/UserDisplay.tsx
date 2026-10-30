@@ -4,6 +4,7 @@ import { AddIcon } from '@sanity/icons/Add'
 import { Button, Grid, useClickOutsideEvent } from '@sanity/ui'
 import { Popover } from '@sanity/ui/popover'
 
+import ButtonTooltip from './ButtonTooltip'
 import AvatarGroup from './DocumentCard/AvatarGroup'
 import UserAssignment from './UserAssignment'
 
@@ -15,10 +16,11 @@ type UserDisplayProps = {
   documentId: string
   locale: string | null
   disabled: boolean
+  disabledReason: string
 }
 
 export default function UserDisplay(props: UserDisplayProps) {
-  const { assignees, userList, documentId, locale, disabled } = props
+  const { assignees, userList, documentId, locale, disabled, disabledReason } = props
 
   const [button, setButton] = useState<HTMLButtonElement | null>(null)
   const [popover, setPopover] = useState<HTMLDivElement | null>(null)
@@ -35,36 +37,46 @@ export default function UserDisplay(props: UserDisplayProps) {
   )
 
   return (
-    <Popover
-      ref={setPopover}
-      content={
-        isOpen && <UserAssignment assignees={assignees} documentId={documentId} locale={locale} />
-      }
-      portal
-      open={isOpen}
-      placement="right"
-      fallbackPlacements={['left-start']}
-    >
-      {!assignees || assignees.length === 0 ? (
-        <Button
-          ref={setButton}
-          onClick={toggle}
-          fontSize={1}
-          padding={2}
-          tabIndex={-1}
-          icon={AddIcon}
-          text="Assign"
-          tone="positive"
-          mode="ghost"
-          disabled={disabled}
-        />
-      ) : (
-        <Grid>
-          <Button ref={setButton} onClick={toggle} padding={0} mode="bleed" disabled={disabled}>
-            <AvatarGroup users={assignedUsers} />
-          </Button>
-        </Grid>
-      )}
-    </Popover>
+    <ButtonTooltip text={disabledReason} disabled={!disabled}>
+      <Popover
+        ref={setPopover}
+        content={
+          isOpen && <UserAssignment assignees={assignees} documentId={documentId} locale={locale} />
+        }
+        portal
+        open={isOpen}
+        placement="right"
+        fallbackPlacements={['left-start']}
+      >
+        {!assignees || assignees.length === 0 ? (
+          <Button
+            ref={setButton}
+            onClick={toggle}
+            fontSize={1}
+            padding={2}
+            tabIndex={-1}
+            icon={AddIcon}
+            text="Assign"
+            tone="positive"
+            mode="ghost"
+            disabled={disabled}
+            style={{ pointerEvents: disabled ? 'none' : 'auto' }}
+          />
+        ) : (
+          <Grid>
+            <Button
+              ref={setButton}
+              onClick={toggle}
+              padding={0}
+              mode="bleed"
+              disabled={disabled}
+              style={{ pointerEvents: disabled ? 'none' : 'auto' }}
+            >
+              <AvatarGroup users={assignedUsers} />
+            </Button>
+          </Grid>
+        )}
+      </Popover>
+    </ButtonTooltip>
   )
 }

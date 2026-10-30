@@ -22,6 +22,11 @@ export function hasAnyRole(userRoleNames: string[], roles: string[] | undefined)
   return roles.some(role => userRoleNames.includes(role))
 }
 
+/** Why a user without a role for the document's current State cannot change its assignees. */
+export function cannotChangeAssigneesMessage(stateTitle: string | undefined): string {
+  return `Your role cannot change assignees in "${stateTitle}"`
+}
+
 /**
  * The first rule that stops the user moving a document from `from` to `to`, or null when the
  * move is allowed. Roles apply to both states, while assignment is only required by the state

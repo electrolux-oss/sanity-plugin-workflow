@@ -6,6 +6,7 @@ import { EditIcon } from '@sanity/icons/Edit'
 import { PublishIcon } from '@sanity/icons/Publish'
 import { Box, Card, Flex, Stack, useTheme_v2 } from '@sanity/ui'
 
+import { cannotChangeAssigneesMessage } from '../../helpers/permissions'
 import { getValidationId } from '../../helpers/validationId'
 import UserDisplay from '../UserDisplay'
 import CompleteButton from './CompleteButton'
@@ -152,6 +153,7 @@ export function DocumentCard(props: DocumentCardProps) {
                       documentId={documentId}
                       locale={item._metadata.locale}
                       disabled={!userRoleCanDrop}
+                      disabledReason={cannotChangeAssigneesMessage(state?.title)}
                     />
                   )}
                 </Box>

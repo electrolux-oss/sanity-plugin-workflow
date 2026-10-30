@@ -10,10 +10,8 @@ import { API_VERSION } from '../constants'
 import { countAffectedDocuments } from '../helpers/dataIssues'
 import { rerankStates } from '../helpers/ranking'
 import { runWithToast } from '../helpers/runWithToast'
-import FilterBarButtonContent, {
-  FILTER_BAR_BUTTON_PADDING,
-  FilterBarTooltip
-} from './FilterBarButtonContent'
+import ButtonTooltip from './ButtonTooltip'
+import FilterBarButtonContent, { FILTER_BAR_BUTTON_PADDING } from './FilterBarButtonContent'
 
 import type { ToastMessages } from '../helpers/runWithToast'
 import type { DataIssuesResult } from '../hooks/useDataIssues'
@@ -165,7 +163,7 @@ export default function DataIssuesMenu(props: DataIssuesMenuProps) {
 
   return (
     <>
-      <FilterBarTooltip text={tooltip} disabled={menuOpen}>
+      <ButtonTooltip text={tooltip} disabled={menuOpen}>
         <MenuButton
           id="workflow-data-issues"
           onOpen={() => setMenuOpen(true)}
@@ -239,7 +237,7 @@ export default function DataIssuesMenu(props: DataIssuesMenuProps) {
             </Menu>
           }
         />
-      </FilterBarTooltip>
+      </ButtonTooltip>
       {confirmation && (
         <Dialog
           id="workflow-data-issue-confirmation"

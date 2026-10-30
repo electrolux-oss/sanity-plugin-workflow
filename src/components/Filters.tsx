@@ -8,10 +8,8 @@ import { AvatarStack, Button, Flex } from '@sanity/ui'
 import { Menu, MenuButton } from '@sanity/ui/menu'
 
 import { getLanguageTitle } from '../helpers/localeFilter'
-import FilterBarButtonContent, {
-  FILTER_BAR_BUTTON_PADDING,
-  FilterBarTooltip
-} from './FilterBarButtonContent'
+import ButtonTooltip from './ButtonTooltip'
+import FilterBarButtonContent, { FILTER_BAR_BUTTON_PADDING } from './FilterBarButtonContent'
 import MultiSelectMenu from './MultiSelectMenu'
 import UserSelectMenu from './UserSelectMenu'
 
@@ -54,7 +52,7 @@ const AssigneeFilterButton = memo(function AssigneeFilterButton({
   const nobodyToFilter = uniqueAssignedUsers.length === 0 && selectedUserIds.length === 0
 
   return (
-    <FilterBarTooltip
+    <ButtonTooltip
       text="No one is assigned to the documents on the board"
       disabled={!nobodyToFilter}
     >
@@ -101,7 +99,7 @@ const AssigneeFilterButton = memo(function AssigneeFilterButton({
           </Menu>
         }
       />
-    </FilterBarTooltip>
+    </ButtonTooltip>
   )
 })
 
@@ -141,34 +139,41 @@ const LocaleFilterButton = memo(function LocaleFilterButton({
   ]
 
   return (
-    <MenuButton
-      button={
-        <Button {...FILTER_BAR_BUTTON_PADDING} mode="ghost" disabled={localeFilterDisabled}>
-          <FilterBarButtonContent
-            text={
-              selectedLocales.length > 0 ? `Languages (${selectedLocales.length})` : 'Languages'
-            }
-            icon={EarthAmericasIcon}
-            dropdown
-          />
-        </Button>
-      }
-      popover={{ portal: true, placement: 'bottom-start', animate: true }}
-      id="locale-filters"
-      menu={
-        <Menu padding={0}>
-          <MultiSelectMenu
-            options={options}
-            value={selectedLocales}
-            onAdd={locale => setSelectedLocales([...selectedLocales, locale])}
-            onRemove={locale => setSelectedLocales(selectedLocales.filter(l => l !== locale))}
-            actions={actions}
-            searchPlaceholder="Search languages"
-            notFound="No languages found"
-          />
-        </Menu>
-      }
-    />
+    <ButtonTooltip text="You only work in one language" disabled={!localeFilterDisabled}>
+      <MenuButton
+        button={
+          <Button
+            {...FILTER_BAR_BUTTON_PADDING}
+            mode="ghost"
+            disabled={localeFilterDisabled}
+            style={{ pointerEvents: localeFilterDisabled ? 'none' : 'auto' }}
+          >
+            <FilterBarButtonContent
+              text={
+                selectedLocales.length > 0 ? `Languages (${selectedLocales.length})` : 'Languages'
+              }
+              icon={EarthAmericasIcon}
+              dropdown
+            />
+          </Button>
+        }
+        popover={{ portal: true, placement: 'bottom-start', animate: true }}
+        id="locale-filters"
+        menu={
+          <Menu padding={0}>
+            <MultiSelectMenu
+              options={options}
+              value={selectedLocales}
+              onAdd={locale => setSelectedLocales([...selectedLocales, locale])}
+              onRemove={locale => setSelectedLocales(selectedLocales.filter(l => l !== locale))}
+              actions={actions}
+              searchPlaceholder="Search languages"
+              notFound="No languages found"
+            />
+          </Menu>
+        }
+      />
+    </ButtonTooltip>
   )
 })
 
