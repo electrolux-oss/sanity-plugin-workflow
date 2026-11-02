@@ -1,7 +1,7 @@
 # Sanity Workflow Plugin - Electrolux Version (for Sanity Studio v6)
 
 > This plugin supports **Sanity Studio v6.20 and newer**.
-> This is a forked version of Sanitys own [Sanity Workflow Plugin (v1.0.3)](https://www.npmjs.com/package/sanity-plugin-workflow/v/1.0.3)
+> Originally based on Sanity's [sanity-io/sanity-plugin-workflow](https://github.com/sanity-io/sanity-plugin-workflow) (v1.0.3, MIT).
 
 > [!WARNING]
 > Breaking changes introduced in version 5.0.0 of this plugin. See [Breaking changes](#breaking-changes).
