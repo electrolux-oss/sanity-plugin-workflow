@@ -1,12 +1,12 @@
-import { LexoRank } from 'lexorank'
 import { useCallback, useState } from 'react'
 import { useClient } from 'sanity'
 
 import { SplitVerticalIcon } from '@sanity/icons/SplitVertical'
-import { useToast } from '@sanity/ui'
+import { useToast } from '@sanity/ui/toast'
 
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
+import { rankBetween } from '../helpers/ranking'
 
 import type { DocumentActionProps, DocumentActionDescription } from 'sanity'
 
@@ -19,10 +19,6 @@ export function useBeginWorkflow({
   const toast = useToast()
   const [beginning, setBeginning] = useState(false)
   const [complete, setComplete] = useState(false)
-
-  if (error) {
-    console.error(error)
-  }
 
   const handle = useCallback(async () => {
     setBeginning(true)
@@ -38,9 +34,7 @@ export function useBeginWorkflow({
         _type: `workflow.metadata`,
         documentId: id,
         state: states?.[0]?.id,
-        orderRank: lowestOrderFirstState
-          ? LexoRank.parse(lowestOrderFirstState).genNext().toString()
-          : LexoRank.min().toString(),
+        orderRank: rankBetween(null, lowestOrderFirstState),
         locale: draft?.locale
       })
 
@@ -70,7 +64,7 @@ export function useBeginWorkflow({
 
   return {
     icon: SplitVerticalIcon,
-    disabled: metadata || loading || Boolean(error) || beginning || complete,
+    disabled: loading || Boolean(error) || beginning,
     label: beginning ? `Beginning...` : `Begin Workflow`,
     onHandle: handle
   }

@@ -1,10 +1,12 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 import { useClient } from 'sanity'
 
 import { CheckmarkIcon } from '@sanity/icons/Checkmark'
-import { Box, Button, Text, Tooltip, useToast } from '@sanity/ui'
+import { Box, Button, Text } from '@sanity/ui'
+import { Tooltip } from '@sanity/ui/tooltip'
+import { useToast } from '@sanity/ui/toast'
 
-import { handleDeleteMetadata } from '../../actions/useCompleteWorkflow'
+import { completeWorkflow } from '../../actions/useCompleteWorkflow'
 import { API_VERSION } from '../../constants'
 
 type CompleteButtonProps = {
@@ -13,21 +15,13 @@ type CompleteButtonProps = {
 }
 
 export default function CompleteButton(props: CompleteButtonProps) {
-  const { documentId, disabled = false } = props
+  const { documentId, disabled } = props
   const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
 
-  const handleComplete: React.MouseEventHandler<HTMLButtonElement> = useCallback(
-    async event => {
-      const id = event.currentTarget.value
-
-      if (!id) {
-        return
-      }
-
-      await handleDeleteMetadata(client, toast, id)
-    },
-    [client, toast]
+  const handleComplete = useCallback(
+    () => completeWorkflow(client, toast, documentId),
+    [client, toast, documentId]
   )
 
   return (
@@ -35,12 +29,11 @@ export default function CompleteButton(props: CompleteButtonProps) {
       portal
       content={
         <Box padding={2}>
-          <Text size={1}>Remove this document from Workflow</Text>
+          <Text size={1}>Ends the workflow for this document.</Text>
         </Box>
       }
     >
       <Button
-        value={documentId}
         onClick={handleComplete}
         text="Complete"
         icon={CheckmarkIcon}

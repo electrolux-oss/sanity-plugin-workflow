@@ -1,119 +1,125 @@
 import React from 'react'
 import { useClient } from 'sanity'
-import { UserSelectMenu } from 'sanity-plugin-utils'
 
-import { useToast } from '@sanity/ui'
+import { useToast } from '@sanity/ui/toast'
 
 import { API_VERSION } from '../constants'
+import { runWithToast } from '../helpers/runWithToast'
+import { useAssignableUsers } from '../hooks/useUsers'
+import UserSelectMenu from './UserSelectMenu'
 
-import type { UserExtended } from '../hooks/useUsers'
+const NO_ASSIGNEES: string[] = []
 
 type UserAssignmentProps = {
-  userList: UserExtended[]
   assignees: string[] | null
   documentId: string
+  locale: string | null | undefined
 }
 
 export default function UserAssignment(props: UserAssignmentProps) {
-  const { assignees, userList, documentId } = props
+  const { documentId, locale } = props
+  const assignees = props.assignees ?? NO_ASSIGNEES
+  const userList = useAssignableUsers(locale, assignees)
+  const [selected, setSelected] = React.useState(assignees)
+
+  // Show changes straight away instead of waiting for the listener to echo the patch back
+  React.useEffect(() => {
+    setSelected(assignees)
+  }, [assignees])
   const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
 
-  const addAssignee = React.useCallback(
+  const metadataId = `workflow-metadata.${documentId}`
+
+  const findUser = React.useCallback(
     (userId: string) => {
       const user = userList.find(u => u.id === userId)
 
-      if (!userId || !user) {
-        return toast.push({
-          status: 'error',
-          title: 'Could not find User'
-        })
+      if (!user) {
+        toast.push({ status: 'error', title: 'Could not find User' })
       }
 
-      return client
-        .patch(`workflow-metadata.${documentId}`)
-        .setIfMissing({ assignees: [] })
-        .insert(`after`, `assignees[-1]`, [userId])
-        .commit()
-        .then(() => {
-          return toast.push({
-            title: `Added ${user.displayName} to assignees`,
-            status: 'success'
-          })
-        })
-        .catch(err => {
-          console.error(err)
-
-          return toast.push({
-            title: `Failed to add assignee`,
-            description: userId,
-            status: 'error'
-          })
-        })
+      return user
     },
-    [documentId, client, toast, userList]
+    [toast, userList]
+  )
+
+  const addAssignee = React.useCallback(
+    async (userId: string) => {
+      const user = findUser(userId)
+
+      if (!user) {
+        return
+      }
+
+      setSelected(current => [...current, userId])
+
+      const added = await runWithToast(
+        toast,
+        () =>
+          client
+            .patch(metadataId)
+            .setIfMissing({ assignees: [] })
+            .insert(`after`, `assignees[-1]`, [userId])
+            .commit(),
+        { success: `Added ${user.displayName} to assignees`, error: 'Failed to add assignee' }
+      )
+
+      if (!added) {
+        setSelected(current => current.filter(id => id !== userId))
+      }
+    },
+    [client, toast, metadataId, findUser]
   )
 
   const removeAssignee = React.useCallback(
-    (userId: string) => {
-      const user = userList.find(u => u.id === userId)
+    async (userId: string) => {
+      const user = findUser(userId)
 
-      if (!userId || !user) {
-        return toast.push({
-          status: 'error',
-          title: 'Could not find User'
-        })
+      if (!user) {
+        return
       }
 
-      return client
-        .patch(`workflow-metadata.${documentId}`)
-        .unset([`assignees[@ == "${userId}"]`])
-        .commit()
-        .then(() => {
-          return toast.push({
-            title: `Removed ${user.displayName} from assignees`,
-            status: 'success'
-          })
-        })
-        .catch(err => {
-          console.error(err)
+      setSelected(current => current.filter(id => id !== userId))
 
-          return toast.push({
-            title: `Failed to remove assignee`,
-            description: documentId,
-            status: 'error'
-          })
-        })
+      const removed = await runWithToast(
+        toast,
+        () =>
+          client
+            .patch(metadataId)
+            .unset([`assignees[@ == "${userId}"]`])
+            .commit(),
+        {
+          success: `Removed ${user.displayName} from assignees`,
+          error: 'Failed to remove assignee'
+        }
+      )
+
+      if (!removed) {
+        setSelected(current => [...current, userId])
+      }
     },
-    [client, toast, documentId, userList]
+    [client, toast, metadataId, findUser]
   )
 
-  const clearAssignees = React.useCallback(() => {
-    return client
-      .patch(`workflow-metadata.${documentId}`)
-      .unset([`assignees`])
-      .commit()
-      .then(() => {
-        return toast.push({
-          title: `Cleared assignees`,
-          status: 'success'
-        })
-      })
-      .catch(err => {
-        console.error(err)
+  const clearAssignees = React.useCallback(async () => {
+    const previous = selected
+    setSelected(NO_ASSIGNEES)
 
-        return toast.push({
-          title: `Failed to clear assignees`,
-          description: documentId,
-          status: 'error'
-        })
-      })
-  }, [client, toast, documentId])
+    const cleared = await runWithToast(
+      toast,
+      () => client.patch(metadataId).unset([`assignees`]).commit(),
+      { success: 'Cleared assignees', error: 'Failed to clear assignees' }
+    )
+
+    if (!cleared) {
+      setSelected(previous)
+    }
+  }, [client, toast, metadataId, selected])
 
   return (
     <UserSelectMenu
-      style={{ maxHeight: 300 }}
-      value={assignees || []}
+      value={selected}
       userList={userList}
       onAdd={addAssignee}
       onClear={clearAssignees}

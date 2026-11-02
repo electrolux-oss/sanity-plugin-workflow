@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useClient, useCurrentUser } from 'sanity'
 
+import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
+import { getAssignableUsers } from '../helpers/users'
 
 import type { SanityClient } from 'sanity'
 
@@ -74,7 +76,9 @@ async function fetchProjectUsers(client: SanityClient, projectId: string): Promi
   const rolesByUserId = new Map(acl.map(entry => [entry.projectUserId, entry.roles]))
 
   const userIds = acl
-    .filter(entry => !(entry.roles.length === 1 && entry.roles[0]?.name === 'viewer'))
+    .filter(
+      entry => !entry.isRobot && !(entry.roles.length === 1 && entry.roles[0]?.name === 'viewer')
+    )
     .map(entry => entry.projectUserId)
 
   if (!userIds.length) {
@@ -100,7 +104,7 @@ export function useProjectUsers({ apiVersion }: HookConfig = {}): UserExtended[]
   const { projectId } = client.config()
 
   const [users, setUsers] = useState<UserExtended[]>(
-    () => (projectId ? resolved.get(projectId)?.users : undefined) ?? EMPTY_USERS
+    () => resolved.get(projectId ?? '')?.users ?? EMPTY_USERS
   )
 
   useEffect(() => {
@@ -155,5 +159,19 @@ export function useProjectUsers({ apiVersion }: HookConfig = {}): UserExtended[]
   return useMemo(
     () => users.map(user => ({ ...user, isCurrentUser: user.id === currentUser?.id })),
     [users, currentUser?.id]
+  )
+}
+
+/** Project users who may be assigned to a document in `locale`, plus its current assignees. */
+export function useAssignableUsers(
+  locale: string | null | undefined,
+  assignees: string[]
+): UserExtended[] {
+  const users = useProjectUsers()
+  const { states, filters } = useWorkflowContext()
+
+  return useMemo(
+    () => getAssignableUsers(users, { states, filters, locale, assignees }),
+    [users, states, filters, locale, assignees]
   )
 }

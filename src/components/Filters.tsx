@@ -1,21 +1,25 @@
 import { memo, useCallback, useMemo } from 'react'
-import { useCurrentUser, UserAvatar, useSchema } from 'sanity'
-import { UserSelectMenu } from 'sanity-plugin-utils'
+import { UserAvatar, useSchema } from 'sanity'
 
-import { CheckmarkCircleIcon } from '@sanity/icons/CheckmarkCircle'
-import { CircleIcon } from '@sanity/icons/Circle'
 import { EarthAmericasIcon } from '@sanity/icons/EarthAmericas'
-import { ResetIcon } from '@sanity/icons/Reset'
+import { RestoreIcon } from '@sanity/icons/Restore'
 import { UserIcon } from '@sanity/icons/User'
-import { Button, Card, Flex, Menu, MenuButton, MenuItem } from '@sanity/ui'
+import { AvatarStack, Button, Flex } from '@sanity/ui'
+import { Menu, MenuButton } from '@sanity/ui/menu'
 
-import type { CurrentUser, Schema as SchemaRegistry } from 'sanity'
+import { getLanguageTitle } from '../helpers/localeFilter'
+import ButtonTooltip from './ButtonTooltip'
+import FilterBarButtonContent, { FILTER_BAR_BUTTON_PADDING } from './FilterBarButtonContent'
+import MultiSelectMenu from './MultiSelectMenu'
+import UserSelectMenu from './UserSelectMenu'
+
+import type { Schema as SchemaRegistry } from 'sanity'
+
+import type { MultiSelectAction } from './MultiSelectMenu'
 
 import type { UserExtended } from '../hooks/useUsers'
 
-import type { FilterOptions } from '../types'
-
-const languageNames = new Intl.DisplayNames('en', { type: 'language' })
+import type { FilterOptions, Language } from '../types'
 
 type FiltersProps = {
   uniqueAssignedUsers: UserExtended[]
@@ -24,13 +28,14 @@ type FiltersProps = {
   schemaTypes: string[]
   selectedSchemaTypes: string[]
   userLocales?: FilterOptions['locales'] | undefined
+  languages: Language[]
   toggleSelectedUser: (userId: string) => void
   resetSelectedUsers: () => void
   toggleSelectedSchemaType: (schemaType: string) => void
-  toggleLocales: (locales: FilterOptions['locales']) => void
+  setSelectedLocales: (locales: FilterOptions['locales']) => void
 }
 
-const UserFilterButton = memo(function UserFilterButton({
+const AssigneeFilterButton = memo(function AssigneeFilterButton({
   selectedUserIds,
   onAddUserToFilter,
   onRemoveUserFromFilter,
@@ -43,18 +48,43 @@ const UserFilterButton = memo(function UserFilterButton({
   onClearUserFilter: () => void
   uniqueAssignedUsers: UserExtended[]
 }) {
+  const selectedUsers = uniqueAssignedUsers.filter(user => selectedUserIds.includes(user.id))
+  const nobodyToFilter = uniqueAssignedUsers.length === 0 && selectedUserIds.length === 0
+
   return (
-    <Card tone="default">
+    <ButtonTooltip
+      text="No one is assigned to the documents on the board"
+      disabled={!nobodyToFilter}
+    >
       <MenuButton
         button={
-          <Button padding={3} fontSize={1} text="Filter Assignees" tone="primary" icon={UserIcon} />
+          <Button
+            {...FILTER_BAR_BUTTON_PADDING}
+            mode="ghost"
+            disabled={nobodyToFilter}
+            style={{ pointerEvents: nobodyToFilter ? 'none' : 'auto' }}
+          >
+            <FilterBarButtonContent
+              text="Assignees"
+              icon={UserIcon}
+              media={
+                selectedUsers.length > 0 && (
+                  <AvatarStack maxLength={3} size={0}>
+                    {selectedUsers.map(user => (
+                      <UserAvatar key={user.id} user={user} size={0} />
+                    ))}
+                  </AvatarStack>
+                )
+              }
+              dropdown
+            />
+          </Button>
         }
         id="user-filters"
-        popover={{ portal: true, placement: 'top' }}
+        popover={{ portal: true, placement: 'bottom-start' }}
         menu={
-          <Menu>
+          <Menu padding={0}>
             <UserSelectMenu
-              style={{ maxHeight: '70dvh' }}
               value={selectedUserIds}
               userList={uniqueAssignedUsers}
               onAdd={onAddUserToFilter}
@@ -69,144 +99,81 @@ const UserFilterButton = memo(function UserFilterButton({
           </Menu>
         }
       />
-    </Card>
-  )
-})
-
-const SlimUserFilterButton = memo(function SlimUserFilterButton({
-  meInUniqueAssignees,
-  currentUser,
-  uniqueAssigneesNotMe,
-  selectedUserIds,
-  toggleSelectedUser,
-  resetSelectedUsers
-}: {
-  meInUniqueAssignees: UserExtended | undefined
-  currentUser: CurrentUser | null
-  uniqueAssigneesNotMe: UserExtended[]
-  selectedUserIds: string[]
-  toggleSelectedUser: (userId: string) => void
-  resetSelectedUsers: () => void
-}) {
-  return (
-    <Card tone="inherit">
-      <Flex gap={2}>
-        {meInUniqueAssignees && currentUser && (
-          <>
-            <Button
-              padding={0}
-              mode={selectedUserIds.includes(currentUser.id) ? `default` : `bleed`}
-              onClick={() => toggleSelectedUser(currentUser.id)}
-            >
-              <Flex padding={1} align="center" justify="center">
-                <UserAvatar user={currentUser.id} size={1} withTooltip />
-              </Flex>
-            </Button>
-            <Card borderRight style={{ height: 30 }} tone="inherit" />
-          </>
-        )}
-
-        {uniqueAssigneesNotMe.map(user => (
-          <Button
-            key={user.id}
-            padding={0}
-            mode={selectedUserIds.includes(user.id) ? 'default' : 'bleed'}
-            tone={selectedUserIds.includes(user.id) ? 'primary' : 'default'}
-            onClick={() => toggleSelectedUser(user.id)}
-          >
-            <Flex padding={1} align="center" justify="center">
-              <UserAvatar user={user} size={1} withTooltip />
-            </Flex>
-          </Button>
-        ))}
-
-        {selectedUserIds.length > 0 && (
-          <Button
-            padding={3}
-            fontSize={1}
-            text="Clear"
-            onClick={resetSelectedUsers}
-            mode="ghost"
-            tone="critical"
-            icon={ResetIcon}
-          />
-        )}
-      </Flex>
-    </Card>
+    </ButtonTooltip>
   )
 })
 
 const LocaleFilterButton = memo(function LocaleFilterButton({
   userLocales,
+  languages,
   selectedLocales,
-  toggleLocales,
+  setSelectedLocales,
   localeFilterDisabled
 }: {
-  userLocales?: FilterOptions['locales'] | undefined
+  userLocales: FilterOptions['locales']
+  languages: Language[]
   selectedLocales: FilterOptions['locales']
-  toggleLocales: (locales: FilterOptions['locales']) => void
+  setSelectedLocales: (locales: FilterOptions['locales']) => void
   localeFilterDisabled: boolean
 }) {
-  const sortedLocales = useMemo(
+  const options = useMemo(
     () =>
       userLocales
-        ? [...userLocales].sort((a, b) => {
-            const aSelected = selectedLocales.includes(a) ? -1 : 1
-            const bSelected = selectedLocales.includes(b) ? -1 : 1
-            return aSelected - bSelected
-          })
-        : undefined,
-    [userLocales, selectedLocales]
+        .map(locale => ({
+          id: locale,
+          label: getLanguageTitle(locale, languages),
+          keywords: [locale]
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [userLocales, languages]
   )
 
+  const actions: MultiSelectAction[] = [
+    {
+      tone: 'critical',
+      icon: RestoreIcon,
+      text: 'Clear',
+      disabled: selectedLocales.length === 0,
+      onClick: () => setSelectedLocales([])
+    }
+  ]
+
   return (
-    <Card tone="default">
+    <ButtonTooltip text="You only work in one language" disabled={!localeFilterDisabled}>
       <MenuButton
         button={
           <Button
-            padding={3}
-            fontSize={1}
-            text="Filter Languages"
-            tone="primary"
-            icon={EarthAmericasIcon}
+            {...FILTER_BAR_BUTTON_PADDING}
+            mode="ghost"
             disabled={localeFilterDisabled}
-          />
+            style={{ pointerEvents: localeFilterDisabled ? 'none' : 'auto' }}
+          >
+            <FilterBarButtonContent
+              text={
+                selectedLocales.length > 0 ? `Languages (${selectedLocales.length})` : 'Languages'
+              }
+              icon={EarthAmericasIcon}
+              dropdown
+            />
+          </Button>
         }
-        popover={{ portal: true, placement: 'top', animate: true }}
+        popover={{ portal: true, placement: 'bottom-start', animate: true }}
         id="locale-filters"
         menu={
-          <Menu style={{ maxHeight: '70dvh' }}>
-            <MenuItem
-              fontSize={1}
-              onClick={() => toggleLocales(userLocales!)}
-              disabled={localeFilterDisabled}
-              tone="positive"
-              padding={3}
-              text="Toggle all"
+          <Menu padding={0}>
+            <MultiSelectMenu
+              options={options}
+              value={selectedLocales}
+              onAdd={locale => setSelectedLocales([...selectedLocales, locale])}
+              onRemove={locale => setSelectedLocales(selectedLocales.filter(l => l !== locale))}
+              actions={actions}
+              searchPlaceholder="Search languages"
+              notFound="No languages found"
             />
-            {sortedLocales?.map(locale => {
-              const selected = selectedLocales.includes(locale)
-              return (
-                <MenuItem
-                  key={locale}
-                  text={languageNames.of(locale)}
-                  icon={
-                    selected ? (
-                      <CheckmarkCircleIcon
-                        style={{ color: 'var(--card-badge-positive-icon-color)' }}
-                      />
-                    ) : (
-                      CircleIcon
-                    )
-                  }
-                  onClick={() => toggleLocales([locale])}
-                />
-              )
-            })}
           </Menu>
         }
       />
-    </Card>
+    </ButtonTooltip>
   )
 })
 
@@ -232,14 +199,13 @@ const SchemaTypeButtons = memo(function SchemaTypeButtons({
 
         return (
           <Button
-            padding={3}
-            fontSize={1}
             key={typeName}
-            text={schemaType?.title ?? typeName}
-            icon={schemaType?.icon ?? undefined}
+            {...FILTER_BAR_BUTTON_PADDING}
             mode={selectedSchemaTypes.includes(typeName) ? `default` : `ghost`}
             onClick={() => toggleSelectedSchemaType(typeName)}
-          />
+          >
+            <FilterBarButtonContent text={schemaType.title ?? typeName} icon={schemaType.icon} />
+          </Button>
         )
       })}
     </Flex>
@@ -256,11 +222,11 @@ function Filters(props: FiltersProps) {
     toggleSelectedUser,
     resetSelectedUsers,
     toggleSelectedSchemaType,
-    toggleLocales,
-    userLocales
+    setSelectedLocales,
+    userLocales,
+    languages
   } = props
 
-  const currentUser = useCurrentUser()
   const schema = useSchema()
 
   const onAddUserToFilter = useCallback(
@@ -285,64 +251,38 @@ function Filters(props: FiltersProps) {
     resetSelectedUsers()
   }, [resetSelectedUsers])
 
-  const meInUniqueAssignees = useMemo(
-    () =>
-      currentUser?.id ? uniqueAssignedUsers.find(u => u.id === currentUser.id) : undefined,
-    [currentUser?.id, uniqueAssignedUsers]
-  )
-
-  const uniqueAssigneesNotMe = useMemo(
-    () => uniqueAssignedUsers.filter(u => u.id !== currentUser?.id),
-    [uniqueAssignedUsers, currentUser?.id]
-  )
-
-  const shouldDisplayUserFilter = uniqueAssignedUsers.length > 5
-
   const localeFilterDisabled = Boolean(userLocales && userLocales.length < 2)
 
   return (
-    <Card tone="primary" padding={2} borderBottom style={{ overflowX: 'hidden' }}>
-      <Flex align="center">
-        <Flex align="center" gap={4} flex={1}>
-          {shouldDisplayUserFilter && (
-            <UserFilterButton
-              selectedUserIds={selectedUserIds}
-              onAddUserToFilter={onAddUserToFilter}
-              onRemoveUserFromFilter={onRemoveUserFromFilter}
-              onClearUserFilter={onClearUserFilter}
-              uniqueAssignedUsers={uniqueAssignedUsers}
-            />
-          )}
-          {!shouldDisplayUserFilter && (
-            <SlimUserFilterButton
-              meInUniqueAssignees={meInUniqueAssignees}
-              currentUser={currentUser}
-              uniqueAssigneesNotMe={uniqueAssigneesNotMe}
-              selectedUserIds={selectedUserIds}
-              toggleSelectedUser={toggleSelectedUser}
-              resetSelectedUsers={resetSelectedUsers}
-            />
-          )}
-          {userLocales && (
-            <LocaleFilterButton
-              userLocales={userLocales}
-              selectedLocales={selectedLocales}
-              toggleLocales={toggleLocales}
-              localeFilterDisabled={localeFilterDisabled}
-            />
-          )}
-        </Flex>
-
-        {schemaTypes.length > 1 && (
-          <SchemaTypeButtons
-            schemaTypes={schemaTypes}
-            selectedSchemaTypes={selectedSchemaTypes}
-            toggleSelectedSchemaType={toggleSelectedSchemaType}
-            schema={schema}
+    <Flex align="center" flex={1}>
+      <Flex align="center" gap={4} flex={1}>
+        <AssigneeFilterButton
+          selectedUserIds={selectedUserIds}
+          onAddUserToFilter={onAddUserToFilter}
+          onRemoveUserFromFilter={onRemoveUserFromFilter}
+          onClearUserFilter={onClearUserFilter}
+          uniqueAssignedUsers={uniqueAssignedUsers}
+        />
+        {userLocales && (
+          <LocaleFilterButton
+            userLocales={userLocales}
+            languages={languages}
+            selectedLocales={selectedLocales}
+            setSelectedLocales={setSelectedLocales}
+            localeFilterDisabled={localeFilterDisabled}
           />
         )}
       </Flex>
-    </Card>
+
+      {schemaTypes.length > 1 && (
+        <SchemaTypeButtons
+          schemaTypes={schemaTypes}
+          selectedSchemaTypes={selectedSchemaTypes}
+          toggleSelectedSchemaType={toggleSelectedSchemaType}
+          schema={schema}
+        />
+      )}
+    </Flex>
   )
 }
 

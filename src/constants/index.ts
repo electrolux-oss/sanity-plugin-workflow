@@ -30,5 +30,7 @@ export const DEFAULT_CONFIG: Required<WorkflowConfig> = {
       requireAssignment: true
     }
   ]),
-  filters: () => undefined
+  filters: () => undefined,
+  languages: [],
+  dataIssueRoles: undefined
 }

@@ -38,27 +38,32 @@ export default function StateTitle(props: StateTitleProps) {
   return (
     <StyledStickyCard paddingY={4} padding={3} tone="inherit">
       <Flex gap={3} align="center">
-        <Badge tone={tone} style={{ opacity: !userRoleCanDrop || isDropDisabled ? 0.5 : 1 }}>
+        <Badge
+          tone={tone}
+          padding={2}
+          radius={4}
+          style={{ opacity: !userRoleCanDrop || isDropDisabled ? 0.5 : 1 }}
+        >
           {state.title}
         </Badge>
-        {userRoleCanDrop ? null : (
+        {!userRoleCanDrop && (
           <Status
             text="You do not have permissions to move documents to this State"
             icon={InfoOutlineIcon}
           />
         )}
-        {requireAssignment ? (
+        {requireAssignment && (
           <Status
             text="You must be assigned to the document to move documents to this State"
             icon={UserIcon}
           />
-        ) : null}
+        )}
         <Box flex={1}>
-          {documentCount > 0 ? (
+          {documentCount > 0 && (
             <Text weight="semibold" align="right" size={1}>
               {documentCount}
             </Text>
-          ) : null}
+          )}
         </Box>
       </Flex>
     </StyledStickyCard>

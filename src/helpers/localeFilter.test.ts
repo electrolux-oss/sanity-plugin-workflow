@@ -1,10 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
+  getLanguageTitle,
+  getQueryLocales,
   isLocaleFilterEnabled,
   readStoredLocales,
-  shouldShowDocuments,
-  shouldShowFilters
+  shouldShowFilters,
+  writeStoredLocales
 } from './localeFilter'
 
 describe('isLocaleFilterEnabled', () => {
@@ -21,23 +23,31 @@ describe('isLocaleFilterEnabled', () => {
   })
 })
 
-describe('shouldShowDocuments', () => {
-  // Regression: with no `filters` configured the board rendered "Have you selected a
-  // language in the filter?" forever, with no filter UI to act on.
-  it('shows documents when locale filtering is not configured', () => {
-    expect(shouldShowDocuments(undefined, [])).toBe(true)
+describe('getLanguageTitle', () => {
+  const languages = [{ id: 'de-CH', title: 'German (Switzerland)' }]
+
+  it('uses the configured title', () => {
+    expect(getLanguageTitle('de-CH', languages)).toBe('German (Switzerland)')
   })
 
-  it('shows documents when `filters` returns no locales', () => {
-    expect(shouldShowDocuments([], [])).toBe(true)
+  it('falls back to the English language name', () => {
+    expect(getLanguageTitle('sv-SE', languages)).toBe('Swedish (Sweden)')
+  })
+})
+
+describe('getQueryLocales', () => {
+  it('applies no locale constraint when locale filtering is not configured', () => {
+    expect(getQueryLocales(undefined, [])).toBeUndefined()
+    expect(getQueryLocales([], ['en'])).toBeUndefined()
   })
 
-  it('hides documents when locales exist but none are selected', () => {
-    expect(shouldShowDocuments(['en', 'sv'], [])).toBe(false)
+  it('queries exactly the selected locales when locale filtering is configured', () => {
+    expect(getQueryLocales(['en', 'sv'], ['sv'])).toEqual(['sv'])
   })
 
-  it('shows documents once a locale is selected', () => {
-    expect(shouldShowDocuments(['en', 'sv'], ['en'])).toBe(true)
+  // An empty selection means every locale the user works in, never every locale in the dataset
+  it('queries all of the user locales for an empty selection', () => {
+    expect(getQueryLocales(['en', 'sv'], [])).toEqual(['en', 'sv'])
   })
 })
 
@@ -108,5 +118,34 @@ describe('readStoredLocales', () => {
 
     withStorage(JSON.stringify([1, 2]))
     expect(readStoredLocales(KEY)).toBeUndefined()
+  })
+})
+
+describe('writeStoredLocales', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('stores the selection as JSON', () => {
+    const setItem = vi.fn()
+    vi.stubGlobal('window', { localStorage: { setItem } })
+
+    writeStoredLocales('key', ['en', 'sv'])
+
+    expect(setItem).toHaveBeenCalledWith('key', '["en","sv"]')
+  })
+
+  // Regression: toggling a locale crashed the tool where storage throws, such as some
+  // private browsing modes, although reading was already guarded.
+  it('does not throw when storage is unavailable', () => {
+    vi.stubGlobal('window', {
+      localStorage: {
+        setItem: () => {
+          throw new Error('QuotaExceededError')
+        }
+      }
+    })
+
+    expect(() => writeStoredLocales('key', ['en'])).not.toThrow()
   })
 })

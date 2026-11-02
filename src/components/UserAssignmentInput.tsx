@@ -2,8 +2,6 @@ import { useFormValue } from 'sanity'
 
 import { Card } from '@sanity/ui'
 
-import { API_VERSION } from '../constants'
-import { useProjectUsers } from '../hooks/useUsers'
 import UserAssignment from './UserAssignment'
 
 import type { FunctionComponent } from 'react'
@@ -13,14 +11,14 @@ const UserAssignmentInput: FunctionComponent<
   ArrayOfPrimitivesInputProps<string | number | boolean, ArraySchemaType>
 > = props => {
   const documentId = useFormValue([`documentId`])
-  const userList = useProjectUsers({ apiVersion: API_VERSION })
+  const locale = useFormValue([`locale`]) as string | undefined
 
   const stringValue =
     Array.isArray(props?.value) && props?.value?.length ? props.value.map(item => String(item)) : []
 
   return (
     <Card border padding={1}>
-      <UserAssignment userList={userList} assignees={stringValue} documentId={String(documentId)} />
+      <UserAssignment assignees={stringValue} documentId={String(documentId)} locale={locale} />
     </Card>
   )
 }

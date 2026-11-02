@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 import { DEFAULT_CONFIG } from '../constants'
 import { useWorkflowMetadata } from '../hooks/useWorkflowMetadata'
@@ -29,10 +29,10 @@ const WorkflowContext = createContext<WorkflowContextValue>({
 export function useWorkflowContext(id?: string) {
   const current = useContext(WorkflowContext)
 
-  return { ...current, metadata: id ? current.data[id] : null }
+  return { ...current, metadata: current.data[id ?? ''] }
 }
 
-type WorkflowProviderProps = LayoutProps & Required<WorkflowConfig>
+type WorkflowProviderProps = LayoutProps & { config: Required<WorkflowConfig> }
 
 /**
  * This Provider wraps the Studio and provides the workflow context to document actions and badges.
@@ -48,22 +48,20 @@ export function WorkflowProvider(props: WorkflowProviderProps) {
   )
   const removeId = useCallback((id: string) => setIds(current => current.filter(i => i !== id)), [])
   const { data, loading, error } = useWorkflowMetadata(ids)
+  const { config } = props
+
+  useEffect(() => {
+    if (error) {
+      console.error(error)
+    }
+  }, [error])
+
+  const value = useMemo(
+    () => ({ data, loading, error, ids, addId, removeId, ...config }),
+    [data, loading, error, ids, addId, removeId, config]
+  )
 
   return (
-    <WorkflowContext.Provider
-      value={{
-        data,
-        loading,
-        error,
-        ids,
-        addId,
-        removeId,
-        states: props.states,
-        schemaTypes: props.schemaTypes,
-        filters: props.filters
-      }}
-    >
-      {props.renderDefault(props)}
-    </WorkflowContext.Provider>
+    <WorkflowContext.Provider value={value}>{props.renderDefault(props)}</WorkflowContext.Provider>
   )
 }

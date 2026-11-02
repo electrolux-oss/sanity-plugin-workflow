@@ -2,7 +2,7 @@ import type { CurrentUser, SanityDocumentLike } from 'sanity'
 
 export type State = {
   id: string
-  transitions: string[]
+  transitions?: string[]
   title: string
   roles?: string[]
   requireAssignment?: boolean
@@ -21,10 +21,22 @@ export type FilterOptions = {
   locales: string[]
 }
 
+export type Language = {
+  id: string
+  title: string
+}
+
 export type WorkflowConfig = {
   schemaTypes: string[]
   states?: State[]
   filters?: (user: CurrentUser | null) => FilterOptions | undefined
+  /** Display names for locales, in document-internationalization's `supportedLanguages` shape */
+  languages?: Language[]
+  /**
+   * Roles that see the board's Data issues menu. Leave it out to show it to everyone; an empty
+   * array shows it to nobody.
+   */
+  dataIssueRoles?: string[] | undefined
 }
 
 export function defineStates<Id extends string, States extends StateCheck<Id, States>[]>(
@@ -38,13 +50,14 @@ export type Metadata = SanityDocumentLike & {
   assignees: string[] | null
   documentId: string
   draftDocumentId?: string
-  hasDraft?: boolean
+  draftUpdatedAt?: string | null
+  publishedUpdatedAt?: string | null
   state: string | null
   orderRank: string | null
   locale: string | null
 }
 
-export type KeyedMetadata = { [key: string]: Metadata }
+export type KeyedMetadata = Partial<Record<string, Metadata>>
 
 export type SanityDocumentWithMetadata = {
   _metadata: Metadata

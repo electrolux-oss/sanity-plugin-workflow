@@ -1,42 +1,40 @@
-import type { DocumentActionProps, DocumentActionDescription } from 'sanity'
 import { useState } from 'react'
+import { useCurrentUser } from 'sanity'
 
 import { UsersIcon } from '@sanity/icons/Users'
+
 import UserAssignment from '../components/UserAssignment'
 import { useWorkflowContext } from '../components/WorkflowContext'
-import { API_VERSION } from '../constants'
-import { useProjectUsers } from '../hooks/useUsers'
+import { cannotChangeAssigneesMessage, hasAnyRole } from '../helpers/permissions'
+
+import type { DocumentActionProps, DocumentActionDescription } from 'sanity'
 
 export function useAssignWorkflow({ id }: DocumentActionProps): DocumentActionDescription | null {
-  const { metadata, loading, error } = useWorkflowContext(id)
+  const { metadata, loading, error, states } = useWorkflowContext(id)
+  const user = useCurrentUser()
   const [isDialogOpen, setDialogOpen] = useState(false)
-  const userList = useProjectUsers({ apiVersion: API_VERSION })
-
-  if (error) {
-    console.error(error)
-  }
 
   if (!metadata) {
     return null
   }
 
+  const state = states.find(s => s.id === metadata.state)
+  const canChangeAssignees = hasAnyRole(user?.roles.map(r => r.name) ?? [], state?.roles)
+
   return {
     icon: UsersIcon,
-    disabled: !metadata || loading || Boolean(error),
+    disabled: loading || Boolean(error) || !canChangeAssignees,
     label: `Assign`,
-    title: metadata ? null : `Document is not in Workflow`,
+    ...(!canChangeAssignees && {
+      title: cannotChangeAssigneesMessage(state?.title)
+    }),
     dialog: isDialogOpen && {
       type: 'popover',
       onClose: () => {
         setDialogOpen(false)
       },
       content: (
-        // <div>Testing</div>
-        <UserAssignment
-          userList={userList}
-          assignees={metadata?.assignees ?? []}
-          documentId={id}
-        />
+        <UserAssignment assignees={metadata.assignees} documentId={id} locale={metadata.locale} />
       )
     },
     onHandle: () => {

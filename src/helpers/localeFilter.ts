@@ -1,4 +1,13 @@
-import type { FilterOptions } from '../types'
+import type { FilterOptions, Language } from '../types'
+
+const languageNames = new Intl.DisplayNames('en', { type: 'language' })
+
+/** A locale's configured title, falling back to its English name and then to the code itself. */
+export function getLanguageTitle(locale: string, languages: Language[]): string {
+  return (
+    languages.find(language => language.id === locale)?.title ?? languageNames.of(locale) ?? locale
+  )
+}
 
 /**
  * Locale filtering is opt-in via the plugin's `filters` config. When it is not
@@ -9,11 +18,23 @@ export function isLocaleFilterEnabled(userLocales?: FilterOptions['locales']): b
   return Boolean(userLocales?.length)
 }
 
-export function shouldShowDocuments(
+/**
+ * The locales to query for: no constraint when locale filtering is not configured, otherwise the
+ * selection, where an empty selection means every locale the user works in.
+ */
+export function getQueryLocales(
   userLocales: FilterOptions['locales'] | undefined,
   selectedLocales: FilterOptions['locales']
-): boolean {
-  return !isLocaleFilterEnabled(userLocales) || selectedLocales.length > 0
+): FilterOptions['locales'] | undefined {
+  if (!isLocaleFilterEnabled(userLocales)) {
+    return undefined
+  }
+
+  if (selectedLocales.length === 0) {
+    return userLocales
+  }
+
+  return selectedLocales
 }
 
 /**
@@ -42,9 +63,21 @@ export function readStoredLocales(storageKey: string): FilterOptions['locales'] 
 
     const parsed: unknown = JSON.parse(stored)
 
-    return Array.isArray(parsed) && parsed.every(l => typeof l === 'string') ? parsed : undefined
+    if (!Array.isArray(parsed) || !parsed.every(l => typeof l === 'string')) {
+      return undefined
+    }
+
+    return parsed
   } catch {
     // Corrupt or unavailable storage must not take the whole tool down
     return undefined
+  }
+}
+
+export function writeStoredLocales(storageKey: string, locales: FilterOptions['locales']): void {
+  try {
+    window.localStorage.setItem(storageKey, JSON.stringify(locales))
+  } catch {
+    // Unavailable or full storage only costs the remembered selection
   }
 }

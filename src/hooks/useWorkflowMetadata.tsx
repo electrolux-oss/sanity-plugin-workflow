@@ -27,7 +27,8 @@ export function useWorkflowMetadata(ids: string[]): {
       assignees,
       documentId,
       state,
-      orderRank
+      orderRank,
+      locale
     }`,
     {
       params: { ids },

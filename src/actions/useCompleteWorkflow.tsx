@@ -2,32 +2,20 @@ import { useCallback } from 'react'
 import { useClient } from 'sanity'
 
 import { CheckmarkIcon } from '@sanity/icons/Checkmark'
-import { useToast } from '@sanity/ui'
+import { useToast } from '@sanity/ui/toast'
 
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
+import { runWithToast } from '../helpers/runWithToast'
 
-import type { ToastContextValue } from '@sanity/ui'
+import type { ToastContextValue } from '@sanity/ui/toast'
 import type { DocumentActionProps, SanityClient, DocumentActionDescription } from 'sanity'
 
-export const handleDeleteMetadata = async (
-  client: SanityClient,
-  toast: ToastContextValue,
-  id: string
-) => {
-  try {
-    await client.delete(`workflow-metadata.${id}`)
-    toast.push({
-      status: 'success',
-      title: 'Workflow completed'
-    })
-  } catch (error) {
-    console.error(error)
-    toast.push({
-      status: 'error',
-      title: 'Could not complete Workflow'
-    })
-  }
+export function completeWorkflow(client: SanityClient, toast: ToastContextValue, id: string) {
+  return runWithToast(toast, () => client.delete(`workflow-metadata.${id}`), {
+    success: 'Workflow completed',
+    error: 'Could not complete Workflow'
+  })
 }
 
 export function useCompleteWorkflow({
@@ -38,12 +26,8 @@ export function useCompleteWorkflow({
   const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
 
-  if (error) {
-    console.error(error)
-  }
-
   const handle = useCallback(async () => {
-    await handleDeleteMetadata(client, toast, id)
+    await completeWorkflow(client, toast, id)
   }, [client, toast, id])
 
   if (!metadata) {
@@ -51,14 +35,14 @@ export function useCompleteWorkflow({
   }
 
   const state = states.find(s => s.id === metadata.state)
-  const isLastState = state?.id === states?.[states?.length - 1]?.id
+  const isLastState = state?.id === states[states.length - 1]?.id
 
   return {
     icon: CheckmarkIcon,
     disabled: loading || Boolean(error) || !isLastState,
     label: `Complete Workflow`,
     title: isLastState
-      ? `Removes the document from the Workflow process`
+      ? `Ends the workflow for this document.`
       : `Cannot remove from workflow until in the last state`,
     onHandle: async () => {
       await handle()

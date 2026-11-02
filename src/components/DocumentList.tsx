@@ -9,7 +9,6 @@ import type { CSSProperties } from 'react'
 
 import type { DraggableStyle } from '@hello-pangea/dnd'
 import type { VirtualItem } from '@tanstack/react-virtual'
-import type { CurrentUser } from 'sanity'
 import type { UserExtended } from '../hooks/useUsers'
 
 import type { SanityDocumentWithMetadata, State } from '../types'
@@ -18,10 +17,8 @@ type DocumentListProps = {
   items: SanityDocumentWithMetadata[]
   invalidDocumentIds: string[]
   patchingIds: string[]
-  state: State
   states: State[]
   toggleInvalidDocumentId: (documentId: string, action: 'ADD' | 'REMOVE') => void
-  user: CurrentUser | null
   userList: UserExtended[]
   userRoleCanDrop: boolean
 }
@@ -60,10 +57,8 @@ export default function DocumentList(props: DocumentListProps) {
     items = [],
     invalidDocumentIds,
     patchingIds,
-    state,
     states,
     toggleInvalidDocumentId,
-    user,
     userList,
     userRoleCanDrop
   } = props
@@ -107,15 +102,11 @@ export default function DocumentList(props: DocumentListProps) {
         {virtualizer.getVirtualItems().map(virtualItem => {
           const item = items[virtualItem.index]
 
-          const { documentId, assignees } = item?._metadata ?? {}
-
-          const isInvalid = invalidDocumentIds.includes(documentId!)
-          const meInAssignees = user?.id ? assignees?.includes(user.id) : false
+          const { documentId } = item?._metadata ?? {}
           const isDragDisabled =
             patchingIds.includes(documentId!) ||
             !userRoleCanDrop ||
-            isInvalid ||
-            !(state.requireAssignment ? state.requireAssignment && meInAssignees : true)
+            invalidDocumentIds.includes(documentId!)
 
           return (
             <Draggable
