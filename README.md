@@ -1,7 +1,7 @@
 # Sanity Workflow Plugin - Electrolux Version (for Sanity Studio v6)
 
-> This is a **Sanity Studio v6** plugin.
-> This is a forked version of Sanitys own [Sanity Workflow Plugin (v1.0.3)](https://www.npmjs.com/package/sanity-plugin-workflow/v/1.0.3)
+> This plugin supports **Sanity Studio v6.20 and newer**.
+> Originally based on Sanity's [sanity-io/sanity-plugin-workflow](https://github.com/sanity-io/sanity-plugin-workflow) (v1.0.3, MIT).
 
 > [!WARNING]
 > Breaking changes introduced in version 5.0.0 of this plugin. See [Breaking changes](#breaking-changes).
@@ -20,11 +20,11 @@
   them
 - A "Data issues" menu that finds and repairs broken workflow metadata
 
-## Install (Sanity Studio v6)
+## Install (Sanity Studio v6.20+)
 
 | Package / Runtime | Requirement |
 | --- | --- |
-| `sanity` | `^6.0.0` |
+| `sanity` | `^6.20.0` |
 | `react` / `react-dom` | `^19.2.2` |
 | `styled-components` | `^6.1.15` |
 | Node.js | `>=22.12` |
@@ -260,8 +260,9 @@ This configuration allows for type-checking you scripts and tests, and not only 
 
 ### **v4 → v5**
 
-This release drops support for **Sanity Studio v5** and moves the plugin to `@sanity/ui` v4, the
-version Studio v6 ships with. Stay on v4 of this plugin while on Studio v5.
+This release requires **Sanity Studio v6.20 or newer**, the first Studio release on `@sanity/ui`
+^4.4.9. Support for Studio v5 and Studio v6 before 6.20 has been dropped; stay on v4 of this
+plugin for older Studios.
 
 State permissions now behave the same in document actions and on the board:
 
@@ -302,7 +303,7 @@ Requirements:
 
 | Package / Runtime | Requirement |
 | --- | --- |
-| `sanity` | `^6.0.0` |
+| `sanity` | `^6.20.0` |
 | `react` / `react-dom` | `^19.2.2` |
 | `styled-components` | `^6.1.15` |
 | Node.js | `>=22.12` |
