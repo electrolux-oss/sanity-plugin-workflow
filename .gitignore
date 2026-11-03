@@ -42,8 +42,9 @@ jspm_packages
 # macOS finder cache file
 .DS_Store
 
-# VS Code settings
-.vscode
+# VS Code settings, except the shared formatter setup
+.vscode/*
+!.vscode/settings.json
 
 # IntelliJ
 .idea
