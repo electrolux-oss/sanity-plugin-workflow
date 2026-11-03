@@ -1,17 +1,13 @@
-import { useCallback, useRef } from 'react'
-
 import { Draggable } from '@hello-pangea/dnd'
+import type { DraggableStyle } from '@hello-pangea/dnd'
 import { useVirtualizer } from '@tanstack/react-virtual'
-
-import { DocumentCard } from './DocumentCard'
-
+import type { VirtualItem } from '@tanstack/react-virtual'
+import { useCallback, useRef } from 'react'
 import type { CSSProperties } from 'react'
 
-import type { DraggableStyle } from '@hello-pangea/dnd'
-import type { VirtualItem } from '@tanstack/react-virtual'
 import type { UserExtended } from '../hooks/useUsers'
-
 import type { SanityDocumentWithMetadata, State } from '../types'
+import { DocumentCard } from './DocumentCard'
 
 type DocumentListProps = {
   items: SanityDocumentWithMetadata[]

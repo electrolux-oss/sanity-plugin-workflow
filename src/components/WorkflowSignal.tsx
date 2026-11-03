@@ -1,9 +1,8 @@
 import { useEffect } from 'react'
 import { getPublishedId } from 'sanity'
+import type { ObjectInputProps } from 'sanity'
 
 import { useWorkflowContext } from './WorkflowContext'
-
-import type { ObjectInputProps } from 'sanity'
 
 // This component is loaded at the root level of the Document Form
 // It is used to signal the document ID to the WorkflowProvider

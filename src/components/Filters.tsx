@@ -1,25 +1,20 @@
-import { memo, useCallback, useMemo } from 'react'
-import { UserAvatar, useSchema } from 'sanity'
-
 import { EarthAmericasIcon } from '@sanity/icons/EarthAmericas'
 import { RestoreIcon } from '@sanity/icons/Restore'
 import { UserIcon } from '@sanity/icons/User'
 import { AvatarStack, Button, Flex } from '@sanity/ui'
 import { Menu, MenuButton } from '@sanity/ui/menu'
+import { memo, useCallback, useMemo } from 'react'
+import { UserAvatar, useSchema } from 'sanity'
+import type { Schema as SchemaRegistry } from 'sanity'
 
 import { getLanguageTitle } from '../helpers/localeFilter'
+import type { UserExtended } from '../hooks/useUsers'
+import type { FilterOptions, Language } from '../types'
 import ButtonTooltip from './ButtonTooltip'
 import FilterBarButtonContent, { FILTER_BAR_BUTTON_PADDING } from './FilterBarButtonContent'
 import MultiSelectMenu from './MultiSelectMenu'
-import UserSelectMenu from './UserSelectMenu'
-
-import type { Schema as SchemaRegistry } from 'sanity'
-
 import type { MultiSelectAction } from './MultiSelectMenu'
-
-import type { UserExtended } from '../hooks/useUsers'
-
-import type { FilterOptions, Language } from '../types'
+import UserSelectMenu from './UserSelectMenu'
 
 type FiltersProps = {
   uniqueAssignedUsers: UserExtended[]

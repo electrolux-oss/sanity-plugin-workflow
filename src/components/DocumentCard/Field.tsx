@@ -1,11 +1,9 @@
+import { Card, Flex, Spinner } from '@sanity/ui'
 import { Preview, useSchema } from 'sanity'
+import type { SanityDocument, StringInputProps } from 'sanity'
 import { Feedback, useListeningQuery } from 'sanity-plugin-utils'
 
-import { Card, Flex, Spinner } from '@sanity/ui'
-
 import EditButton from './EditButton'
-
-import type { SanityDocument, StringInputProps } from 'sanity'
 
 // TODO: Update this to use the same component as the Tool
 export default function Field(props: StringInputProps) {

@@ -1,8 +1,6 @@
-import { isValidElement } from 'react'
-
 import { ChevronDownIcon } from '@sanity/icons/ChevronDown'
 import { Flex, Text, useTheme_v2 } from '@sanity/ui'
-
+import { isValidElement } from 'react'
 import type { ComponentType, ReactNode } from 'react'
 
 type IconProp = ReactNode | ComponentType

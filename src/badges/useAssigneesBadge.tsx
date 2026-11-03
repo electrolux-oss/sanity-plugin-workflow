@@ -1,10 +1,9 @@
 import { useCurrentUser } from 'sanity'
+import type { DocumentBadgeProps, DocumentBadgeDescription } from 'sanity'
 
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
 import { useProjectUsers } from '../hooks/useUsers'
-
-import type { DocumentBadgeProps, DocumentBadgeDescription } from 'sanity'
 
 export function useAssigneesBadge({
   id: documentId

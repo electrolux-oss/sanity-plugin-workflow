@@ -1,7 +1,6 @@
+import { useToast } from '@sanity/ui/toast'
 import React from 'react'
 import { useClient } from 'sanity'
-
-import { useToast } from '@sanity/ui/toast'
 
 import { API_VERSION } from '../constants'
 import { runWithToast } from '../helpers/runWithToast'

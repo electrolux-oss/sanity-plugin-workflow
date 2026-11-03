@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { useListeningQuery } from 'sanity-plugin-utils'
 
 import { API_VERSION } from '../constants'
-
 import type { KeyedMetadata, Metadata } from '../types'
 
 /**

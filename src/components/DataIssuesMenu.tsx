@@ -1,22 +1,20 @@
-import { useCallback, useState } from 'react'
-import { useClient } from 'sanity'
-
 import { WarningOutlineIcon } from '@sanity/icons/WarningOutline'
 import { Box, Button, Dialog, Flex, Text } from '@sanity/ui'
 import { Menu, MenuButton, MenuDivider, MenuItem } from '@sanity/ui/menu'
 import { useToast } from '@sanity/ui/toast'
+import { useCallback, useState } from 'react'
+import { useClient } from 'sanity'
 
 import { API_VERSION } from '../constants'
 import { countAffectedDocuments } from '../helpers/dataIssues'
 import { rerankStates } from '../helpers/ranking'
 import { runWithToast } from '../helpers/runWithToast'
-import ButtonTooltip from './ButtonTooltip'
-import FilterBarButtonContent, { FILTER_BAR_BUTTON_PADDING } from './FilterBarButtonContent'
-
 import type { ToastMessages } from '../helpers/runWithToast'
 import type { DataIssuesResult } from '../hooks/useDataIssues'
 import type { UserExtended } from '../hooks/useUsers'
 import type { SanityDocumentWithMetadata, State } from '../types'
+import ButtonTooltip from './ButtonTooltip'
+import FilterBarButtonContent, { FILTER_BAR_BUTTON_PADDING } from './FilterBarButtonContent'
 
 function plural(count: number, noun: string) {
   return `${count} ${noun}${count === 1 ? '' : 's'}`

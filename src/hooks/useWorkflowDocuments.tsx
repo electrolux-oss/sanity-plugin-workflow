@@ -1,13 +1,11 @@
 import type { DraggableLocation } from '@hello-pangea/dnd'
+import { useToast } from '@sanity/ui/toast'
 import React, { useCallback, useEffect } from 'react'
 import { useClient } from 'sanity'
 import { useListeningQuery } from 'sanity-plugin-utils'
 
-import { useToast } from '@sanity/ui/toast'
-
 import { API_VERSION } from '../constants'
 import { runWithToast } from '../helpers/runWithToast'
-
 import type { Metadata, SanityDocumentWithMetadata, State } from '../types'
 
 const QUERY = `*[_type == "workflow.metadata" && (!$filterByLocale || locale in $localeFilter)]|order(orderRank){

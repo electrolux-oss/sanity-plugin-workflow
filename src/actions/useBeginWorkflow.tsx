@@ -1,14 +1,12 @@
-import { useCallback, useState } from 'react'
-import { useClient } from 'sanity'
-
 import { SplitVerticalIcon } from '@sanity/icons/SplitVertical'
 import { useToast } from '@sanity/ui/toast'
+import { useCallback, useState } from 'react'
+import { useClient } from 'sanity'
+import type { DocumentActionProps, DocumentActionDescription } from 'sanity'
 
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
 import { rankBetween } from '../helpers/ranking'
-
-import type { DocumentActionProps, DocumentActionDescription } from 'sanity'
 
 export function useBeginWorkflow({
   id,

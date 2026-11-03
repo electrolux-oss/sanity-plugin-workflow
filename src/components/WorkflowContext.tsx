@@ -1,10 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import type { LayoutProps } from 'sanity'
 
 import { DEFAULT_CONFIG } from '../constants'
 import { useWorkflowMetadata } from '../hooks/useWorkflowMetadata'
-
-import type { LayoutProps } from 'sanity'
-
 import type { KeyedMetadata, WorkflowConfig } from '../types'
 
 export type WorkflowContextValue = Required<WorkflowConfig> & {

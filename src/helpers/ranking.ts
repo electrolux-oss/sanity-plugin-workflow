@@ -1,9 +1,8 @@
 import { LexoRank } from 'lexorank'
 
+import type { SanityDocumentWithMetadata } from '../types'
 import { filterItemsAndSort } from './filterItemsAndSort'
 import { generateMultipleOrderRanks } from './generateMultipleOrderRanks'
-
-import type { SanityDocumentWithMetadata } from '../types'
 
 /**
  * A rank strictly between two neighbours. A missing neighbour is the edge of the column,

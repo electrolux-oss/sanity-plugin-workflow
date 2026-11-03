@@ -1,7 +1,6 @@
-import React from 'react'
-
 import { Box, Text } from '@sanity/ui'
 import { Tooltip } from '@sanity/ui/tooltip'
+import React from 'react'
 
 type StatusProps = {
   text: string

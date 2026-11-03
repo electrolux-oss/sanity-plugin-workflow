@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
+import type { UserExtended } from '../hooks/useUsers'
+import type { Metadata, State } from '../types'
 import { doc } from './__fixtures__/documents'
 import { countAffectedDocuments, findDataIssues, simulateDataIssues } from './dataIssues'
 import { generateMultipleOrderRanks } from './generateMultipleOrderRanks'
-
-import type { UserExtended } from '../hooks/useUsers'
-import type { Metadata, State } from '../types'
 
 const states: State[] = [
   { id: 'review', title: 'Review' },

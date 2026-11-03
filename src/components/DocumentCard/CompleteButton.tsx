@@ -1,10 +1,9 @@
-import { useCallback } from 'react'
-import { useClient } from 'sanity'
-
 import { CheckmarkIcon } from '@sanity/icons/Checkmark'
 import { Box, Button, Text } from '@sanity/ui'
-import { Tooltip } from '@sanity/ui/tooltip'
 import { useToast } from '@sanity/ui/toast'
+import { Tooltip } from '@sanity/ui/tooltip'
+import { useCallback } from 'react'
+import { useClient } from 'sanity'
 
 import { completeWorkflow } from '../../actions/useCompleteWorkflow'
 import { API_VERSION } from '../../constants'

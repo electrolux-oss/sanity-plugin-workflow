@@ -1,14 +1,12 @@
-import { useCallback, useMemo, useState } from 'react'
-
 import { AddIcon } from '@sanity/icons/Add'
 import { Button, Grid, useClickOutsideEvent } from '@sanity/ui'
 import { Popover } from '@sanity/ui/popover'
+import { useCallback, useMemo, useState } from 'react'
 
+import type { UserExtended } from '../hooks/useUsers'
 import ButtonTooltip from './ButtonTooltip'
 import AvatarGroup from './DocumentCard/AvatarGroup'
 import UserAssignment from './UserAssignment'
-
-import type { UserExtended } from '../hooks/useUsers'
 
 type UserDisplayProps = {
   userList: UserExtended[]

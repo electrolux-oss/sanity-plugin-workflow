@@ -9,5 +9,5 @@ export function getValidationId({
   draftDocumentId,
   draftUpdatedAt
 }: Pick<Metadata, 'documentId' | 'draftDocumentId' | 'draftUpdatedAt'>): string {
-  return draftUpdatedAt ? draftDocumentId ?? `drafts.${documentId}` : documentId
+  return draftUpdatedAt ? (draftDocumentId ?? `drafts.${documentId}`) : documentId
 }

@@ -22,12 +22,12 @@
 
 ## Install (Sanity Studio v6.20+)
 
-| Package / Runtime | Requirement |
-| --- | --- |
-| `sanity` | `^6.20.0` |
-| `react` / `react-dom` | `^19.2.2` |
-| `styled-components` | `^6.1.15` |
-| Node.js | `>=22.12` |
+| Package / Runtime     | Requirement |
+| --------------------- | ----------- |
+| `sanity`              | `^6.20.0`   |
+| `react` / `react-dom` | `^19.2.2`   |
+| `styled-components`   | `^6.1.15`   |
+| Node.js               | `>=22.12`   |
 
 Run
 
@@ -46,15 +46,15 @@ yarn add @electrolux-oss/sanity-plugin-workflow
 Add it as a plugin in `sanity.config.ts` (or .js) file:
 
 ```ts
-import { defineConfig } from 'sanity'
 import { workflow } from '@electrolux-oss/sanity-plugin-workflow'
+import { defineConfig } from 'sanity'
 
 export default defineConfig({
   // all other settings ...
   plugins: [
     workflow({
       // Required, list of document type names
-      schemaTypes: ['article', 'product'],
+      schemaTypes: ['article', 'product']
       // Optional, see "Configuring States"
       // states: [],
       // Optional, see "Filtering by language"
@@ -167,17 +167,20 @@ Once the document is in the last State, the "Complete Workflow" document action 
 **Step 1: Set up the plugin for local development**
 
 In the plugin directory, run:
+
 ```zsh
 npm run link-watch
 ```
 
 This will:
+
 - Build your plugin automatically whenever code changes
 - Publish the package to a local yalc repository
 
 **Step 2: Link the plugin to your studio**
 
 In your studio project directory, run:
+
 ```zsh
 npx yalc add @electrolux-oss/sanity-plugin-workflow && npm install
 ```
@@ -185,11 +188,13 @@ npx yalc add @electrolux-oss/sanity-plugin-workflow && npm install
 **Step 3: Verify the setup**
 
 Check your studio's `package.json` - you should see:
+
 ```json
 "@electrolux-oss/sanity-plugin-workflow": "file:.yalc/@electrolux-oss/sanity-plugin-workflow"
 ```
 
 Now you can use the local version of the plugin:
+
 ```typescript
 import { workflow } from '@electrolux-oss/sanity-plugin-workflow'
 ```
@@ -240,7 +245,6 @@ Two areas are worth knowing about when adding tests:
 
 `npm run build` type-checks as it compiles, so a type error fails the build rather than
 being emitted into `dist`.
-
 
 ## FAQ
 
@@ -301,12 +305,12 @@ New in v5:
 
 Requirements:
 
-| Package / Runtime | Requirement |
-| --- | --- |
-| `sanity` | `^6.20.0` |
-| `react` / `react-dom` | `^19.2.2` |
-| `styled-components` | `^6.1.15` |
-| Node.js | `>=22.12` |
+| Package / Runtime     | Requirement |
+| --------------------- | ----------- |
+| `sanity`              | `^6.20.0`   |
+| `react` / `react-dom` | `^19.2.2`   |
+| `styled-components`   | `^6.1.15`   |
+| Node.js               | `>=22.12`   |
 
 ### **v3 → v4**
 
@@ -314,12 +318,12 @@ This release adds support for **Sanity Studio v6** and drops support for Studio 
 
 Requirements:
 
-| Package / Runtime | Requirement |
-| --- | --- |
-| `sanity` | `^5.0.0 \|\| ^6.0.0` |
-| `react` / `react-dom` | `^19.2.2` |
-| `styled-components` | `^6.1.15` (v5 is no longer supported) |
-| Node.js | `>=22.12` |
+| Package / Runtime     | Requirement                           |
+| --------------------- | ------------------------------------- |
+| `sanity`              | `^5.0.0 \|\| ^6.0.0`                  |
+| `react` / `react-dom` | `^19.2.2`                             |
+| `styled-components`   | `^6.1.15` (v5 is no longer supported) |
+| Node.js               | `>=22.12`                             |
 
 ### **v2 → v3**
 

@@ -1,6 +1,5 @@
 import { Box, Text } from '@sanity/ui'
 import { Tooltip } from '@sanity/ui/tooltip'
-
 import type { ReactNode } from 'react'
 
 type ButtonTooltipProps = {

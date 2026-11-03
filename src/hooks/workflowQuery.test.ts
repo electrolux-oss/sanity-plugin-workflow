@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs'
+
 import { evaluate, parse } from 'groq-js'
 import { describe, expect, it } from 'vitest'
 
 import { getValidationId } from '../helpers/validationId'
-
 import type { Metadata } from '../types'
 
 // Read the query straight from source so the test cannot drift from what ships

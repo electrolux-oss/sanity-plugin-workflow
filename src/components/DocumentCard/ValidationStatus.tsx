@@ -1,10 +1,8 @@
-import { TextWithTone } from 'sanity'
-
 import { ErrorOutlineIcon } from '@sanity/icons/ErrorOutline'
 import { WarningOutlineIcon } from '@sanity/icons/WarningOutline'
 import { Box, Text } from '@sanity/ui'
 import { Tooltip } from '@sanity/ui/tooltip'
-
+import { TextWithTone } from 'sanity'
 import type { ValidationMarker } from 'sanity'
 
 type ValidationStatusProps = {

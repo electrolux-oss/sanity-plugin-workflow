@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useClient, useCurrentUser } from 'sanity'
+import type { SanityClient } from 'sanity'
 
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
 import { getAssignableUsers } from '../helpers/users'
-
-import type { SanityClient } from 'sanity'
 
 export type UserRole = {
   name: string
@@ -86,9 +85,8 @@ async function fetchProjectUsers(client: SanityClient, projectId: string): Promi
   }
 
   const batches = await Promise.all(
-    chunk(userIds, USER_ID_BATCH_SIZE).map(
-      (ids): Promise<UserExtended[]> =>
-        client.request({ url: `/projects/${projectId}/users/${ids.join(',')}` })
+    chunk(userIds, USER_ID_BATCH_SIZE).map((ids): Promise<UserExtended[]> =>
+      client.request({ url: `/projects/${projectId}/users/${ids.join(',')}` })
     )
   )
 

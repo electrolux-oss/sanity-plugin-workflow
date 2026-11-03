@@ -1,11 +1,9 @@
-import { useFormValue } from 'sanity'
-
 import { Card } from '@sanity/ui'
+import type { FunctionComponent } from 'react'
+import { useFormValue } from 'sanity'
+import type { ArrayOfPrimitivesInputProps, ArraySchemaType } from 'sanity'
 
 import UserAssignment from './UserAssignment'
-
-import type { FunctionComponent } from 'react'
-import type { ArrayOfPrimitivesInputProps, ArraySchemaType } from 'sanity'
 
 const UserAssignmentInput: FunctionComponent<
   ArrayOfPrimitivesInputProps<string | number | boolean, ArraySchemaType>

@@ -1,11 +1,10 @@
 import { LexoRank } from 'lexorank'
 import { describe, expect, it } from 'vitest'
 
+import type { SanityDocumentWithMetadata } from '../types'
 import { doc } from './__fixtures__/documents'
 import { generateMultipleOrderRanks } from './generateMultipleOrderRanks'
 import { getDropOrderRank, rankBetween, rerankStates } from './ranking'
-
-import type { SanityDocumentWithMetadata } from '../types'
 
 const [rankA, rankB, rankC, rankD] = generateMultipleOrderRanks(4).map(rank => rank.toString())
 

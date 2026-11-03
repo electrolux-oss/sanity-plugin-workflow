@@ -1,14 +1,11 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-
 import { CheckmarkIcon } from '@sanity/icons/Checkmark'
 import { SearchIcon } from '@sanity/icons/Search'
 import { Box, Button, Card, Flex, Stack, Text, TextInput } from '@sanity/ui'
-
-import { searchOptions } from '../helpers/search'
-
+import type { ButtonTone } from '@sanity/ui'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { ComponentType, KeyboardEvent, ReactNode } from 'react'
 
-import type { ButtonTone } from '@sanity/ui'
+import { searchOptions } from '../helpers/search'
 
 export type MultiSelectOption = {
   id: string

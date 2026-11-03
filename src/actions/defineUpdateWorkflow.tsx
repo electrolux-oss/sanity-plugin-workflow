@@ -1,17 +1,15 @@
-import { useClient, useCurrentUser, useValidationStatus } from 'sanity'
-
 import { ArrowLeftIcon } from '@sanity/icons/ArrowLeft'
 import { ArrowRightIcon } from '@sanity/icons/ArrowRight'
 import { useToast } from '@sanity/ui/toast'
+import { useClient, useCurrentUser, useValidationStatus } from 'sanity'
+import type { DocumentActionProps, DocumentActionDescription } from 'sanity'
 
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
 import { getTransitionBlocker } from '../helpers/permissions'
-import { runWithToast } from '../helpers/runWithToast'
-
 import type { TransitionBlocker } from '../helpers/permissions'
+import { runWithToast } from '../helpers/runWithToast'
 import type { State } from '../types'
-import type { DocumentActionProps, DocumentActionDescription } from 'sanity'
 
 function useUpdateWorkflow(
   { id, type, draft, version, onComplete }: DocumentActionProps,

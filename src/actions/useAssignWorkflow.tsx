@@ -1,13 +1,11 @@
+import { UsersIcon } from '@sanity/icons/Users'
 import { useState } from 'react'
 import { useCurrentUser } from 'sanity'
-
-import { UsersIcon } from '@sanity/icons/Users'
+import type { DocumentActionProps, DocumentActionDescription } from 'sanity'
 
 import UserAssignment from '../components/UserAssignment'
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { cannotChangeAssigneesMessage, hasAnyRole } from '../helpers/permissions'
-
-import type { DocumentActionProps, DocumentActionDescription } from 'sanity'
 
 export function useAssignWorkflow({ id }: DocumentActionProps): DocumentActionDescription | null {
   const { metadata, loading, error, states } = useWorkflowContext(id)

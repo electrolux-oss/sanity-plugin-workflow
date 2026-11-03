@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { filterUsersByStateRoles, getAssignableUsers } from './users'
-
 import type { UserExtended } from '../hooks/useUsers'
 import type { State, WorkflowConfig } from '../types'
+import { filterUsersByStateRoles, getAssignableUsers } from './users'
 
 function user(id: string, overrides: Partial<UserExtended> = {}): UserExtended {
   return {

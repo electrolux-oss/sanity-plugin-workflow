@@ -1,25 +1,22 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Preview, useSchema } from 'sanity'
-
 import { DragHandleIcon } from '@sanity/icons/DragHandle'
 import { EditIcon } from '@sanity/icons/Edit'
 import { PublishIcon } from '@sanity/icons/Publish'
 import { Box, Card, Flex, Stack, useTheme_v2 } from '@sanity/ui'
+import type { CardTone } from '@sanity/ui'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Preview, useSchema } from 'sanity'
+import type { SchemaType, ValidationMarker } from 'sanity'
 
 import { cannotChangeAssigneesMessage } from '../../helpers/permissions'
 import { getValidationId } from '../../helpers/validationId'
+import type { UserExtended } from '../../hooks/useUsers'
+import type { SanityDocumentWithMetadata, State } from '../../types'
 import UserDisplay from '../UserDisplay'
 import CompleteButton from './CompleteButton'
 import EditButton from './EditButton'
 import Validate from './Validate'
 import { ValidationStatus } from './ValidationStatus'
 import { VersionStatus } from './VersionStatus'
-
-import type { SchemaType, ValidationMarker } from 'sanity'
-import type { CardTone } from '@sanity/ui'
-
-import type { UserExtended } from '../../hooks/useUsers'
-import type { SanityDocumentWithMetadata, State } from '../../types'
 
 type DocumentCardProps = {
   isDragDisabled: boolean

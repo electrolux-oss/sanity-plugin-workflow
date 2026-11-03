@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react'
 
 import { findDataIssues, simulateDataIssues } from '../helpers/dataIssues'
-
 import type { DataIssues } from '../helpers/dataIssues'
-import type { UserExtended } from './useUsers'
 import type { SanityDocumentWithMetadata, State } from '../types'
+import type { UserExtended } from './useUsers'
 
 const SIMULATE_STORAGE_KEY = 'studio.plugin.workflow.simulate-data-issues'
 
