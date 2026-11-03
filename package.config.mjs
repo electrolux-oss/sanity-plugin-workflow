@@ -5,7 +5,7 @@ export default defineConfig({
   tsconfig: 'tsconfig.dist.json',
 
   // Remove this block to enable strict export validation
-  extract: {
+  tsdoc: {
     rules: {
       'ae-incompatible-release-tags': 'off',
       'ae-internal-missing-underscore': 'off',
