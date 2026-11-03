@@ -209,7 +209,7 @@ const SchemaTypeButtons = memo(function SchemaTypeButtons({
 
 function Filters(props: FiltersProps) {
   const {
-    uniqueAssignedUsers = [],
+    uniqueAssignedUsers,
     selectedLocales,
     selectedUserIds,
     schemaTypes,

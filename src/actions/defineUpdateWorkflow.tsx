@@ -12,7 +12,7 @@ import { runWithToast } from '../helpers/runWithToast'
 import type { State } from '../types'
 
 function useUpdateWorkflow(
-  { id, type, draft, version, onComplete }: DocumentActionProps,
+  { id, type, draft, version }: DocumentActionProps,
   actionState: State
 ): DocumentActionDescription | null {
   const user = useCurrentUser()
@@ -40,7 +40,6 @@ function useUpdateWorkflow(
       () => client.patch(`workflow-metadata.${documentId}`).set({ state: newState.id }).commit(),
       { success: `Document state now "${newState.title}"`, error: 'Document state update failed' }
     )
-    onComplete()
   }
 
   // Remove button if:

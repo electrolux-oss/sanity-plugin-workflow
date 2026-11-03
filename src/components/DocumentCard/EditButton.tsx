@@ -14,7 +14,6 @@ export default function EditButton(props: EditButtonProps) {
 
   return (
     <Button
-      // eslint-disable-next-line react/jsx-no-bind
       onClick={() => navigateIntent('edit', { id, type })}
       mode="ghost"
       fontSize={1}

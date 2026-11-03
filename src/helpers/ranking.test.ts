@@ -90,7 +90,7 @@ describe('rerankStates', () => {
 
     expect(ranks.map(r => r.documentId)).toEqual(['a', 'b', 'c'])
     expect(new Set(ranks.map(r => r.orderRank)).size).toBe(3)
-    expect([...ranks.map(r => r.orderRank)].sort()).toEqual(ranks.map(r => r.orderRank))
+    expect(ranks.map(r => r.orderRank).sort()).toEqual(ranks.map(r => r.orderRank))
   })
 
   it('leaves other states alone', () => {

@@ -20,6 +20,7 @@ function Icon({ icon }: { icon: IconProp }) {
     return icon
   }
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- schema icons are elements or components, and elements return above
   const IconComponent = icon as ComponentType
 
   return <IconComponent />

@@ -53,7 +53,7 @@ export default function DataIssuesMenu(props: DataIssuesMenuProps) {
         return
       }
 
-      runWithToast(toast, write, messages)
+      void runWithToast(toast, write, messages)
     },
     [issues.simulated, toast]
   )

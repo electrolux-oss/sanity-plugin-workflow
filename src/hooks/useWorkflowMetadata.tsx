@@ -12,10 +12,10 @@ import type { KeyedMetadata, Metadata } from '../types'
 export function useWorkflowMetadata(ids: string[]): {
   data: KeyedMetadata
   loading: boolean
-  error: boolean | unknown | ProgressEvent
+  error: unknown
 } {
   const {
-    data: _rawData,
+    data: rawData,
     loading,
     error
   } = useListeningQuery<Metadata[]>(
@@ -34,8 +34,6 @@ export function useWorkflowMetadata(ids: string[]): {
       options: { apiVersion: API_VERSION }
     }
   )
-
-  const rawData = _rawData as Metadata[]
 
   const keyedMetadata = useMemo(() => {
     if (!rawData?.length) {

@@ -40,7 +40,7 @@ function handleArrowKeys(event: KeyboardEvent<HTMLDivElement>) {
   const focusable = Array.from(
     event.currentTarget.querySelectorAll<HTMLElement>('input, button:not([disabled])')
   )
-  const current = focusable.indexOf(document.activeElement as HTMLElement)
+  const current = focusable.findIndex(element => element === document.activeElement)
   const next = focusable[event.key === 'ArrowDown' ? current + 1 : current - 1]
 
   if (next) {

@@ -12,7 +12,7 @@ type ValidateProps = {
 // Because it's not performant to run on a lot of documents
 export default function Validate(props: ValidateProps) {
   const { documentId, type, onChange } = props
-  const { isValidating, validation = [] } = useValidationStatus(documentId, type, false)
+  const { isValidating, validation } = useValidationStatus(documentId, type, false)
 
   useEffect(() => {
     onChange({ isValidating, validation })

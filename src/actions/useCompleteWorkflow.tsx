@@ -16,10 +16,7 @@ export function completeWorkflow(client: SanityClient, toast: ToastContextValue,
   })
 }
 
-export function useCompleteWorkflow({
-  id,
-  onComplete
-}: DocumentActionProps): DocumentActionDescription | null {
+export function useCompleteWorkflow({ id }: DocumentActionProps): DocumentActionDescription | null {
   const { metadata, loading, error, states } = useWorkflowContext(id)
   const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
@@ -42,10 +39,7 @@ export function useCompleteWorkflow({
     title: isLastState
       ? `Ends the workflow for this document.`
       : `Cannot remove from workflow until in the last state`,
-    onHandle: async () => {
-      await handle()
-      onComplete()
-    },
+    onHandle: handle,
     tone: 'positive'
   }
 }
