@@ -220,7 +220,7 @@ export default function WorkflowTool(props: WorkflowToolProps) {
   return (
     <Flex direction="column" height="fill" overflow="hidden">
       {(showFilters || hasDataIssues) && (
-        <Card padding={2} borderBottom style={{ overflowX: 'hidden' }}>
+        <Card padding={2} borderBottom>
           <Flex align="center" justify="flex-end" gap={2}>
             {showFilters && (
               <Filters
