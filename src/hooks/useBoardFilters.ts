@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-
-import { readStoredLocales, writeStoredLocales } from '../helpers/localeFilter'
-
 import type { CurrentUser } from 'sanity'
 
-import type { UserExtended } from './useUsers'
+import { readStoredLocales, writeStoredLocales } from '../helpers/localeFilter'
 import type { SanityDocumentWithMetadata, WorkflowConfig } from '../types'
+import type { UserExtended } from './useUsers'
 
 const LOCALE_FILTER_STORAGE_KEY = 'studio.plugin.workflow.locale-filter'
 

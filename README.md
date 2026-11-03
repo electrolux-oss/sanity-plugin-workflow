@@ -22,12 +22,12 @@
 
 ## Install (Sanity Studio v6.20+)
 
-| Package / Runtime | Requirement |
-| --- | --- |
-| `sanity` | `^6.20.0` |
-| `react` / `react-dom` | `^19.2.2` |
-| `styled-components` | `^6.1.15` |
-| Node.js | `>=22.12` |
+| Package / Runtime     | Requirement |
+| --------------------- | ----------- |
+| `sanity`              | `^6.20.0`   |
+| `react` / `react-dom` | `^19.2.2`   |
+| `styled-components`   | `^6.1.15`   |
+| Node.js               | `>=22.12`   |
 
 Run
 
@@ -46,8 +46,8 @@ yarn add @electrolux-oss/sanity-plugin-workflow
 Add it as a plugin in `sanity.config.ts` (or .js) file:
 
 ```ts
-import { defineConfig } from 'sanity'
 import { workflow } from '@electrolux-oss/sanity-plugin-workflow'
+import { defineConfig } from 'sanity'
 
 export default defineConfig({
   // all other settings ...
@@ -58,10 +58,10 @@ export default defineConfig({
       // Optional, see "Configuring States"
       // states: [],
       // Optional, see "Filtering by language"
-      // filters: (user) => ({ locales: ['sv-SE', 'de-CH'] }),
-      // languages: [{ id: 'de-CH', title: 'German (Switzerland)' }],
+      filters: user => ({ locales: ['sv-SE', 'de-CH'] }),
+      languages: [{ id: 'de-CH', title: 'German (Switzerland)' }],
       // Optional, roles that see the "Data issues" menu; leave out to show it to everyone
-      // dataIssueRoles: ['administrator'],
+      dataIssueRoles: ['administrator']
     })
   ]
 })
@@ -164,35 +164,55 @@ Once the document is in the last State, the "Complete Workflow" document action 
 
 ### Link the plugin to a local studio
 
-**Step 1: Set up the plugin for local development**
+**Step 1: Install the studio's dependencies**
+
+In your studio project directory, run:
+
+```zsh
+npm install
+```
+
+This installs the published version of the plugin, so its own dependencies end up in the
+studio's `node_modules`.
+
+**Step 2: Publish the plugin to yalc and watch for changes**
 
 In the plugin directory, run:
+
 ```zsh
 npm run link-watch
 ```
 
 This will:
-- Build your plugin automatically whenever code changes
-- Publish the package to a local yalc repository
 
-**Step 2: Link the plugin to your studio**
+- Build your plugin automatically whenever code changes
+- Publish the package to a local yalc repository and push it to linked studios
+
+**Step 3: Link the plugin to your studio**
 
 In your studio project directory, run:
+
 ```zsh
-npx yalc add @electrolux-oss/sanity-plugin-workflow && npm install
+npx yalc link @electrolux-oss/sanity-plugin-workflow
 ```
 
-**Step 3: Verify the setup**
+**Step 4: Verify the setup**
 
-Check your studio's `package.json` - you should see:
-```json
-"@electrolux-oss/sanity-plugin-workflow": "file:.yalc/@electrolux-oss/sanity-plugin-workflow"
+`node_modules/@electrolux-oss/sanity-plugin-workflow` is now a symlink to
+`.yalc/@electrolux-oss/sanity-plugin-workflow`, and the studio's `package.json` is unchanged:
+
+```zsh
+ls -l node_modules/@electrolux-oss/
+git diff package.json   # no change
 ```
 
-Now you can use the local version of the plugin:
-```typescript
-import { workflow } from '@electrolux-oss/sanity-plugin-workflow'
-```
+Don't run `npm install` in the studio while linked: it replaces the link with the published
+version. Run `npx yalc link @electrolux-oss/sanity-plugin-workflow` again if you did. To stop,
+run `npx yalc remove @electrolux-oss/sanity-plugin-workflow && npm install`.
+
+Avoid `yalc add` here. It writes `file:.yalc/…` into the studio's `package.json`, and with
+`link-watch` every rebuild replaces the plugin with a copy that can't resolve the plugin's own
+dependencies.
 
 ### Making changes
 
@@ -218,8 +238,9 @@ have done. Remove the key to switch back.
 ```zsh
 npm test          # unit tests (Vitest)
 npm run typecheck # tsc --noEmit
-npm run lint      # ESLint
-npm run build     # also fails on type errors
+npm run lint      # oxlint, type-aware; warnings count as errors
+npm run format    # oxfmt
+npm run build     # plugin-kit verify-package, then pkg-utils
 ```
 
 Use `npm run test:watch` while working on a change.
@@ -238,9 +259,30 @@ Two areas are worth knowing about when adding tests:
   Reading it from source means the test cannot drift from the query that actually ships.
   This is how the draft-vs-published validation target and the locale filter are covered.
 
-`npm run build` type-checks as it compiles, so a type error fails the build rather than
-being emitted into `dist`.
+`npm run build` doesn't type-check (pkg-utils 13 generates types without checking them), so
+run `typecheck` or `lint` to catch type errors.
 
+### Formatting
+
+The plugin is formatted with [oxfmt](https://oxc.rs/docs/guide/usage/formatter.html), using
+plugin-kit's preset with the repository's previous Prettier settings on top (see
+`oxfmt.config.ts`). To format on save in VS Code, install the
+[Oxc extension](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode) and make it
+the default formatter for this workspace; a global Prettier formatter would undo oxfmt's
+import and `package.json` sorting.
+
+### Publishing
+
+Releases are published with pnpm, while development uses npm:
+
+```zsh
+npx pnpm@10.34.9 publish --tag next
+```
+
+pkg-utils writes a `source` condition into `exports` for local development and a
+`source`-less `publishConfig.exports` for the published package. pnpm applies
+`publishConfig` when it packs the package; npm doesn't, and would publish an export that points
+at `src/`, which isn't shipped.
 
 ## FAQ
 
@@ -301,12 +343,12 @@ New in v5:
 
 Requirements:
 
-| Package / Runtime | Requirement |
-| --- | --- |
-| `sanity` | `^6.20.0` |
-| `react` / `react-dom` | `^19.2.2` |
-| `styled-components` | `^6.1.15` |
-| Node.js | `>=22.12` |
+| Package / Runtime     | Requirement |
+| --------------------- | ----------- |
+| `sanity`              | `^6.20.0`   |
+| `react` / `react-dom` | `^19.2.2`   |
+| `styled-components`   | `^6.1.15`   |
+| Node.js               | `>=22.12`   |
 
 ### **v3 → v4**
 
@@ -314,12 +356,12 @@ This release adds support for **Sanity Studio v6** and drops support for Studio 
 
 Requirements:
 
-| Package / Runtime | Requirement |
-| --- | --- |
-| `sanity` | `^5.0.0 \|\| ^6.0.0` |
-| `react` / `react-dom` | `^19.2.2` |
-| `styled-components` | `^6.1.15` (v5 is no longer supported) |
-| Node.js | `>=22.12` |
+| Package / Runtime     | Requirement                           |
+| --------------------- | ------------------------------------- |
+| `sanity`              | `^5.0.0 \|\| ^6.0.0`                  |
+| `react` / `react-dom` | `^19.2.2`                             |
+| `styled-components`   | `^6.1.15` (v5 is no longer supported) |
+| Node.js               | `>=22.12`                             |
 
 ### **v2 → v3**
 

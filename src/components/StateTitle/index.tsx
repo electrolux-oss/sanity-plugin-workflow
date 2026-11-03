@@ -1,13 +1,11 @@
-import { styled } from 'styled-components'
-
 import { InfoOutlineIcon } from '@sanity/icons/InfoOutline'
 import { UserIcon } from '@sanity/icons/User'
 import { Badge, Box, Card, Flex, Text } from '@sanity/ui'
-
-import { Status } from './Status'
-
 import type { BadgeTone } from '@sanity/ui'
+import { styled } from 'styled-components'
+
 import type { State } from '../../types'
+import { Status } from './Status'
 
 const StyledStickyCard = styled(Card)`
   position: sticky;

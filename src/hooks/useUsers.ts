@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useClient, useCurrentUser } from 'sanity'
+import type { SanityClient } from 'sanity'
 
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
 import { getAssignableUsers } from '../helpers/users'
-
-import type { SanityClient } from 'sanity'
 
 export type UserRole = {
   name: string
@@ -86,16 +85,22 @@ async function fetchProjectUsers(client: SanityClient, projectId: string): Promi
   }
 
   const batches = await Promise.all(
-    chunk(userIds, USER_ID_BATCH_SIZE).map(
-      (ids): Promise<UserExtended[]> =>
-        client.request({ url: `/projects/${projectId}/users/${ids.join(',')}` })
+    chunk(userIds, USER_ID_BATCH_SIZE).map((ids): Promise<UserExtended[]> =>
+      client.request({ url: `/projects/${projectId}/users/${ids.join(',')}` })
     )
   )
 
-  return batches.flat().map(user => ({
-    ...user,
-    roles: rolesByUserId.get(user.id) ?? []
-  }))
+  const users = batches.flat()
+
+  for (const user of users) {
+    user.roles = rolesByUserId.get(user.id) ?? []
+  }
+
+  return users
+}
+
+function cachedUsers(projectId: string | undefined): UserExtended[] {
+  return resolved.get(projectId ?? '')?.users ?? EMPTY_USERS
 }
 
 export function useProjectUsers({ apiVersion }: HookConfig = {}): UserExtended[] {
@@ -103,23 +108,21 @@ export function useProjectUsers({ apiVersion }: HookConfig = {}): UserExtended[]
   const client = useClient({ apiVersion: apiVersion ?? API_VERSION })
   const { projectId } = client.config()
 
-  const [users, setUsers] = useState<UserExtended[]>(
-    () => resolved.get(projectId ?? '')?.users ?? EMPTY_USERS
-  )
+  const [users, setUsers] = useState<UserExtended[]>(() => cachedUsers(projectId))
+  const [usersProjectId, setUsersProjectId] = useState(projectId)
+
+  // Show whatever we already have for a new project straight away, stale or not
+  if (projectId !== usersProjectId) {
+    setUsersProjectId(projectId)
+    setUsers(cachedUsers(projectId))
+  }
 
   useEffect(() => {
     if (!projectId) {
       return undefined
     }
 
-    const entry = resolved.get(projectId)
-
-    // Show whatever we already have straight away, stale or not
-    if (entry) {
-      setUsers(entry.users)
-    }
-
-    if (!isStale(entry)) {
+    if (!isStale(resolved.get(projectId))) {
       return undefined
     }
 

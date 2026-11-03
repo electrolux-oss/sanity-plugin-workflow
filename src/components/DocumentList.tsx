@@ -1,17 +1,13 @@
-import { useCallback, useRef } from 'react'
-
 import { Draggable } from '@hello-pangea/dnd'
+import type { DraggableStyle } from '@hello-pangea/dnd'
 import { useVirtualizer } from '@tanstack/react-virtual'
-
-import { DocumentCard } from './DocumentCard'
-
+import type { VirtualItem } from '@tanstack/react-virtual'
+import { useCallback, useRef } from 'react'
 import type { CSSProperties } from 'react'
 
-import type { DraggableStyle } from '@hello-pangea/dnd'
-import type { VirtualItem } from '@tanstack/react-virtual'
 import type { UserExtended } from '../hooks/useUsers'
-
 import type { SanityDocumentWithMetadata, State } from '../types'
+import { DocumentCard } from './DocumentCard'
 
 type DocumentListProps = {
   items: SanityDocumentWithMetadata[]
@@ -33,10 +29,7 @@ function getStyle(
   // If a card is being dragged over, this card needs to move up or down
   if (draggableStyle && draggableStyle.transform) {
     // So get the transform value from beautiful-dnd
-    const draggableTransformY = parseInt(
-      draggableStyle.transform.split(',')[1]!.split('px')[0]!,
-      10
-    )
+    const draggableTransformY = parseInt(draggableStyle.transform.split(',')[1].split('px')[0], 10)
 
     // And apply it to the card
     transform = `translateY(${virtualItem.start + draggableTransformY}px)`
@@ -54,7 +47,7 @@ function getStyle(
 
 export default function DocumentList(props: DocumentListProps) {
   const {
-    items = [],
+    items,
     invalidDocumentIds,
     patchingIds,
     states,
@@ -65,6 +58,7 @@ export default function DocumentList(props: DocumentListProps) {
 
   const parentRef = useRef(null)
 
+  // oxlint-disable-next-line react/incompatible-library -- TanStack Virtual can't be memoized by the React Compiler, which this plugin doesn't use
   const virtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: useCallback(() => parentRef.current, []),
@@ -104,14 +98,14 @@ export default function DocumentList(props: DocumentListProps) {
 
           const { documentId } = item?._metadata ?? {}
           const isDragDisabled =
-            patchingIds.includes(documentId!) ||
+            patchingIds.includes(documentId) ||
             !userRoleCanDrop ||
-            invalidDocumentIds.includes(documentId!)
+            invalidDocumentIds.includes(documentId)
 
           return (
             <Draggable
               key={virtualItem.key}
-              draggableId={documentId!}
+              draggableId={documentId}
               index={virtualItem.index}
               isDragDisabled={isDragDisabled}
             >
@@ -126,9 +120,9 @@ export default function DocumentList(props: DocumentListProps) {
                     <DocumentCard
                       userRoleCanDrop={userRoleCanDrop}
                       isDragDisabled={isDragDisabled}
-                      isPatching={patchingIds.includes(documentId!)}
+                      isPatching={patchingIds.includes(documentId)}
                       isDragging={draggableSnapshot.isDragging}
-                      item={item!}
+                      item={item}
                       toggleInvalidDocumentId={toggleInvalidDocumentId}
                       userList={userList}
                       states={states}

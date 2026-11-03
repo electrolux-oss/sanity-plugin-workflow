@@ -1,8 +1,6 @@
-import { isValidElement } from 'react'
-
 import { ChevronDownIcon } from '@sanity/icons/ChevronDown'
 import { Flex, Text, useTheme_v2 } from '@sanity/ui'
-
+import { isValidElement } from 'react'
 import type { ComponentType, ReactNode } from 'react'
 
 type IconProp = ReactNode | ComponentType
@@ -22,6 +20,7 @@ function Icon({ icon }: { icon: IconProp }) {
     return icon
   }
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- schema icons are elements or components, and elements return above
   const IconComponent = icon as ComponentType
 
   return <IconComponent />

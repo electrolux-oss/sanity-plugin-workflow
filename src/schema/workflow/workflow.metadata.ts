@@ -4,10 +4,8 @@ import Field from '../../components/DocumentCard/Field'
 import UserAssignmentInput from '../../components/UserAssignmentInput'
 import { API_VERSION } from '../../constants'
 import initialRank from '../../helpers/initialRank'
-
 import type { State } from '../../types'
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export default (states: State[]) =>
   defineType({
     type: 'document',

@@ -1,9 +1,7 @@
-import { RelativeTime, TextWithTone } from 'sanity'
-
 import { Box, Text } from '@sanity/ui'
 import { Tooltip } from '@sanity/ui/tooltip'
-
 import type { ComponentType } from 'react'
+import { RelativeTime, TextWithTone } from 'sanity'
 
 type VersionStatusProps = {
   updatedAt: string | null | undefined

@@ -1,27 +1,22 @@
+import { Card, Flex, Spinner } from '@sanity/ui'
 import { Preview, useSchema } from 'sanity'
+import type { SanityDocument, StringInputProps } from 'sanity'
 import { Feedback, useListeningQuery } from 'sanity-plugin-utils'
 
-import { Card, Flex, Spinner } from '@sanity/ui'
-
 import EditButton from './EditButton'
-
-import type { SanityDocument, StringInputProps } from 'sanity'
 
 // TODO: Update this to use the same component as the Tool
 export default function Field(props: StringInputProps) {
   const schema = useSchema()
-  const {
-    data: _data,
-    loading,
-    error
-  } = useListeningQuery<SanityDocument>(`*[_id in [$id, $draftId]]|order(_updatedAt)[0]`, {
-    params: {
-      id: String(props.value),
-      draftId: `drafts.${String(props.value)}`
+  const { data, loading, error } = useListeningQuery<SanityDocument>(
+    `*[_id in [$id, $draftId]]|order(_updatedAt)[0]`,
+    {
+      params: {
+        id: String(props.value),
+        draftId: `drafts.${String(props.value)}`
+      }
     }
-  })
-
-  const data = _data as SanityDocument
+  )
 
   if (loading) {
     return <Spinner />

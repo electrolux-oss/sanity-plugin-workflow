@@ -1,15 +1,13 @@
-import { useCallback } from 'react'
-import { useClient } from 'sanity'
-
 import { CheckmarkIcon } from '@sanity/icons/Checkmark'
 import { useToast } from '@sanity/ui/toast'
+import type { ToastContextValue } from '@sanity/ui/toast'
+import { useCallback } from 'react'
+import { useClient } from 'sanity'
+import type { DocumentActionProps, SanityClient, DocumentActionDescription } from 'sanity'
 
 import { useWorkflowContext } from '../components/WorkflowContext'
 import { API_VERSION } from '../constants'
 import { runWithToast } from '../helpers/runWithToast'
-
-import type { ToastContextValue } from '@sanity/ui/toast'
-import type { DocumentActionProps, SanityClient, DocumentActionDescription } from 'sanity'
 
 export function completeWorkflow(client: SanityClient, toast: ToastContextValue, id: string) {
   return runWithToast(toast, () => client.delete(`workflow-metadata.${id}`), {
@@ -18,10 +16,7 @@ export function completeWorkflow(client: SanityClient, toast: ToastContextValue,
   })
 }
 
-export function useCompleteWorkflow({
-  id,
-  onComplete
-}: DocumentActionProps): DocumentActionDescription | null {
+export function useCompleteWorkflow({ id }: DocumentActionProps): DocumentActionDescription | null {
   const { metadata, loading, error, states } = useWorkflowContext(id)
   const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
@@ -44,10 +39,7 @@ export function useCompleteWorkflow({
     title: isLastState
       ? `Ends the workflow for this document.`
       : `Cannot remove from workflow until in the last state`,
-    onHandle: async () => {
-      await handle()
-      onComplete()
-    },
+    onHandle: handle,
     tone: 'positive'
   }
 }

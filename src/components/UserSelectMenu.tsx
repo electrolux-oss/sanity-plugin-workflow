@@ -1,15 +1,12 @@
-import { useMemo } from 'react'
-import { UserAvatar } from 'sanity'
-
 import { AddCircleIcon } from '@sanity/icons/AddCircle'
 import { RemoveCircleIcon } from '@sanity/icons/RemoveCircle'
 import { RestoreIcon } from '@sanity/icons/Restore'
-
-import MultiSelectMenu from './MultiSelectMenu'
-
-import type { MultiSelectAction, MultiSelectOption } from './MultiSelectMenu'
+import { useMemo } from 'react'
+import { UserAvatar } from 'sanity'
 
 import type { UserExtended } from '../hooks/useUsers'
+import MultiSelectMenu from './MultiSelectMenu'
+import type { MultiSelectAction, MultiSelectOption } from './MultiSelectMenu'
 
 const LABELS = {
   addMe: 'Assign myself',

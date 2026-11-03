@@ -1,8 +1,6 @@
+import { Box, Flex, Text } from '@sanity/ui'
 import React from 'react'
 import { useCurrentUser, UserAvatar } from 'sanity'
-
-import { Box, Flex, Text } from '@sanity/ui'
-
 import type { User } from 'sanity'
 
 type AvatarGroupProps = {

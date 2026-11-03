@@ -1,13 +1,11 @@
 import type { DraggableLocation } from '@hello-pangea/dnd'
-import React, { useCallback, useEffect } from 'react'
+import { useToast } from '@sanity/ui/toast'
+import React, { useCallback } from 'react'
 import { useClient } from 'sanity'
 import { useListeningQuery } from 'sanity-plugin-utils'
 
-import { useToast } from '@sanity/ui/toast'
-
 import { API_VERSION } from '../constants'
 import { runWithToast } from '../helpers/runWithToast'
-
 import type { Metadata, SanityDocumentWithMetadata, State } from '../types'
 
 const QUERY = `*[_type == "workflow.metadata" && (!$filterByLocale || locale in $localeFilter)]|order(orderRank){
@@ -56,24 +54,18 @@ export function useWorkflowDocuments(localeFilter: string[] | undefined): Workfl
   const client = useClient({ apiVersion: API_VERSION })
 
   // Get and listen to changes on documents + workflow metadata documents
-  const {
-    data: _data,
-    loading,
-    error
-  } = useListeningQuery<SanityDocumentWithMetadata[]>(QUERY, {
+  const { data, loading, error } = useListeningQuery<SanityDocumentWithMetadata[]>(QUERY, {
     params: { filterByLocale: localeFilter !== undefined, localeFilter: localeFilter ?? [] },
     initialValue: []
   })
 
-  const data = _data as SanityDocumentWithMetadata[]
-
   const [localDocuments, setLocalDocuments] = React.useState<SanityDocumentWithMetadata[]>([])
+  const [syncedData, setSyncedData] = React.useState<SanityDocumentWithMetadata[] | null>(null)
 
-  useEffect(() => {
-    if (data) {
-      setLocalDocuments(data)
-    }
-  }, [data])
+  if (data && data !== syncedData) {
+    setSyncedData(data)
+    setLocalDocuments(data)
+  }
 
   const move = useCallback(
     async (

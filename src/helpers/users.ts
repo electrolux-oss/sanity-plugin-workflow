@@ -23,6 +23,7 @@ function toCurrentUser(user: UserExtended): CurrentUser {
     name: user.displayName,
     email: user.email,
     profileImage: user.imageUrl,
+    // oxlint-disable-next-line typescript/no-deprecated -- CurrentUser still requires it
     role: user.roles?.[0]?.name ?? '',
     roles: user.roles ?? []
   }

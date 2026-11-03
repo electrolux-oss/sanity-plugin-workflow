@@ -1,7 +1,6 @@
-import { useRouter } from 'sanity/router'
-
 import { EditIcon } from '@sanity/icons/Edit'
 import { Button } from '@sanity/ui'
+import { useRouter } from 'sanity/router'
 
 type EditButtonProps = {
   id: string
@@ -15,7 +14,6 @@ export default function EditButton(props: EditButtonProps) {
 
   return (
     <Button
-      // eslint-disable-next-line react/jsx-no-bind
       onClick={() => navigateIntent('edit', { id, type })}
       mode="ghost"
       fontSize={1}

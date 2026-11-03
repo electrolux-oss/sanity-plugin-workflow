@@ -1,14 +1,11 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-
 import { CheckmarkIcon } from '@sanity/icons/Checkmark'
 import { SearchIcon } from '@sanity/icons/Search'
 import { Box, Button, Card, Flex, Stack, Text, TextInput } from '@sanity/ui'
-
-import { searchOptions } from '../helpers/search'
-
+import type { ButtonTone } from '@sanity/ui'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { ComponentType, KeyboardEvent, ReactNode } from 'react'
 
-import type { ButtonTone } from '@sanity/ui'
+import { searchOptions } from '../helpers/search'
 
 export type MultiSelectOption = {
   id: string
@@ -43,7 +40,7 @@ function handleArrowKeys(event: KeyboardEvent<HTMLDivElement>) {
   const focusable = Array.from(
     event.currentTarget.querySelectorAll<HTMLElement>('input, button:not([disabled])')
   )
-  const current = focusable.indexOf(document.activeElement as HTMLElement)
+  const current = focusable.findIndex(element => element === document.activeElement)
   const next = focusable[event.key === 'ArrowDown' ? current + 1 : current - 1]
 
   if (next) {

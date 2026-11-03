@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs'
+
 import { evaluate, parse } from 'groq-js'
 import { describe, expect, it } from 'vitest'
 
 import { getValidationId } from '../helpers/validationId'
-
 import type { Metadata } from '../types'
 
 // Read the query straight from source so the test cannot drift from what ships
@@ -53,19 +53,19 @@ describe('workflow documents query', () => {
         article('drafts.a', '2026-02-01T00:00:00Z')
       ])
 
-      expect(getValidationId(item!._metadata)).toBe('drafts.a')
+      expect(getValidationId(item._metadata)).toBe('drafts.a')
     })
 
     it('falls back to the published document when there is no draft', async () => {
       const [item] = await run([metadata('b'), article('b', '2026-01-01T00:00:00Z')])
 
-      expect(getValidationId(item!._metadata)).toBe('b')
+      expect(getValidationId(item._metadata)).toBe('b')
     })
 
     it('targets the draft for a never-published document', async () => {
       const [item] = await run([metadata('c'), article('drafts.c', '2026-03-01T00:00:00Z')])
 
-      expect(getValidationId(item!._metadata)).toBe('drafts.c')
+      expect(getValidationId(item._metadata)).toBe('drafts.c')
     })
   })
 

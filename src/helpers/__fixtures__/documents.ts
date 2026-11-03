@@ -23,6 +23,6 @@ export function doc(
       assignees: [],
       locale: 'en',
       ...metadata
-    } as SanityDocumentWithMetadata['_metadata']
+    }
   }
 }

@@ -1,11 +1,10 @@
 import { LexoRank } from 'lexorank'
 import { describe, expect, it } from 'vitest'
 
+import type { SanityDocumentWithMetadata } from '../types'
 import { doc } from './__fixtures__/documents'
 import { generateMultipleOrderRanks } from './generateMultipleOrderRanks'
 import { getDropOrderRank, rankBetween, rerankStates } from './ranking'
-
-import type { SanityDocumentWithMetadata } from '../types'
 
 const [rankA, rankB, rankC, rankD] = generateMultipleOrderRanks(4).map(rank => rank.toString())
 
@@ -91,7 +90,7 @@ describe('rerankStates', () => {
 
     expect(ranks.map(r => r.documentId)).toEqual(['a', 'b', 'c'])
     expect(new Set(ranks.map(r => r.orderRank)).size).toBe(3)
-    expect([...ranks.map(r => r.orderRank)].sort()).toEqual(ranks.map(r => r.orderRank))
+    expect(ranks.map(r => r.orderRank).sort()).toEqual(ranks.map(r => r.orderRank))
   })
 
   it('leaves other states alone', () => {

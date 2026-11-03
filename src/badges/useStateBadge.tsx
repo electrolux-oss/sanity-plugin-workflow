@@ -1,6 +1,6 @@
-import { useWorkflowContext } from '../components/WorkflowContext'
-
 import type { DocumentBadgeDescription, DocumentBadgeProps } from 'sanity'
+
+import { useWorkflowContext } from '../components/WorkflowContext'
 
 export function useStateBadge({
   id: documentId

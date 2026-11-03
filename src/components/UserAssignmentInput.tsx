@@ -1,17 +1,14 @@
-import { useFormValue } from 'sanity'
-
 import { Card } from '@sanity/ui'
+import type { FunctionComponent } from 'react'
+import { useFormValue } from 'sanity'
+import type { ArrayOfPrimitivesInputProps } from 'sanity'
 
 import UserAssignment from './UserAssignment'
 
-import type { FunctionComponent } from 'react'
-import type { ArrayOfPrimitivesInputProps, ArraySchemaType } from 'sanity'
-
-const UserAssignmentInput: FunctionComponent<
-  ArrayOfPrimitivesInputProps<string | number | boolean, ArraySchemaType>
-> = props => {
+const UserAssignmentInput: FunctionComponent<ArrayOfPrimitivesInputProps> = props => {
   const documentId = useFormValue([`documentId`])
-  const locale = useFormValue([`locale`]) as string | undefined
+  const localeValue = useFormValue([`locale`])
+  const locale = typeof localeValue === 'string' ? localeValue : undefined
 
   const stringValue =
     Array.isArray(props?.value) && props?.value?.length ? props.value.map(item => String(item)) : []

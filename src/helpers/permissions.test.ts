@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { getTransitionBlocker, hasAnyRole } from './permissions'
-
 import type { State } from '../types'
+import { getTransitionBlocker, hasAnyRole } from './permissions'
 
 function state(id: string, overrides: Partial<State> = {}): State {
   return { id, title: id, ...overrides }

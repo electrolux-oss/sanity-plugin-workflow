@@ -1,7 +1,6 @@
+import { useToast } from '@sanity/ui/toast'
 import React from 'react'
 import { useClient } from 'sanity'
-
-import { useToast } from '@sanity/ui/toast'
 
 import { API_VERSION } from '../constants'
 import { runWithToast } from '../helpers/runWithToast'
@@ -21,11 +20,14 @@ export default function UserAssignment(props: UserAssignmentProps) {
   const assignees = props.assignees ?? NO_ASSIGNEES
   const userList = useAssignableUsers(locale, assignees)
   const [selected, setSelected] = React.useState(assignees)
+  const [syncedAssignees, setSyncedAssignees] = React.useState(assignees)
 
   // Show changes straight away instead of waiting for the listener to echo the patch back
-  React.useEffect(() => {
+  if (assignees !== syncedAssignees) {
+    setSyncedAssignees(assignees)
     setSelected(assignees)
-  }, [assignees])
+  }
+
   const client = useClient({ apiVersion: API_VERSION })
   const toast = useToast()
 
