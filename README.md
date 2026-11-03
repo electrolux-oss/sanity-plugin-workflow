@@ -276,8 +276,11 @@ import and `package.json` sorting.
 Releases are published with pnpm, while development uses npm:
 
 ```zsh
-npx pnpm@10.34.9 publish --tag next
+npm run publish:next:dry-run   # what would ship
+npm run publish:next           # publish behind the next tag
 ```
+
+pnpm is a pinned devDependency, so `npm ci` installs it. Don't use `npm publish`.
 
 pkg-utils writes a `source` condition into `exports` for local development and a
 `source`-less `publishConfig.exports` for the published package. pnpm applies
