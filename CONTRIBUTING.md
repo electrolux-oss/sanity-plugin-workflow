@@ -1,11 +1,5 @@
 # Contributing
 
-These conventions are shared by
-[sanity-plugin-workflow](https://github.com/electrolux-oss/sanity-plugin-workflow) and
-[sanity-plugin-media](https://github.com/electrolux-oss/sanity-plugin-media). Both repositories
-have the same `CONTRIBUTING.md`; sections marked **(this plugin)** are the only ones that differ.
-When you change a shared section, change it in both repositories.
-
 ## Setup
 
 - Node.js `^22.18.0 || >=24.11.0` to build (the published plugin itself supports `>=22.12`)
@@ -57,7 +51,7 @@ Don't use `yalc add`. It writes `file:.yalc/…` into the Studio's `package.json
 `link-watch` every rebuild replaces the plugin with a copy that can't resolve its own
 dependencies.
 
-### Trying the data repairs (this plugin)
+### Trying the data repairs
 
 The board's "Data issues" menu repairs broken workflow metadata, such as orphaned metadata or
 duplicate order ranks. To try it without broken data, run this in the browser console and reload:
@@ -84,7 +78,7 @@ npm run build       # plugin-kit verify-package, then pkg-utils
 `typecheck` or `lint` to catch type errors. `npm run format` formats everything, and
 `npm run lint:fix` applies oxlint's safe fixes.
 
-### Tests (this plugin)
+### Tests
 
 ```sh
 npm test              # Vitest
